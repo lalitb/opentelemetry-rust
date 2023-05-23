@@ -33,11 +33,3 @@ opentelemetry-stdout = {path = "../opentelemetry-stdout", features = ["logs"] }
 
 
 
-
-
-
-
-
-
-
-

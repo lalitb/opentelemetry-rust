@@ -125,3 +125,4 @@ where
             self.logger.emit(log_record);
         }
     }
+    
