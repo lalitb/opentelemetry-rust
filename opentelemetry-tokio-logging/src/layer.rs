@@ -1,6 +1,9 @@
 
+use std::borrow::Borrow;
+
 use opentelemetry_api::{
-    logs::{self as otel}, logs::{LogRecordBuilder, LoggerProvider}, logs::AnyValue, logs::Severity, logs::{LogRecord, Logger}
+    logs::LoggerProvider, logs::Severity, logs::{LogRecord, Logger},
+    OrderMap
 };
 
 use opentelemetry_sdk:: {
@@ -9,7 +12,6 @@ use opentelemetry_sdk:: {
 };
 
 use tracing_subscriber::Layer;
-use tracing_core::Metadata;
 
 const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 const INSTRUMENTATION_LIBRARY_NAME: &str = "opemtelemetry-tokio-logging";
@@ -32,15 +34,48 @@ impl<'a> tracing::field::Visit for EventVisitor<'a> {
     }
 
     fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
-
         if field.name() == "message" {
             self.log_record.body = Some(format!("{value:?}").into());
+            println!("LALIT: record debug: {:?}", self.log_record.body);
         }
     }
 
     fn record_f64(&mut self, field: &tracing::field::Field, value: f64) {
+        if let Some(ref mut map) = self.log_record.attributes {
+            map.insert(field.name().into(), value.into());
+        } else {
+            let mut map = OrderMap::with_capacity(1);
+            map.insert(field.name().into(), value.into());
+            self.log_record.attributes = Some(map);
+        }
+    }
+
+    fn record_i64(&mut self, field: &tracing::field::Field, value: i64) {
+        if let Some(ref mut map) = self.log_record.attributes {
+            map.insert(field.name().into(), value.into());
+        } else {
+            let mut map = OrderMap::with_capacity(1);
+            map.insert(field.name().into(), value.into());
+            self.log_record.attributes = Some(map);
+        }
 
     }
+
+    fn record_u64(&mut self, field: &tracing::field::Field, value: u64) {
+        //Not supported type
+    }
+
+    fn record_bool(&mut self, field: &tracing::field::Field, value: bool) {
+        if let Some(ref mut map) = self.log_record.attributes {
+            map.insert(field.name().into(), value.into());
+        } else {
+            let mut map = OrderMap::with_capacity(1);
+            map.insert(field.name().into(), value.into());
+            self.log_record.attributes = Some(map);
+        }
+    }
+
+
 }
 
 impl<'a> EventVisitor<'a>{
@@ -57,12 +92,7 @@ impl<'a> EventVisitor<'a>{
             _ => self.log_record.severity_number = Some(Severity::Info) // won't reach here
         };
     }
-
-//    fn end(&mut self) {
-//      let l = self.log_record_builder.build();
-//    }
 }
-
 
 pub struct OpenTelemetryLogsLayer{
     logger: sdk_logger,
@@ -71,7 +101,6 @@ pub struct OpenTelemetryLogsLayer{
 impl OpenTelemetryLogsLayer{
     pub fn new(log_provider: sdk_log_provider) -> Self{
         let logger = log_provider.versioned_logger(INSTRUMENTATION_LIBRARY_NAME, Some(CARGO_PKG_VERSION.into()), None, None, true);
-
         Self {
             logger
         }
@@ -87,6 +116,7 @@ where
             event: &tracing::Event<'_>,
             _ctx: tracing_subscriber::layer::Context<'_, S>
         ) {
+            println!("LALIT->Event received");
             let meta = event.metadata();
             let mut log_record: LogRecord = LogRecord::default();
             let mut visitor = EventVisitor{log_record: &mut log_record};

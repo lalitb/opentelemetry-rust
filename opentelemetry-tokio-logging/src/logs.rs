@@ -9,4 +9,3 @@ use opentelemetry_api::{
     Context as OtelContext,
 };
 
-
