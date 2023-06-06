@@ -1,0 +1,23 @@
+[package]
+name = "opentelemetry-userevents-exporter"
+description = "OpenTelemetry-Rust exporter to userevents"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-userevents-exporter"
+repository = "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-userevents-exporter"
+readme = "README.md"
+rust-version = "1.68.2"
+keywords = ["opentelemetry", "log", "trace", "user_events"]
+license = "Apache-2.0"
+
+[features]
+#logs = ["opentelemetry_api/logs", "opentelemetry_sdk/logs", "async-trait", "thiserror"]
+
+[dependencies]
+eventheader = "0.2"
+eventheader_dynamic = "0.2"
+opentelemetry_api = { version = "0.19", path = "../opentelemetry-api", features = ["logs"]}
+opentelemetry_sdk = { version = "0.19", path = "../opentelemetry-sdk", features = ["logs"]}
+
+
+
