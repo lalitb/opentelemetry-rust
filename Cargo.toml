@@ -17,6 +17,7 @@ members = [
     "opentelemetry-stackdriver",
     "opentelemetry-stdout",
     "opentelemetry-userevents-exporter",
+    "opentelemetry-userevents-exporter-log",
     "opentelemetry-zipkin",
     "opentelemetry-zpages",
     "examples/actix-http",
