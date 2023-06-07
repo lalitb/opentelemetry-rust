@@ -3,7 +3,7 @@
 use eventheader::{FieldFormat, Level, Opcode};
 use eventheader_dynamic::{EventBuilder, EventSet};
 
-use opentelemetry::{
+use opentelemetry_api::{
     Array, Key, Value,
 };
 
@@ -20,15 +20,15 @@ pub(crate) fn register_eventsets(
 ){
     #[cfg(not(test))]
     {
-        provider.register_set(eventheader::Level::Informational, kwl.get_log_event_level());
-        provider.register_set(eventheader::Level::Error, kwl.get_log_event_level());
-        provider.register_set(eventheader::Level::Verbose, kwl.get_log_event_level()); 
+        provider.register_set(eventheader::Level::Informational, kwl.get_log_event_keywords());
+        provider.register_set(eventheader::Level::Error, kwl.get_log_event_keywords());
+        provider.register_set(eventheader::Level::Verbose, kwl.get_log_event_keywords()); 
     }
     #[cfg(test)]
     {
-        provider.create_unregistered(true, eventheader::Level::Informational, kwl.get_log_event_level());
-        provider.create_unregistered(true, eventheader::Level::Error, kwl.get_log_event_level());
-        provider.create_unregistered(true, eventheader::Level::Verbose, kwl.get_log_event_level());    
+        provider.create_unregistered(true, eventheader::Level::Informational, kwl.get_log_event_keywords());
+        provider.create_unregistered(true, eventheader::Level::Error, kwl.get_log_event_keywords());
+        provider.create_unregistered(true, eventheader::Level::Verbose, kwl.get_log_event_keywords());    
     }  
 }
 
@@ -47,6 +47,17 @@ impl<C: KeywordLevelProvider> UserEventsExporter<C> {
         UserEventsExporter {
             provider,
             exporter_config,
+        }
+    }
+}
+
+impl<C: KeywordLevelProvider> EventExporter for UserEventsExporter<C> {
+    fn enabled(&self, level: u8, keyword: u64) -> bool {
+        let es = self.provider.find_set(level.into(), keyword);
+        if es.is_some() {
+            es.unwrap().enabled()
+        } else {
+            false
         }
     }
 

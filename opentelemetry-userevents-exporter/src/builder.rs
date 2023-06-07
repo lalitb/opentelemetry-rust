@@ -3,7 +3,7 @@ use crate::logs;
 
 use crate::exporter_traits::*;
 
-type ProviderGroup = Option<Cow<'static, str>>;
+pub type ProviderGroup = Option<Cow<'static, str>>;
 
 /// Create a new exporter builder by calling [`new_exporter`].
 pub struct ExporterBuilder {
@@ -11,6 +11,7 @@ pub struct ExporterBuilder {
     pub(crate) provider_group: ProviderGroup,
     pub(crate) runtime: Option<ExporterAsyncRuntime>,
     pub(crate) exporter_config: Option<Box<dyn KeywordLevelProvider>>,
+    pub(crate) emit_realtime_events: bool,
 }
 
 /// Create an exporter builder. After configuring the builder,
@@ -21,7 +22,8 @@ pub fn new_exporter(name: &str) -> ExporterBuilder {
         provider_name: name.to_owned(),
         provider_group: None,
         runtime: None,
-        exporter_config: None
+        exporter_config: None,
+        emit_realtime_events: true
     }
 }
 
@@ -34,7 +36,12 @@ impl ExporterBuilder {
     }
 
     pub fn with_provider_group(mut self, name: &str) -> Self {
-        self.provider_group = ProviderGroup::Some(Cow::Owned(name.to_owned()));
+        self.provider_group = Some(Cow::Owned(name.to_owned()));
+        self
+    }
+
+    pub fn without_realtime_events(mut self) -> Self {
+        self.emit_realtime_events = false;
         self
     }
 

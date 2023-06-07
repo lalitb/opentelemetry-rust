@@ -1,4 +1,10 @@
+use std::sync::Arc;
+
+use opentelemetry_sdk::logs::LogProcessor;
+
 pub trait KeywordLevelProvider: Send + Sync {
+    /// The keyword(s) to use for Log events.
+    fn get_log_event_keywords(&self) -> u64;
     /// The level to use for Log events.
     fn get_log_event_level(&self) -> u8;
 }
@@ -11,6 +17,10 @@ pub(crate) struct DefaultKeywordLevelProvider;
 
 impl KeywordLevelProvider for DefaultKeywordLevelProvider {
     #[inline(always)]
+    fn get_log_event_keywords(&self) -> u64 {
+        0x1000
+    }
+    #[inline(always)]
     fn get_log_event_level(&self) -> u8 {
         4 // Level::Informational
     }
@@ -18,12 +28,20 @@ impl KeywordLevelProvider for DefaultKeywordLevelProvider {
 
 impl KeywordLevelProvider for Box<dyn KeywordLevelProvider> {
     #[inline(always)]
+    fn get_log_event_keywords(&self) -> u64 {
+        self.as_ref().get_log_event_keywords()
+    }
+    #[inline(always)]
     fn get_log_event_level(&self) -> u8 {
         self.as_ref().get_log_event_level()
     }   
 }
 
 impl<T: KeywordLevelProvider> KeywordLevelProvider for ExporterConfig<T> {
+    #[inline(always)]
+    fn get_log_event_keywords(&self) -> u64 {
+        self.kwl.get_log_event_keywords()
+    }
     #[inline(always)]
     fn get_log_event_level(&self) -> u8 {
         self.kwl.get_log_event_level()
@@ -52,3 +70,4 @@ pub enum ExporterAsyncRuntime {
     #[cfg_attr(docsrs, doc(cfg(feature = "rt-tokio-current-thread")))]
     TokioCurrentThread,
 }
+
