@@ -110,7 +110,14 @@ impl LogsExporterBuilder {
         let provider = provider_builder.build();
         let _ = global::set_logger_provider(provider);
     } else {
-
+        let exporter = Box::new(logs::Exporter::new(
+            &self.parent.provider_name,
+            self.parent.provider_group,
+            ExporterConfig{
+                kwl: DefaultKeywordLevelProvider,   
+            },
+        ));
+        let processor = logs::RealTimeLogProcessor::new(exporter);
         // Process RealTimeLogProcessor
 
     }

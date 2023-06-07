@@ -9,6 +9,7 @@ pub trait KeywordLevelProvider: Send + Sync {
     fn get_log_event_level(&self) -> u8;
 }
 
+#[derive(Debug)]
 pub(crate) struct ExporterConfig<T: KeywordLevelProvider> {
     pub(crate) kwl: T,
 }

@@ -32,6 +32,7 @@ pub(crate) fn register_eventsets(
     }  
 }
 
+#[derive(Debug)]
 pub(crate) struct UserEventsExporter<C: KeywordLevelProvider> {
     provider: Arc<eventheader_dynamic::Provider>,
     exporter_config: ExporterConfig<C>,
