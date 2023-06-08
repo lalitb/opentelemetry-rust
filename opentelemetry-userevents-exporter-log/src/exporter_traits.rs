@@ -54,8 +54,6 @@ impl<T: KeywordLevelProvider> KeywordLevelProvider for ExporterConfig<T> {
     fn get_log_event_level(&self) -> u8 {
         self.kwl.get_log_event_level()
     }
-
-
 }
 
 pub trait EventExporter {

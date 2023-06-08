@@ -44,3 +44,4 @@ impl<E: EventExporter + Send + Sync> LogExporter for Exporter<E> {
         Ok(())
     }
 }
+
