@@ -5,7 +5,7 @@ use crate::{
 };
 use opentelemetry_api::{
     global::{self},
-    logs::{LogRecord, LogResult, TraceContext},
+    logs::{LogRecord, LogResult, Severity, TraceContext},
     trace::TraceContextExt,
     Context, InstrumentationLibrary,
 };
@@ -224,5 +224,16 @@ impl opentelemetry_api::logs::Logger for Logger {
             };
             processor.emit(data);
         }
+    }
+
+    fn event_enabled(&self, level: Severity) -> bool {
+        let provider = match self.provider() {
+            Some(provider) => provider,
+            None => return false,
+        };
+        provider
+            .config()
+            .event_enabled
+            .is_enabled(self.instrumentation_lib.name.as_ref(), level)
     }
 }

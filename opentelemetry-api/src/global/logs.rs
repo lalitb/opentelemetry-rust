@@ -52,6 +52,10 @@ impl Logger for BoxedLogger {
     fn emit(&self, record: crate::logs::LogRecord) {
         self.0.emit(record)
     }
+
+    fn event_enabled(&self, level: crate::logs::Severity) -> bool {
+        self.0.event_enabled(level)
+    }
 }
 
 #[derive(Clone)]

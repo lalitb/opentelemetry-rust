@@ -1,6 +1,9 @@
 use std::{borrow::Cow, sync::Arc};
 
-use crate::{logs::LogRecord, InstrumentationLibrary, KeyValue};
+use crate::{
+    logs::{LogRecord, Severity},
+    InstrumentationLibrary, KeyValue,
+};
 
 /// The interface for emitting [`LogRecord`]s.
 pub trait Logger {
@@ -10,6 +13,8 @@ pub trait Logger {
     /// [`Context`]: crate::Context
     /// [`TraceContext`]: crate::logs::TraceContext
     fn emit(&self, record: LogRecord);
+
+    fn event_enabled(&self, level: Severity) -> bool;
 }
 
 /// Interfaces that can create [`Logger`] instances.
