@@ -4,12 +4,19 @@ use crate::{logs::LogRecord, InstrumentationLibrary, KeyValue};
 
 /// The interface for emitting [`LogRecord`]s.
 pub trait Logger {
+    /// The [`LogRecord`] type used by this tracer.
+    type LogRecordType: LogRecord;
+
+    ///  Create a Log Record object
+    fn create_log_record(&self) -> Self::LogRecordType;
+
     /// Emit a [`LogRecord`]. If there is active current thread's [`Context`],
     ///  the logger will set the record's [`TraceContext`] to the active trace context,
     ///
     /// [`Context`]: crate::Context
     /// [`TraceContext`]: crate::logs::TraceContext
-    fn emit(&self, record: LogRecord);
+    fn emit(&self, record: Self::LogRecordType);
+    //  where T: LogRecord;
 }
 
 /// Interfaces that can create [`Logger`] instances.

@@ -34,10 +34,21 @@ impl LoggerProvider for NoopLoggerProvider {
     }
 }
 
+// A no-op implementation of a [`LogRecord`]
+#[derive(Clone, Debug)]
+pub struct NoopLogRecord(());
+
 /// A no-op implementation of a [`Logger`]
 #[derive(Clone, Debug)]
 pub struct NoopLogger(());
 
 impl Logger for NoopLogger {
-    fn emit(&self, _record: LogRecord) {}
+    fn create_log_record(&self) -> Self::LogRecordType {
+        NoopLogRecord(());
+    }
+    fn emit<T>(&self, _record: T)
+    where
+        T: LogRecord,
+    {
+    }
 }
