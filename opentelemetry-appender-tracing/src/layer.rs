@@ -1,6 +1,6 @@
 use std::vec;
 
-use opentelemetry_api::logs::{LogRecord, Logger, LoggerProvider, Severity};
+use opentelemetry_api::logs::{AnyValue, LogRecord, Logger, LoggerProvider, Severity};
 
 use tracing_subscriber::Layer;
 
@@ -11,55 +11,38 @@ struct EventVisitor<'a> {
     log_record: &'a mut LogRecord,
 }
 
+impl<'a> EventVisitor<'a> {
+    fn record(&mut self, name: &str, value: AnyValue) {
+        if let Some(ref mut vec) = self.log_record.attributes {
+            vec.push((name.to_owned().into(), value));
+        } else {
+            self.log_record.attributes = Some(vec![(name.to_owned().into(), value)]);
+        }
+    }
+}
+
 impl<'a> tracing::field::Visit for EventVisitor<'a> {
     fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
-        if field.name() == "message" {
-            self.log_record.body = Some(format!("{value:?}").into());
-        } else if let Some(ref mut vec) = self.log_record.attributes {
-            vec.push((field.name().into(), format!("{value:?}").into()));
-        } else {
-            let vec = vec![(field.name().into(), format!("{value:?}").into())];
-            self.log_record.attributes = Some(vec);
-        }
+        let formatted_value = format!("{:?}", value);
+        self.record(field.name(), AnyValue::String(formatted_value.into()));
     }
 
     fn record_str(&mut self, field: &tracing_core::Field, value: &str) {
-        if let Some(ref mut vec) = self.log_record.attributes {
-            vec.push((field.name().into(), value.to_owned().into()));
-        } else {
-            let vec = vec![(field.name().into(), value.to_owned().into())];
-            self.log_record.attributes = Some(vec);
-        }
+        self.record(field.name(), AnyValue::String(value.to_owned().into()));
     }
 
     fn record_bool(&mut self, field: &tracing_core::Field, value: bool) {
-        if let Some(ref mut vec) = self.log_record.attributes {
-            vec.push((field.name().into(), value.into()));
-        } else {
-            let vec = vec![(field.name().into(), value.into())];
-            self.log_record.attributes = Some(vec);
-        }
+        self.record(field.name(), AnyValue::Boolean(value));
     }
 
     fn record_f64(&mut self, field: &tracing::field::Field, value: f64) {
-        if let Some(ref mut vec) = self.log_record.attributes {
-            vec.push((field.name().into(), value.into()));
-        } else {
-            let vec = vec![(field.name().into(), value.into())];
-            self.log_record.attributes = Some(vec);
-        }
+        self.record(field.name(), AnyValue::Double(value));
     }
 
     fn record_i64(&mut self, field: &tracing::field::Field, value: i64) {
-        if let Some(ref mut vec) = self.log_record.attributes {
-            vec.push((field.name().into(), value.into()));
-        } else {
-            let vec = vec![(field.name().into(), value.into())];
-            self.log_record.attributes = Some(vec);
-        }
+        self.record(field.name(), AnyValue::Int(value));
     }
-
-    // TODO: Remaining field types from AnyValue : Bytes, ListAny, Boolean
+    //TBD - support remaining types from AnyValue enum.
 }
 
 pub struct OpenTelemetryTracingBridge<P, L>
