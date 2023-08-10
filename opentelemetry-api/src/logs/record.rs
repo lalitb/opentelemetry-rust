@@ -6,37 +6,27 @@ use std::{borrow::Cow, time::SystemTime};
 
 pub trait LogRecord {
     /// Record timestamp
-    fn with_timestamp(self, timestamp: SystemTime) -> Self;
+    fn with_timestamp(self, timestamp: SystemTime) ;
 
     /// Timestamp for when the record was observed by OpenTelemetry
-    fn with_observed_timestamp(self, timestamp: SystemTime) -> Self;
+    fn with_observed_timestamp(self, timestamp: SystemTime) ;
 
     /// Assign the record's [`TraceContext`]
-    fn with_span_context(self, span_context: &SpanContext) -> Self;
-
-    /// Assign the record's [`TraceContext`] from a `TraceContextExt` trait
-    fn with_context<T>(self, context: &T) -> Self
-    where
-        T: TraceContextExt;
+    fn with_span_context(self, span_context: &SpanContext) ;
 
     /// The original severity string from the source
-    fn with_severity_text<T>(self, severity_text: T) -> Self
-    where
-        T: Into<Cow<'static, str>>;
+    fn with_severity_text(self, severity_text: Cow<'static, str>);
 
     /// The corresponding severity value, normalized
-    fn with_severity_number(self, severity_number: Severity) -> Self;
+    fn with_severity_number(self, severity_number: Severity) ;
 
     /// Record body
-    fn with_body(self, body: AnyValue) -> Self;
+    fn with_body(self, body: AnyValue);
 
     /// Additional attributes associated with this record
-    fn with_attributes(self, attributes: Vec<(Key, AnyValue)>) -> Self;
+    fn with_attributes(self, attributes: Vec<(Key, AnyValue)>) ;
 
-    fn with_attribute<K, V>(self, key: K, value: V) -> Self
-    where
-        K: Into<Key>,
-        V: Into<AnyValue>;
+    fn with_attribute(self, key: Key, value: AnyValue);
 }
 
 /// Value types for representing arbitrary values in a log record.
