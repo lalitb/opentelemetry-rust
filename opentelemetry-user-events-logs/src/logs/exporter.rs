@@ -162,6 +162,7 @@ impl UserEventsExporter {
         &self,
         log_data: &opentelemetry_sdk::export::logs::LogData,
     ) -> opentelemetry_sdk::export::logs::ExportResult {
+        println!("[UserEventsExporter] export_log_data started..");
         let mut level: Level = Level::Invalid;
         if log_data.record.severity_number.is_some() {
             level = self.get_severity_level(log_data.record.severity_number.unwrap());
@@ -172,6 +173,10 @@ impl UserEventsExporter {
             .get_log_keyword_or_default(log_data.instrumentation.name.as_ref());
 
         if keyword.is_none() {
+            println!(
+                "[UserEventsExporter] export_log_data: keyword is None for {}. And also no default keyword is configured.",
+                log_data.instrumentation.name.as_ref()
+            );
             return Ok(());
         }
 
@@ -181,9 +186,17 @@ impl UserEventsExporter {
         {
             es
         } else {
+            println!(
+                "[UserEventsExporter] export_log_data: eventsource is None for {}",
+                log_data.instrumentation.name.as_ref()
+            );  
             return Ok(());
         };
         if log_es.enabled() {
+            println!(
+                "[UserEventsExporter] export_log_data: eventsource is enabled for {}",
+                log_data.instrumentation.name.as_ref()
+            );
             EBW.with(|eb| {
                 let [mut cs_a_count, mut cs_b_count, mut cs_c_count] = [0; 3];
                 let mut eb = eb.borrow_mut();
@@ -241,16 +254,17 @@ impl UserEventsExporter {
                     is_body_present = true;
                 }
                 if level != Level::Invalid {
-                    cs_b_count += cs_b_count;
+                    cs_b_count += 1;
                 }
                 if log_data.record.severity_text.is_some() {
-                    cs_b_count += cs_b_count;
+                    cs_b_count += 1;
                     is_severity_text_present = true;
                 }
-
+                cs_b_count += 1; // for _typename
                 if cs_b_count > 0 {
                     eb.add_struct("PartB", cs_b_count, 0);
                     {
+                        eb.add_str("_typename", "Log", FieldFormat::Default, 0);
                         if level != Level::Invalid {
                             eb.add_value(
                                 "severityNumber",
@@ -308,7 +322,21 @@ impl UserEventsExporter {
                         );
                     }
                 }
-                eb.write(&log_es, None, None);
+                println!("[UserEventsExporter] No of attributes PartA {} PartB {} PartC {}", cs_a_count, cs_b_count, cs_c_count);
+                let res = eb.write(&log_es, None, None);
+                if res == 0{
+                    println!(
+                        "[UserEventsExporter] export_log_data: write successful");
+                    } else if res == 9 {
+                    println!(
+                        "[UserEventsExporter] ERROR: No consumer listening for events."); 
+                }  else if res == 34 {
+                    println!("
+                        [UserEventsExporter] ERROR: data size overflow");
+                } else if res < 0 {
+                    println!(
+                        "[UserEventsExporter] ERROR: write failed with error code: {}", res);
+                }
             });
             return Ok(());
         }
@@ -336,9 +364,14 @@ impl opentelemetry_sdk::export::logs::LogExporter for UserEventsExporter {
 
     #[cfg(feature = "logs_level_enabled")]
     fn event_enabled(&self, level: Severity, _target: &str, name: &str) -> bool {
+        println!("[otel-user-events-log] event_enabled: level: {:?}, target: {}, name: {}", level, _target, name);
         let (found, keyword) = if self.exporter_config.keywords_map.is_empty() {
+            println!("[otel-user-events-log] event_enabled: using default_keyword: {}", self.exporter_config.default_keyword);
             (true, self.exporter_config.default_keyword)
         } else {
+            println!(
+                "[otel-user-events-log] event_enabled: using keyword for name: {} and level {:?}",
+                name, level);
             // TBD - target is not used as of now for comparison.
             match self.exporter_config.get_log_keyword(name) {
                 Some(x) => (true, x),
@@ -346,15 +379,26 @@ impl opentelemetry_sdk::export::logs::LogExporter for UserEventsExporter {
             }
         };
         if !found {
+            println!(
+                "[otel-user-events-log] event_enabled: keyword not found for name: {} and level {:?}",
+                name, level);
             return false;
         }
         let es = self
             .provider
             .find_set(self.get_severity_level(level), keyword);
-        match es {
+        if es.is_none() {
+            println!(
+                "[otel-user-events-log] event_enabled: Cannot find eventheder set for severity level not found for name: {} and level {:?}",
+                name, level);
+        }
+        let res = match es {
             Some(x) => x.enabled(),
             _ => false,
         };
-        false
+        println!(
+            "[otel-user-events-log] final event_enabled: returning {} for name: {} and level {:?}",
+            res, name, level);
+        res
     }
 }

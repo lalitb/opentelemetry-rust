@@ -100,6 +100,9 @@ where
         event: &tracing::Event<'_>,
         _ctx: tracing_subscriber::layer::Context<'_, S>,
     ) {
+        println!(
+            "[otel=appender-tracing] - on_event called with event: {:?}",
+            event);
         let meta = event.metadata();
         let mut log_record: LogRecord = LogRecord::default();
         log_record.severity_number = Some(map_severity_to_otel_severity(meta.level().as_str()));
@@ -121,9 +124,14 @@ where
         _event: &tracing_core::Event<'_>,
         _ctx: tracing_subscriber::layer::Context<'_, S>,
     ) -> bool {
+        println!("[otel=appender-tracing] - checking if event is enabled {} {}",
+            _event.metadata().level().as_str(),
+            _event.metadata().target());
         let severity = map_severity_to_otel_severity(_event.metadata().level().as_str());
-        self.logger
-            .event_enabled(severity, _event.metadata().target())
+        let res = self.logger
+            .event_enabled(severity, _event.metadata().target());
+        println!("[otel=appender-tracing] - event enabled: {}", res);
+        res
     }
 }
 
