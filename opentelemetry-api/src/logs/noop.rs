@@ -1,7 +1,7 @@
 use std::{borrow::Cow, sync::Arc};
 
 use crate::{
-    logs::{LogRecord, Logger, LoggerProvider},
+    logs::{Logger, LoggerProvider},
     InstrumentationLibrary, KeyValue,
 };
 
@@ -34,12 +34,19 @@ impl LoggerProvider for NoopLoggerProvider {
     }
 }
 
+// A no-op implementation of a [`LogRecord`]
+#[derive(Clone, Debug)]
+pub struct NoopLogRecord(());
+
+
+
 /// A no-op implementation of a [`Logger`]
 #[derive(Clone, Debug)]
 pub struct NoopLogger(());
 
 impl Logger for NoopLogger {
-    fn emit(&self, _record: LogRecord) {}
+    fn create_log_record(&self) -> Self::LogRecord { NoopLogRecord(())}
+    fn emit(&self, _record: Self::LogRecord) {}
     #[cfg(feature = "logs_level_enabled")]
     fn event_enabled(&self, _level: super::Severity, _target: &str) -> bool {
         true
