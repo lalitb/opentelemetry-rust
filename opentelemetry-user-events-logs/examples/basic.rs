@@ -6,6 +6,7 @@ use opentelemetry_user_events_logs::{ExporterConfig, ReentrantLogProcessor};
 use std::collections::HashMap;
 use tracing::error;
 use tracing_subscriber::prelude::*;
+use microbench::*;
 
 fn init_logger() -> LoggerProvider {
     let exporter_config = ExporterConfig {
@@ -29,10 +30,24 @@ fn main() {
     // fast filtering.
     // event_id is also passed as an attribute now, there is nothing in metadata where a
     // numeric id can be stored.
-    error!(
-        event_name = "my-event-name",
-        event_id = 20,
-        user_name = "otel user",
-        user_email = "otel@opentelemetry.io"
-    );
+    let options = microbench::Options::default();
+    microbench::bench(
+        &options,
+  "testing",        || {
+            error!(
+                event_name = "my-event-name",
+                event_id = 20,
+                user_name = "tracing user",
+                user_email = "traing_email",
+                attr1 = "val1",
+                attr2 = "val2",
+                attr3 = "val3",
+                attr4 = "val4",
+                attr5 = "val5",
+                attr6 = "val6",
+                attr7 = "val7",
+                attr8 = "val8",
+                attr9 = "val9",
+                attr10 = "val10")
+            });
 }

@@ -83,7 +83,7 @@ pub mod tonic {
 
             LogRecord {
                 time_unix_nano: log_record.timestamp.map(to_nanos).unwrap_or_default(),
-                observed_time_unix_nano: to_nanos(log_record.observed_timestamp),
+                observed_time_unix_nano:  log_record.observed_timestamp.map(to_nanos).unwrap_or_default(),
                 severity_number: severity_number.into(),
                 severity_text: log_record.severity_text.map(Into::into).unwrap_or_default(),
                 body: log_record.body.map(Into::into),
@@ -222,7 +222,7 @@ pub mod grpcio {
 
             LogRecord {
                 time_unix_nano: log_record.timestamp.map(to_nanos).unwrap_or_default(),
-                observed_time_unix_nano: to_nanos(log_record.observed_timestamp),
+                observed_time_unix_nano: log_record.observed_timestamp.map(to_nanos).unwrap_or_default(),
                 severity_number: severity_number.into(),
                 severity_text: log_record.severity_text.map(Into::into).unwrap_or_default(),
                 body: log_record.body.map(Into::into),
