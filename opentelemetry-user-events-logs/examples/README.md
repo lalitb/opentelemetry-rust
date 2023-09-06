@@ -3,7 +3,7 @@
 ## Prerequisites
 
 * Rust and Cargo: [Install](https://doc.rust-lang.org/cargo/getting-started/installation.html) them if you haven't.
-* A Linux system: Make sure it supports [user_events](https://docs.kernel.org/trace/user_events.html): Ubuntu 23.10 (once available), or kernel 6.4 or later build with user_events support.
+* A Linux system with [user_events](https://docs.kernel.org/trace/user_events.html) enabled: Ubuntu 23.10 (once available), or kernel 6.4 or later build with user_events support.
 * Correct Permissions: Linux user(preferable non-root) with write permission to the tracefs.
 * A listener/agent to listen for new events. Or else [perf](https://perf.wiki.kernel.org/index.php/Main_Page) and [decode-perf](https://github.com/microsoft/LinuxTracepoints/tree/main/libeventheader-decode-cpp/tools) tools installed for validation.
 
@@ -35,12 +35,12 @@ tracing-subscriber = { version = "0.3.0", default-features = false, features = [
 
 ```sh
 $ perf record -e user_events:test_L2K1Gtest
-<ctrl-c after running sample code>
+<ctrl-c after running example code>
 $ decode-perf ./perf.data
 <log data is output here>
 ```
 
-Note: The sample code sets up a tracepoint called `test_L2K1Gtest`, and error message are relayed to this tracepoint. Refer to next section for more details.
+Note: The example code sets up a tracepoint called `test_L2K1Gtest`, and error log is exported to this tracepoint. Refer to the next section for more details.
 
 ## Configuring tracepoint names:
 
@@ -77,9 +77,9 @@ The `ProviderName` is configured as `myprovider` above.
 let provider =  LoggerProvider::builder().with_log_processor(reenterant_processor).build();
 ```
 
-### Sample code:
+### Example code:
 
-The sample code uses `test` as the ProviderName and `1` as the EventKeyword. So, it makes these 5 tracepoints:
+The example code uses `test` as the ProviderName and `1` as the EventKeyword. So, it makes these 5 tracepoints:
 
 * test_L5K1Gtest
 * test_L4K1Gtest
