@@ -78,7 +78,7 @@ let provider =  LoggerProvider::builder().with_log_processor(reenterant_processo
 
 ### Sample code:
 
-The sample code uses `test` as the ProviderName and `1 as the EventKeyword. So, it makes these 5 tracepoints:
+The sample code uses `test` as the ProviderName and `1` as the EventKeyword. So, it makes these 5 tracepoints:
 
 * test_L5K1Gtest
 * test_L4K1Gtest
