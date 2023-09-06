@@ -51,7 +51,7 @@ ProviderName + '_' + 'L' + EventLevel + 'K' + EventKeyword + 'G' + ProviderGroup
 
 * `ProviderName` and `EventKeyword` can be changed using Exporter configuration.
 * These settings decide the tracepoint names and where events go.
-* OpenTelemetry SDK will automatically create a tracepoint for each of the 5 levels (Critical, Error, Warning, Info, Verbose).
+* OpenTelemetry SDK currently creates a tracepoint for each of the 5 levels (Critical, Error, Warning, Info, Verbose).
 * In future, the `EventKeyword` would be mapped to the unique events sent by the application.
 
 ### How to configure:
