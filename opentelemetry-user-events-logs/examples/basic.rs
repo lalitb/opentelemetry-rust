@@ -26,6 +26,7 @@ fn main() {
 
     error!(
         user_name = "otel user",
+        //event_name = "my-event-name",
         user_email = "otel@opentelemetry.io",
         "Login failed."
     );

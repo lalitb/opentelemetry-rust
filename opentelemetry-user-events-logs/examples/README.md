@@ -2,10 +2,10 @@
 
 ## Prerequisites
 
-* Rust and Cargo: Install them if you haven't.
-* A Linux system: Make sure it supports user_events.
+* Rust and Cargo: [Install](https://doc.rust-lang.org/cargo/getting-started/installation.html) them if you haven't.
+* A Linux system: Make sure it supports [user_events](https://docs.kernel.org/trace/user_events.html): Ubuntu 23.10 (once available), or kernel 6.4 or later build with user_events support.
 * Correct Permissions: Linux user(preferable non-root) with write permission to the tracefs.
-* A listener/agent to listen for new events. Or else `perf` and `decode-perf` tools installed for validation.
+* A listener/agent to listen for new events. Or else [perf](https://perf.wiki.kernel.org/index.php/Main_Page) and [decode-perf](https://github.com/microsoft/LinuxTracepoints/tree/main/libeventheader-decode-cpp/tools) tools installed for validation.
 
 ## Steps
 1. Create a new Rust application and run it.
@@ -49,7 +49,7 @@ ProviderName + '_' + 'L' + EventLevel + 'K' + EventKeyword + 'G' + ProviderGroup
 
 ### What you need to know:
 
-* `ProviderName` and `EventKeyword` can be changed using Exporter configuration.
+* [ProviderName](https://github.com/microsoft/LinuxTracepoints/tree/main/libeventheader-tracepoint#provider-names) and [EventKeyword](https://github.com/microsoft/LinuxTracepoints/tree/main/libeventheader-tracepoint#tracepoint-names) can be changed using Exporter configuration.
 * These settings decide the tracepoint names and where events go.
 * OpenTelemetry SDK currently creates a tracepoint for each of the 5 levels (Critical, Error, Warning, Info, Verbose).
 * In future, the `EventKeyword` would be mapped to the unique events sent by the application.
@@ -67,9 +67,9 @@ ProviderName + '_' + 'L' + EventLevel + 'K' + EventKeyword + 'G' + ProviderGroup
 
 2. Create LogProcessor instance:
 ```rust
-let processor = ReentrantLogProcessor::new("test_provider", None, exporter_config);
+let processor = ReentrantLogProcessor::new("myprovider", None, exporter_config);
 ```
-The `ProviderName` is configured as `test_provider` above.
+The `ProviderName` is configured as `myprovider` above.
 
 3. Create LoggerProvider with above configurations.
 ```rust
