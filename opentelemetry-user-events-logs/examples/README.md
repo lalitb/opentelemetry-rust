@@ -45,6 +45,7 @@ Note: The sample code sets up a tracepoint called `test_L2K1Gtest`, and error me
 ## Configuring tracepoint names:
 
 ### Tracepoint Format:
+
 ProviderName + '_' + 'L' + EventLevel + 'K' + EventKeyword + 'G' + ProviderGroup
 
 ### What you need to know:
