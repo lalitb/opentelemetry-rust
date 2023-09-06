@@ -30,7 +30,7 @@ tracing-subscriber = { version = "0.3.0", default-features = false, features = [
 
 ```
 
-3. Replace what's inside `src/main.rs` with the example file [basic.rs](./basic.rs). This new code sets up logging, make new tracepoints, and send an error message where it needs to go.
+3. Replace what's inside `src/main.rs` with the example file [basic.rs](./basic.rs). This new code sets up logging, make new tracepoints, and send an error log where it needs to go.
 4. Run and Check: Go back to the terminal and type `cargo run`. If everything is okay, your logs will be sent to the proper place. To test this, you can use the `perf` and `decode-perf` tool like this:
 
 ```sh
