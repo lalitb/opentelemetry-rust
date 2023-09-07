@@ -25,7 +25,7 @@ fn main() {
     tracing_subscriber::registry().with(layer).init();
 
     error!(
-        name: "my-event",
+        //name: "my-event",
         user_name = "otel user",
         user_email = "otel@opentelemetry.io",
         "Login failed."
