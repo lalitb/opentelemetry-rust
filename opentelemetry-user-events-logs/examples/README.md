@@ -6,7 +6,7 @@
 * A Linux system with [user_events](https://docs.kernel.org/trace/user_events.html) enabled: Ubuntu 23.10 (once available), or kernel 6.4 or later build with user_events support.
 * Permissions: Make sure you're a Linux user with write permissions to the tracefs (preferably not root).
 * Perf Tool: Install the [perf](https://perf.wiki.kernel.org/index.php/Main_Page) tool to capture the user_events.
-* Decode-Perf Tool: Install the [decode-perf](https://perf.wiki.kernel.org/index.php/Main_Page) tool to decode the user_events.
+* Decode-Perf Tool: Install the [decode-perf](https://github.com/microsoft/LinuxTracepoints/tree/main/libeventheader-decode-cpp/tools) tool to decode the user_events.
 
 ## Steps
 1. Create a new Rust application and run it.
