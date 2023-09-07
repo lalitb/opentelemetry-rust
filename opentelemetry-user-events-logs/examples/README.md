@@ -90,8 +90,6 @@ The example code uses `myprovider` as the ProviderName and `1` as the EventKeywo
 * myprovider_L1K1Gmyprovider
 
 To get the events sent to these tracepoints, the listener should be set up to monitor one or more of them.
-
-
 ## Useful links
 
 1. Rust Installation: https://doc.rust-lang.org/cargo/getting-started/installation.html
