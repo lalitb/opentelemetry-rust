@@ -4,7 +4,7 @@
 
 * Rust and Cargo: [Install](https://doc.rust-lang.org/cargo/getting-started/installation.html) them if you haven't.
 * A Linux system with [user_events](https://docs.kernel.org/trace/user_events.html) enabled: Ubuntu 23.10 (once available), or kernel 6.4 or later build with user_events support.
-* Correct Permissions: Linux user(preferable non-root) with write permission to the tracefs.
+* Correct Permissions: Linux user (preferable non-root) with write permission to the tracefs.
 * A listener/agent to listen for new events. Or else [perf](https://perf.wiki.kernel.org/index.php/Main_Page) and [decode-perf](https://github.com/microsoft/LinuxTracepoints/tree/main/libeventheader-decode-cpp/tools) tools installed for validation.
 
 ## Steps
