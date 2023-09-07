@@ -38,7 +38,8 @@ tracing-subscriber = { version = "0.3.0", default-features = false, features = [
 $ perf record -e user_events:myprovider_L2K1Gmyprovider
 <ctrl-c after running example code>
 $ decode-perf ./perf.data
-<log data is output here>
+"perf.data": [
+  { "n": "myprovider:opentelemetry-appender-tracing", "__csver__": "0x401", "PartA": { "time": "2023-09-07T18:50:22.946235600+00:00" }, "PartC": { "user_name": "otel user", "user_email": "otel@opentelemetry.io" }, "PartB": { "_typename": "Logs", "body": "Login failed.", "severityNumber": 2, "severityText": "ERROR" }, "meta": { "time": 238196.067709600, "cpu": 0, "pid": 3843, "tid": 3843, "level": 2, "keyword": "0x1" } } ]
 ```
 
 Note: The example code sets up a tracepoint called `myprovider_L2K1Gmyprovider`, and error log is exported to this tracepoint. Refer to the next section for more details.
