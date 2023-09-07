@@ -25,7 +25,7 @@ fn main() {
     tracing_subscriber::registry().with(layer).init();
 
     error!(
-        //name: "my-event",
+        //name: "my-event", //Commented out as this is supported only in the upcoming release of tracing crate
         user_name = "otel user",
         user_email = "otel@opentelemetry.io",
         "Login failed."
