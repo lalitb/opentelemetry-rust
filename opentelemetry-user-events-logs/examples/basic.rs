@@ -12,7 +12,7 @@ fn init_logger() -> LoggerProvider {
         default_keyword: 1,
         keywords_map: HashMap::new(),
     };
-    let reenterant_processor = ReentrantLogProcessor::new("test", None, exporter_config);
+    let reenterant_processor = ReentrantLogProcessor::new("myprovider", None, exporter_config);
     LoggerProvider::builder()
         .with_log_processor(reenterant_processor)
         .build()
@@ -25,8 +25,8 @@ fn main() {
     tracing_subscriber::registry().with(layer).init();
 
     error!(
+        name: "my-event",
         user_name = "otel user",
-        //event_name = "my-event-name",
         user_email = "otel@opentelemetry.io",
         "Login failed."
     );

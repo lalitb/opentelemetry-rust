@@ -34,13 +34,13 @@ tracing-subscriber = { version = "0.3.0", default-features = false, features = [
 4. Run and Check: Go back to the terminal and type `cargo run`. If everything is okay, your logs will be sent to the proper place. To test this, you can use the `perf` and `decode-perf` tool like this:
 
 ```sh
-$ perf record -e user_events:test_L2K1Gtest
+$ perf record -e user_events:myprovider_L2K1Gmyprovider
 <ctrl-c after running example code>
 $ decode-perf ./perf.data
 <log data is output here>
 ```
 
-Note: The example code sets up a tracepoint called `test_L2K1Gtest`, and error log is exported to this tracepoint. Refer to the next section for more details.
+Note: The example code sets up a tracepoint called `myprovider_L2K1Gmyprovider`, and error log is exported to this tracepoint. Refer to the next section for more details.
 
 ## Configuring tracepoint names:
 
@@ -79,13 +79,13 @@ let provider =  LoggerProvider::builder().with_log_processor(reenterant_processo
 
 ### Example code:
 
-The example code uses `test` as the ProviderName and `1` as the EventKeyword. So, it makes these 5 tracepoints:
+The example code uses `myprovider` as the ProviderName and `1` as the EventKeyword. So, it makes these 5 tracepoints:
 
-* test_L5K1Gtest
-* test_L4K1Gtest
-* test_L3K1Gtest
-* test_L2K1Gtest
-* test_L1K1Gtest
+* myprovider_L5K1Gmyprovider
+* myprovider_L4K1Gmyprovider
+* myprovider_L3K1Gmyprovider
+* myprovider_L2K1Gmyprovider
+* myprovider_L1K1Gmyprovider
 
 To get the events sent to these tracepoints, the listener should be set up to monitor one or more of them.
 
