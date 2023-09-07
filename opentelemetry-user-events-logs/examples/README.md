@@ -52,9 +52,10 @@ ProviderName + '_' + 'L' + EventLevel + 'K' + EventKeyword + 'G' + ProviderGroup
 ### What you need to know:
 
 * [ProviderName](https://github.com/microsoft/LinuxTracepoints/tree/main/libeventheader-tracepoint#provider-names) and [EventKeyword](https://github.com/microsoft/LinuxTracepoints/tree/main/libeventheader-tracepoint#tracepoint-names) can be changed using Exporter configuration.
+* `ProviderGroup` is assigned the value of ProviderName.
 * These settings decide the tracepoint names and where events go.
 * OpenTelemetry SDK currently creates a tracepoint for each of the 5 levels (Critical, Error, Warning, Info, Verbose).
-* In future, the `EventKeyword` would be mapped to the unique events sent by the application.
+* In future, the `EventKeyword` would be mapped to the unique events sent by the application. 
 
 ### How to configure:
 
