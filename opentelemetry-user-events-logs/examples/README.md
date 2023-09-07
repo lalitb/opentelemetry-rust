@@ -90,7 +90,7 @@ The example code uses `test` as the ProviderName and `1` as the EventKeyword. So
 To get the events sent to these tracepoints, the listener should be set up to monitor one or more of them.
 
 
-Useful Links:
+## Useful links
 
 1. Rust Installation: https://doc.rust-lang.org/cargo/getting-started/installation.html
 2. user_events: https://docs.kernel.org/trace/user_events.html
