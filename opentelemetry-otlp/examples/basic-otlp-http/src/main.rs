@@ -7,6 +7,13 @@ use opentelemetry::{
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::metrics as sdkmetrics;
 use opentelemetry_sdk::trace as sdktrace;
+
+use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
+use opentelemetry_sdk::{logs::Config, runtime, Resource};
+use opentelemetry::logs::LogError;
+
+
+
 use std::error::Error;
 
 fn init_tracer() -> Result<sdktrace::Tracer, TraceError> {
@@ -35,6 +42,22 @@ fn init_metrics() -> metrics::Result<sdkmetrics::MeterProvider> {
         .build()
 }
 
+fn init_logs() -> Result<opentelemetry_sdk::logs::Logger, LogError> {
+    opentelemetry_otlp::new_pipeline()
+        .logging()
+        .with_log_config(
+            Config::default().with_resource(Resource::new(vec![KeyValue::new(
+                opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                "basic-otlp-logging-example",
+            )])),
+        )
+        .with_exporter(
+            opentelemetry_otlp::new_exporter()
+                .http()
+                .with_endpoint("http://localhost:4317"),
+        )
+        .install_batch(runtime::Tokio)
+}
 const LEMONS_KEY: Key = Key::from_static_str("ex.com/lemons");
 const ANOTHER_KEY: Key = Key::from_static_str("ex.com/another");
 
