@@ -4,6 +4,7 @@ use opentelemetry::{
     trace::{TraceContextExt, TraceError, Tracer},
     Key, KeyValue,
 };
+use opentelemetry::global::{logger_provider, shutdown_logger_provider};
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::metrics as sdkmetrics;
 use opentelemetry_sdk::trace as sdktrace;
@@ -11,10 +12,11 @@ use opentelemetry_sdk::trace as sdktrace;
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_sdk::{logs::Config, runtime, Resource};
 use opentelemetry::logs::LogError;
-
-
+use tracing_subscriber::prelude::*;
 
 use std::error::Error;
+use tracing::info;
+
 
 fn init_tracer() -> Result<sdktrace::Tracer, TraceError> {
     opentelemetry_otlp::new_pipeline()
@@ -75,6 +77,12 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let _ = init_tracer()?;
     let meter_provider = init_metrics()?;
 
+    let _= init_logs();
+    let logger_provider = logger_provider();
+    let layer = OpenTelemetryTracingBridge::new(&logger_provider);
+    tracing_subscriber::registry().with(layer).init();
+
+
     let tracer = global::tracer("ex.com/basic");
     let meter = global::meter("ex.com/basic");
 
@@ -95,10 +103,15 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
 
             span.add_event("Sub span event", vec![]);
         });
+        info!(target: "my-target", "hello from {}. My price is {}. I am also inside a Span!", "banana", 2.99);
+
     });
+    info!(target: "my-target", "hello from {}. My price is {}", "apple", 1.99);
 
     meter_provider.shutdown()?;
     global::shutdown_tracer_provider();
+    shutdown_logger_provider();
+
 
     Ok(())
 }
