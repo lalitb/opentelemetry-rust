@@ -24,7 +24,7 @@ fn init_tracer() -> Result<sdktrace::Tracer, TraceError> {
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .http()
-                .with_endpoint("http://localhost:4318/v1/traces"),
+                .with_endpoint("http://localhost:4318"),
         )
         .install_batch(opentelemetry_sdk::runtime::Tokio)
 }
@@ -56,7 +56,7 @@ fn init_logs() -> Result<opentelemetry_sdk::logs::Logger, LogError> {
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .http()
-                .with_endpoint("http://localhost:4317"),
+                .with_endpoint("http://localhost:4318"),
         )
         .install_batch(runtime::Tokio)
 }
@@ -74,7 +74,7 @@ static COMMON_ATTRIBUTES: Lazy<[KeyValue; 4]> = Lazy::new(|| {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-    //let _ = init_tracer()?;
+    let _ = init_tracer()?;
     //let meter_provider = init_metrics()?;
 
     let _= init_logs();
@@ -83,13 +83,13 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     tracing_subscriber::registry().with(layer).init();
 
 
-    //let tracer = global::tracer("ex.com/basic");
+    let tracer = global::tracer("ex.com/basic");
     //let meter = global::meter("ex.com/basic");
 
     //let histogram = meter.f64_histogram("ex.com.two").init();
     //histogram.record(5.5, COMMON_ATTRIBUTES.as_ref());
 
-    /*tracer.in_span("operation", |cx| {
+    tracer.in_span("operation", |cx| {
         let span = cx.span();
         span.add_event(
             "Nice operation!".to_string(),
@@ -103,16 +103,16 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
 
             span.add_event("Sub span event", vec![]);
         });
-        println!("info called inside");
-        info!(target: "my-target", "hello from {}. My price is {}. I am also inside a Span!", "banana", 2.99);
+       println!("info called inside");
+       info!(target: "my-target", "hello from {}. My price is {}. I am also inside a Span!", "banana", 2.99);
 
-    });*/
+    }); 
     println!("info called outside...");
     info!(target: "my-target", "hello from {}. My price is {}", "apple", 1.99);
 
     //meter_provider.shutdown()?;
     //global::shutdown_tracer_provider();
-    shutdown_logger_provider();
+   shutdown_logger_provider();
 
 
     Ok(())

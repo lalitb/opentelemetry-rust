@@ -65,12 +65,13 @@ mod reqwest {
     #[async_trait]
     impl HttpClient for reqwest::Client {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
-            println!("=================>>>>  HTTP Send called...");
+            println!("=================>>>>  [HTTP Send called...]");
             let request: reqwest::Request = request.try_into()?;
             println!("Method: {:?}", request.method());
             println!("URL: {:?}", request.url());
             println!("Headers: {:?}", request.headers());
             println!("before HTTP execute..");
+            println!("Complete request: {:?}", request);
             let mut response = self.execute(request).await?;
             println!("after HTTP execute...");
             let headers = std::mem::take(response.headers_mut());
@@ -78,6 +79,8 @@ mod reqwest {
                 .status(response.status())
                 .body(response.bytes().await?)?;
             *http_response.headers_mut() = headers;
+
+            println!("http_response: {:?}", http_response);
 
             Ok(http_response)
         }

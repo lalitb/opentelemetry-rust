@@ -19,6 +19,8 @@ pub trait LogExporter: Send + Sync + Debug {
     #[cfg(feature = "logs_level_enabled")]
     /// Chek if logs are enabled.
     fn event_enabled(&self, _level: Severity, _target: &str, _name: &str) -> bool {
+        println!("\n\n\n\n\n");
+        println!("LogExporter::event_enabled() for target == {} and name == {}", _target, _name);
         true
     }
 }

@@ -119,7 +119,7 @@ where
         _event: &tracing_core::Event<'_>,
         _ctx: tracing_subscriber::layer::Context<'_, S>,
     ) -> bool {
-        println!("Event Enabled..");
+        println!("=========================>>>>>  Event Enabled..");
         let severity = map_severity_to_otel_severity(_event.metadata().level().as_str());
         self.logger
             .event_enabled(severity, _event.metadata().target())
