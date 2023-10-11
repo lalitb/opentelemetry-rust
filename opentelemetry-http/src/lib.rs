@@ -65,7 +65,7 @@ mod reqwest {
     #[async_trait]
     impl HttpClient for reqwest::Client {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
-            println!("HTTP Send called...");
+            println!("=================>>>>  HTTP Send called...");
             let request: reqwest::Request = request.try_into()?;
             println!("Method: {:?}", request.method());
             println!("URL: {:?}", request.url());
@@ -86,6 +86,7 @@ mod reqwest {
     #[async_trait]
     impl HttpClient for reqwest::blocking::Client {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
+            println!("===>Send:::reqwest::blocking::client");
             let request = request.try_into()?;
             let mut response = self.execute(request)?;
             let headers = std::mem::take(response.headers_mut());
@@ -126,6 +127,7 @@ pub mod surf {
     #[async_trait]
     impl HttpClient for surf::Client {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
+            println!("===>use Surf client...");
             let (parts, body) = request.into_parts();
             let method = parts.method.as_str().parse()?;
             let uri = parts.uri.to_string().parse()?;
@@ -168,6 +170,7 @@ mod isahc {
     #[async_trait]
     impl HttpClient for isahc::HttpClient {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
+            println!("====>isahc client...");
             let mut response = self.send_async(request).await?;
             let mut bytes = Vec::with_capacity(response.body().len().unwrap_or(0).try_into()?);
             response.copy_to(&mut bytes).await?;
@@ -228,6 +231,7 @@ pub mod hyper {
         C: Connect + Send + Sync + Clone + Debug + 'static,
     {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
+            println!("=================>Use hyper client...");
             let (parts, body) = request.into_parts();
             let mut request = Request::from_parts(parts, body.into());
             if let Some(ref authorization) = self.authorization {

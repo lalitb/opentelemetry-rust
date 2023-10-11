@@ -44,7 +44,7 @@ impl SpanExporter for OtlpHttpClient {
         for (k, v) in &self.headers {
             request.headers_mut().insert(k.clone(), v.clone());
         }
-
+        println!("SpanExporter::before HttpClient::Send...");
         Box::pin(async move {
             client.send(request).await?;
 
