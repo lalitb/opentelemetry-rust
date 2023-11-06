@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Bump MSRV to 1.65 [#1318](https://github.com/open-telemetry/opentelemetry-rust/pull/1318)
 - Default Resource (the one used when no other Resource is explicitly provided) now includes `TelemetryResourceDetector`,
   populating "telemetry.sdk.*" attributes.
   [#1066](https://github.com/open-telemetry/opentelemetry-rust/pull/1193).
@@ -29,11 +30,34 @@
 - Updated crate documentation and examples.
   [#1256](https://github.com/open-telemetry/opentelemetry-rust/issues/1256)
 - Replace regex with glob (#1301)
+- **Breaking**
+  [#1293](https://github.com/open-telemetry/opentelemetry-rust/issues/1293)
+  makes few breaking changes with respect to how Span attributes are stored to
+  achieve performance gains. See below for details:
 
+  *Behavior Change*:
+
+  SDK will no longer perform de-duplication of Span attribute Keys. Please share
+  [feedback
+  here](https://github.com/open-telemetry/opentelemetry-rust/issues/1300), if
+  you are affected.
+
+  *Breaking Change Affecting Exporter authors*:
+
+   `SpanData` now stores `attributes` as `Vec<KeyValue>` instead of
+  `EvictedHashMap`. `SpanData` now expose `dropped_attributes_count` as a
+  separate field.
+
+  *Breaking Change Affecting Sampler authors*:
+
+  `should_sample` changes `attributes` from `OrderMap<Key, Value>` to
+  `Vec<KeyValue>`.
+- **Breaking** Move type argument from `RuntimeChannel<T>` to associated types [#1314](https://github.com/open-telemetry/opentelemetry-rust/pull/1314)
 
 ### Removed
 
 - Remove context from Metric force_flush [#1245](https://github.com/open-telemetry/opentelemetry-rust/pull/1245)
+- Remove `logs::BatchMessage` and `trace::BatchMessage` types [#1314](https://github.com/open-telemetry/opentelemetry-rust/pull/1314)
 
 ### Fixed
 
