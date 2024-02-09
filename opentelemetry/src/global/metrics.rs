@@ -1,4 +1,5 @@
 use crate::metrics::{self, Meter, MeterProvider};
+use crate::InstrumentationLibrary;
 use crate::KeyValue;
 use core::fmt;
 use once_cell::sync::Lazy;
@@ -19,13 +20,7 @@ static GLOBAL_METER_PROVIDER: Lazy<RwLock<GlobalMeterProvider>> = Lazy::new(|| {
 pub trait ObjectSafeMeterProvider {
     /// Creates a versioned named meter instance that is a trait object through the underlying
     /// [MeterProvider].
-    fn versioned_meter_cow(
-        &self,
-        name: Cow<'static, str>,
-        version: Option<Cow<'static, str>>,
-        schema_url: Option<Cow<'static, str>>,
-        attributes: Option<Vec<KeyValue>>,
-    ) -> Meter;
+    fn library_meter(&self, library: Arc<InstrumentationLibrary>) -> Meter;
 }
 
 impl<P> ObjectSafeMeterProvider for P
@@ -33,14 +28,8 @@ where
     P: MeterProvider,
 {
     /// Return a versioned boxed tracer
-    fn versioned_meter_cow(
-        &self,
-        name: Cow<'static, str>,
-        version: Option<Cow<'static, str>>,
-        schema_url: Option<Cow<'static, str>>,
-        attributes: Option<Vec<KeyValue>>,
-    ) -> Meter {
-        self.versioned_meter(name, version, schema_url, attributes)
+    fn library_meter(&self, library: Arc<InstrumentationLibrary>) -> Meter {
+        self.library_meter(library)
     }
 }
 
@@ -58,19 +47,8 @@ impl fmt::Debug for GlobalMeterProvider {
 }
 
 impl MeterProvider for GlobalMeterProvider {
-    fn versioned_meter(
-        &self,
-        name: impl Into<Cow<'static, str>>,
-        version: Option<impl Into<Cow<'static, str>>>,
-        schema_url: Option<impl Into<Cow<'static, str>>>,
-        attributes: Option<Vec<KeyValue>>,
-    ) -> Meter {
-        self.provider.versioned_meter_cow(
-            name.into(),
-            version.map(Into::into),
-            schema_url.map(Into::into),
-            attributes,
-        )
+    fn library_meter(&self, library: Arc<InstrumentationLibrary>) -> Meter {
+        self.provider.library_meter(library)
     }
 }
 

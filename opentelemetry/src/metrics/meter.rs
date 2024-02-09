@@ -9,6 +9,7 @@ use crate::metrics::{
     AsyncInstrumentBuilder, Counter, Histogram, InstrumentBuilder, InstrumentProvider,
     ObservableCounter, ObservableGauge, ObservableUpDownCounter, Result, UpDownCounter,
 };
+use crate::InstrumentationLibrary;
 use crate::KeyValue;
 
 use super::AsyncInstrument;
@@ -65,7 +66,33 @@ pub trait MeterProvider {
         version: Option<impl Into<Cow<'static, str>>>,
         schema_url: Option<impl Into<Cow<'static, str>>>,
         attributes: Option<Vec<KeyValue>>,
-    ) -> Meter;
+    ) -> Meter {
+        self.library_meter(Arc::new(InstrumentationLibrary::new(
+            name, version, schema_url, attributes,
+        )))
+    }
+
+    /// Returns a new versioned meter with the given instrumentation library.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use opentelemetry::{global, InstrumentationLibrary, metrics::MeterProvider};
+    ///
+    /// let provider = global::meter_provider();
+    ///
+    /// // logger used in applications/binaries
+    /// let meter = provider.meter("my_app");
+    /// // logger used in libraries/crates that optionally includes version and schema url
+    /// let library = std::sync::Arc::new(InstrumentationLibrary::new(
+    ///     env!("CARGO_PKG_NAME"),
+    ///     Some(env!("CARGO_PKG_VERSION")),
+    ///     Some("https://opentelemetry.io/schema/1.0.0"),
+    ///     None,
+    /// ));
+    /// let meter = provider.library_meter(library);
+    /// ```
+    fn library_meter(&self, library: Arc<InstrumentationLibrary>) -> Meter;
 }
 
 /// Provides access to instrument instances for recording measurements.

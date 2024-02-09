@@ -14,6 +14,8 @@ use crate::{
     metrics::{aggregation::Aggregation, internal::Measure},
 };
 
+use std::backtrace::Backtrace;
+
 pub(crate) const EMPTY_MEASURE_MSG: &str = "no aggregators for observable instrument";
 
 /// The identifier of a group of instruments that all perform the same function.
@@ -71,7 +73,7 @@ pub struct Instrument {
     /// Unit is the unit of measurement recorded by the instrument.
     pub unit: Unit,
     /// The instrumentation that created the instrument.
-    pub scope: Scope,
+    pub scope: Arc<Scope>,
 }
 
 impl Instrument {
@@ -99,7 +101,7 @@ impl Instrument {
     }
 
     /// Set the instrument scope.
-    pub fn scope(mut self, scope: Scope) -> Self {
+    pub fn scope(mut self, scope: Arc<Scope>) -> Self {
         self.scope = scope;
         self
     }
@@ -110,7 +112,7 @@ impl Instrument {
             && self.description == ""
             && self.kind.is_none()
             && self.unit.as_str() == ""
-            && self.scope == Scope::default()
+            && *self.scope == Scope::default()
     }
 
     pub(crate) fn matches(&self, other: &Instrument) -> bool {
@@ -260,6 +262,12 @@ pub(crate) struct ResolvedMeasures<T> {
 
 impl<T: Copy + 'static> SyncCounter<T> for ResolvedMeasures<T> {
     fn add(&self, val: T, attrs: &[KeyValue]) {
+        println!(
+            "LALIT: Count measures {} backtrace: {}",
+            self.measures.len(),
+            Backtrace::force_capture()
+        );
+
         for measure in &self.measures {
             measure.call(val, AttributeSet::from(attrs))
         }
@@ -308,7 +316,7 @@ pub(crate) struct IdInner {
     /// The unit of measurement recorded by the instrument.
     pub(crate) unit: Unit,
     /// The instrumentation that created the instrument.
-    scope: Scope,
+    scope: Arc<Scope>,
 }
 
 impl<T> Hash for ObservableId<T> {
@@ -333,7 +341,7 @@ pub(crate) struct Observable<T> {
 
 impl<T> Observable<T> {
     pub(crate) fn new(
-        scope: Scope,
+        scope: Arc<Scope>,
         kind: InstrumentKind,
         name: Cow<'static, str>,
         description: Cow<'static, str>,
@@ -361,11 +369,11 @@ impl<T> Observable<T> {
     /// An error is returned if this observable is effectively a no-op because it does not have
     /// any aggregators. Also, an error is returned if scope defines a Meter other
     /// than the observable it was created by.
-    pub(crate) fn registerable(&self, scope: &Scope) -> Result<()> {
+    pub(crate) fn registerable(&self, scope: Arc<Scope>) -> Result<()> {
         if self.measures.is_empty() {
             return Err(MetricsError::Other(EMPTY_MEASURE_MSG.into()));
         }
-        if &self.id.inner.scope != scope {
+        if self.id.inner.scope != scope {
             return Err(MetricsError::Other(format!(
                 "invalid registration: observable {} from Meter {:?}, registered with Meter {}",
                 self.id.inner.name, self.id.inner.scope, scope.name,

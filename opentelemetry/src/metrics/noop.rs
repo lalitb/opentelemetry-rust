@@ -8,7 +8,7 @@ use crate::{
         AsyncInstrument, CallbackRegistration, InstrumentProvider, Meter, MeterProvider, Observer,
         Result, SyncCounter, SyncGauge, SyncHistogram, SyncUpDownCounter,
     },
-    KeyValue,
+    InstrumentationLibrary, KeyValue,
 };
 use std::{any::Any, borrow::Cow, sync::Arc};
 
@@ -26,6 +26,10 @@ impl NoopMeterProvider {
 }
 
 impl MeterProvider for NoopMeterProvider {
+    fn library_meter(&self, _library: Arc<InstrumentationLibrary>) -> Meter {
+        Meter::new(Arc::new(NoopMeterCore::new()))
+    }
+
     fn versioned_meter(
         &self,
         _name: impl Into<Cow<'static, str>>,

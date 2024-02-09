@@ -47,7 +47,7 @@ const INSTRUMENT_UNIT_INVALID_CHAR: &str = "characters in instrument unit must b
 ///
 /// [Meter API]: opentelemetry::metrics::Meter
 pub struct SdkMeter {
-    scope: Scope,
+    scope: Arc<Scope>,
     pipes: Arc<Pipelines>,
     u64_resolver: Resolver<u64>,
     i64_resolver: Resolver<i64>,
@@ -56,7 +56,7 @@ pub struct SdkMeter {
 }
 
 impl SdkMeter {
-    pub(crate) fn new(scope: Scope, pipes: Arc<Pipelines>) -> Self {
+    pub(crate) fn new(scope: Arc<Scope>, pipes: Arc<Pipelines>) -> Self {
         let view_cache = Default::default();
 
         SdkMeter {
@@ -508,7 +508,7 @@ impl InstrumentProvider for SdkMeter {
         let mut errs = vec![];
         for inst in insts {
             if let Some(i64_obs) = inst.downcast_ref::<Observable<i64>>() {
-                if let Err(err) = i64_obs.registerable(&self.scope) {
+                if let Err(err) = i64_obs.registerable(self.scope.clone()) {
                     if !err.to_string().contains(EMPTY_MEASURE_MSG) {
                         errs.push(err);
                     }
@@ -516,7 +516,7 @@ impl InstrumentProvider for SdkMeter {
                 }
                 reg.register_i64(i64_obs.id.clone());
             } else if let Some(u64_obs) = inst.downcast_ref::<Observable<u64>>() {
-                if let Err(err) = u64_obs.registerable(&self.scope) {
+                if let Err(err) = u64_obs.registerable(self.scope.clone()) {
                     if !err.to_string().contains(EMPTY_MEASURE_MSG) {
                         errs.push(err);
                     }
@@ -524,7 +524,7 @@ impl InstrumentProvider for SdkMeter {
                 }
                 reg.register_u64(u64_obs.id.clone());
             } else if let Some(f64_obs) = inst.downcast_ref::<Observable<f64>>() {
-                if let Err(err) = f64_obs.registerable(&self.scope) {
+                if let Err(err) = f64_obs.registerable(self.scope.clone()) {
                     if !err.to_string().contains(EMPTY_MEASURE_MSG) {
                         errs.push(err);
                     }
@@ -775,7 +775,7 @@ mod tests {
     fn test_instrument_config_validation() {
         // scope and pipelines are not related to test
         let meter = SdkMeter::new(
-            Scope::default(),
+            Arc::new(Scope::default()),
             Arc::new(Pipelines::new(Resource::default(), Vec::new(), Vec::new())),
         )
         .with_validation_policy(InstrumentValidationPolicy::Strict);

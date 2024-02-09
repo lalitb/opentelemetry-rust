@@ -10,7 +10,7 @@ use std::{
 
 use opentelemetry::{
     metrics::{noop::NoopMeterCore, Meter, MeterProvider, MetricsError, Result},
-    KeyValue,
+    InstrumentationLibrary, KeyValue,
 };
 
 use crate::{instrumentation::Scope, Resource};
@@ -27,7 +27,7 @@ use super::{meter::SdkMeter, pipeline::Pipelines, reader::MetricReader, view::Vi
 #[derive(Clone, Debug)]
 pub struct SdkMeterProvider {
     pipes: Arc<Pipelines>,
-    meters: Arc<Mutex<HashMap<Scope, Arc<SdkMeter>>>>,
+    meters: Arc<Mutex<HashMap<Arc<Scope>, Arc<SdkMeter>>>>,
     is_shutdown: Arc<AtomicBool>,
 }
 
@@ -124,14 +124,17 @@ impl MeterProvider for SdkMeterProvider {
         if self.is_shutdown.load(Ordering::Relaxed) {
             return Meter::new(Arc::new(NoopMeterCore::new()));
         }
+        self.library_meter(Arc::new(InstrumentationLibrary::new(
+            name, version, schema_url, attributes,
+        )))
+    }
 
-        let scope = Scope::new(name, version, schema_url, attributes);
-
+    fn library_meter(&self, library: Arc<InstrumentationLibrary>) -> Meter {
         if let Ok(mut meters) = self.meters.lock() {
             let meter = meters
-                .entry(scope)
-                .or_insert_with_key(|scope| {
-                    Arc::new(SdkMeter::new(scope.clone(), self.pipes.clone()))
+                .entry(library)
+                .or_insert_with_key(|library| {
+                    Arc::new(SdkMeter::new(library.clone(), self.pipes.clone()))
                 })
                 .clone();
             Meter::new(meter)
