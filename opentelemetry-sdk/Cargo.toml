@@ -30,6 +30,7 @@ url = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["rt", "time"], optional = true }
 tokio-stream = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
+dashmap = "5.5.3"
 
 [package.metadata.docs.rs]
 all-features = true
