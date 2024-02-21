@@ -39,7 +39,28 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
             KeyValue::new("mykey2", "myvalue2"),
         ],
     );
-
+    counter.add(
+        20,
+        &[
+            KeyValue::new("mykey3", "myvalue3"),
+            KeyValue::new("mykey4", "myvalue4"),
+        ],
+    );
+    counter.add(
+        20,
+        &[
+            KeyValue::new("mykey1", "myvalue1.1"),
+            KeyValue::new("mykey2", "myvalue2.1"),
+        ],
+    );
+    counter.add(
+        20,
+        &[
+            KeyValue::new("mykey3", "myvalue3.1"),
+            KeyValue::new("mykey4", "myvalue4.1"),
+        ],
+    );
+/*
     // Create a ObservableCounter instrument and register a callback that reports the measurement.
     let observable_counter = meter
         .u64_observable_counter("my_observable_counter")
@@ -142,7 +163,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
             ],
         )
     })?;
-
+*/
     // Metrics are exported by default every 30 seconds when using stdout exporter,
     // however shutting down the MeterProvider here instantly flushes
     // the metrics, instead of waiting for the 30 sec interval.

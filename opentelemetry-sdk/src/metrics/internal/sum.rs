@@ -1,10 +1,11 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{
-    collections::{hash_map::Entry, HashMap},
+    collections:: HashMap,
     sync::Mutex,
     time::SystemTime,
 };
 
+use dashmap::DashMap;
 use crate::attributes::AttributeSet;
 use crate::metrics::data::{self, Aggregation, DataPoint, Temporality};
 use opentelemetry::{global, metrics::MetricsError};
@@ -13,10 +14,11 @@ use super::{
     aggregate::{is_under_cardinality_limit, STREAM_OVERFLOW_ATTRIBUTE_SET},
     AtomicTracker, Number,
 };
+use std::time::Instant;
 
 /// The storage for sums.
 struct ValueMap<T: Number<T>> {
-    values: Mutex<HashMap<AttributeSet, T>>,
+    values: DashMap<AttributeSet, T>,
     has_no_value_attribute_value: AtomicBool,
     no_attribute_value: T::AtomicTracker,
 }
@@ -30,41 +32,57 @@ impl<T: Number<T>> Default for ValueMap<T> {
 impl<T: Number<T>> ValueMap<T> {
     fn new() -> Self {
         ValueMap {
-            values: Mutex::new(HashMap::new()),
+            values: DashMap::new(),
             has_no_value_attribute_value: AtomicBool::new(false),
             no_attribute_value: T::new_atomic_tracker(),
         }
     }
 }
 
+
 impl<T: Number<T>> ValueMap<T> {
     fn measure(&self, measurement: T, attrs: AttributeSet) {
+       // let mut duration1 = Instant::now().elapsed();
+       // let mut duration2 = Instant::now().elapsed();
+      //  let mut duration3 = Instant::now().elapsed();
+      //  let mut duration_2 =    Instant::now().elapsed();
+        // measure total time taken
+        let start = Instant::now();
+
         if attrs.is_empty() {
             self.no_attribute_value.add(measurement);
             self.has_no_value_attribute_value
                 .store(true, Ordering::Release);
-        } else if let Ok(mut values) = self.values.lock() {
-            let size = values.len();
-            match values.entry(attrs) {
-                Entry::Occupied(mut occupied_entry) => {
-                    let sum = occupied_entry.get_mut();
-                    *sum += measurement;
-                }
-                Entry::Vacant(vacant_entry) => {
-                    if is_under_cardinality_limit(size) {
-                        vacant_entry.insert(measurement);
-                    } else {
-                        values
-                            .entry(STREAM_OVERFLOW_ATTRIBUTE_SET.clone())
-                            .and_modify(|val| *val += measurement)
-                            .or_insert(measurement);
-                        global::handle_error(MetricsError::Other("Warning: Maximum data points for metric stream exceeded. Entry added to overflow.".into()));
-                    }
-                }
+        } else {
+            let current_size = self.values.len();
+        //    duration2 = start.elapsed(); // End timing and get duration
+
+            if is_under_cardinality_limit(current_size) {
+                // Use entry API to update or insert measurement atomically
+                //let start1 = Instant::now();
+          //      duration3 = start.elapsed(); // End timing and get duration
+            //    let start2 = Instant::now();
+                self.values.entry(attrs).and_modify(|e| *e += measurement).or_insert(measurement);
+             //   duration_2 = start2.elapsed(); // End timing and get duration
+             //   duration1 = start.elapsed(); // End timing and get duration            
+            } else {
+                // Handle cardinality limit exceeded case
+                self.values
+                    .entry(STREAM_OVERFLOW_ATTRIBUTE_SET.clone()) // Assuming STREAM_OVERFLOW_ATTRIBUTE_SET is defined and meets DashMap's requirements
+                    .and_modify(|val| *val += measurement)
+                    .or_insert(measurement);
+                global::handle_error(MetricsError::Other("Warning: Maximum data points for metric stream exceeded. Entry added to overflow.".into()));
             }
         }
+        let duration = start.elapsed(); // End timing and get duration
+       // println!("Time elapsed in innermost measure nanoseconds: {}", duration2.as_nanos());
+      //  println!("Time elapsed in 2nd inner measure nanoseconds: {}", duration3.as_nanos());
+     //   println!("Time elapsed in 3rd inner measure nanoseconds: {}", duration1.as_nanos()); 
+     //   println!("Time elapsed in get and modify or insert measure nanoseconds: {}", duration_2.as_nanos());
+        println!("Time elapsed in outer measure nanoseconds: {}", duration.as_nanos());
     }
 }
+
 
 /// Summarizes a set of measurements made as their arithmetic sum.
 pub(crate) struct Sum<T: Number<T>> {
@@ -112,16 +130,9 @@ impl<T: Number<T>> Sum<T> {
         s_data.is_monotonic = self.monotonic;
         s_data.data_points.clear();
 
-        let mut values = match self.value_map.values.lock() {
-            Ok(v) => v,
-            Err(_) => return (0, None),
-        };
-
-        let n = values.len() + 1;
+        let n = self.value_map.values.len() + 1;
         if n > s_data.data_points.capacity() {
-            s_data
-                .data_points
-                .reserve_exact(n - s_data.data_points.capacity());
+            s_data.data_points.reserve_exact(n - s_data.data_points.capacity());
         }
 
         let prev_start = self.start.lock().map(|start| *start).unwrap_or(t);
@@ -138,15 +149,18 @@ impl<T: Number<T>> Sum<T> {
                 exemplars: vec![],
             });
         }
+        let keys: Vec<_> = self.value_map.values.iter().map(|entry| entry.key().clone()).collect();
 
-        for (attrs, value) in values.drain() {
-            s_data.data_points.push(DataPoint {
-                attributes: attrs,
-                start_time: Some(prev_start),
-                time: Some(t),
-                value,
-                exemplars: vec![],
-            });
+        for key in keys {
+            if let Some((attrs, value)) = self.value_map.values.remove(&key) {
+                s_data.data_points.push(DataPoint {
+                    attributes: attrs,
+                    start_time: Some(prev_start),
+                    time: Some(t),
+                    value,
+                    exemplars: vec![],
+                });
+            }
         }
 
         // The delta collection cycle resets.
@@ -181,16 +195,8 @@ impl<T: Number<T>> Sum<T> {
         s_data.is_monotonic = self.monotonic;
         s_data.data_points.clear();
 
-        let values = match self.value_map.values.lock() {
-            Ok(v) => v,
-            Err(_) => return (0, None),
-        };
-
-        let n = values.len() + 1;
-        if n > s_data.data_points.capacity() {
-            s_data
-                .data_points
-                .reserve_exact(n - s_data.data_points.capacity());
+        if s_data.data_points.capacity() < self.value_map.values.len() + 1 {
+            s_data.data_points.reserve_exact(self.value_map.values.len() + 1 - s_data.data_points.capacity());
         }
 
         let prev_start = self.start.lock().map(|start| *start).unwrap_or(t);
@@ -213,15 +219,17 @@ impl<T: Number<T>> Sum<T> {
         // are unbounded number of attribute sets being aggregated. Attribute
         // sets that become "stale" need to be forgotten so this will not
         // overload the system.
-        for (attrs, value) in values.iter() {
+        self.value_map.values.iter().for_each(|entry| {
+            let attrs = entry.key().clone(); // Clone key for data point
+            let value = *entry.value(); // Dereference value for data point
             s_data.data_points.push(DataPoint {
-                attributes: attrs.clone(),
+                attributes: attrs,
                 start_time: Some(prev_start),
                 time: Some(t),
-                value: *value,
+                value: value,
                 exemplars: vec![],
             });
-        }
+        });
 
         (
             s_data.data_points.len(),
@@ -274,17 +282,11 @@ impl<T: Number<T>> PrecomputedSum<T> {
         s_data.temporality = Temporality::Delta;
         s_data.is_monotonic = self.monotonic;
 
-        let mut values = match self.value_map.values.lock() {
-            Ok(v) => v,
-            Err(_) => return (0, None),
-        };
-
-        let n = values.len() + 1;
+        let n = self.value_map.values.len() + 1;
         if n > s_data.data_points.capacity() {
-            s_data
-                .data_points
-                .reserve_exact(n - s_data.data_points.capacity());
+            s_data.data_points.reserve_exact(n - s_data.data_points.capacity());
         }
+
         let mut new_reported = HashMap::with_capacity(n);
         let mut reported = match self.reported.lock() {
             Ok(r) => r,
@@ -305,19 +307,24 @@ impl<T: Number<T>> PrecomputedSum<T> {
             });
         }
 
+        let keys: Vec<_> = self.value_map.values.iter().map(|entry| entry.key().clone()).collect();
         let default = T::default();
-        for (attrs, value) in values.drain() {
-            let delta = value - *reported.get(&attrs).unwrap_or(&default);
-            if delta != default {
-                new_reported.insert(attrs.clone(), value);
+        for key in keys {
+            if let Some((attrs, value)) = self.value_map.values.remove(&key) {
+                let delta = value - *reported.get(&attrs).unwrap_or(&default);
+                if delta != default {
+                    new_reported.insert(attrs.clone(), value);
+                    // Here, instead of directly inserting into `new_reported`, we simply use the `reported` map for updates
+                    // Consider how you want to update `reported` with new values; direct update, merge, etc.
+                }
+                s_data.data_points.push(DataPoint {
+                    attributes: attrs,
+                    start_time: Some(prev_start),
+                    time: Some(t),
+                    value: delta,
+                    exemplars: vec![],
+                });
             }
-            s_data.data_points.push(DataPoint {
-                attributes: attrs.clone(),
-                start_time: Some(prev_start),
-                time: Some(t),
-                value: delta,
-                exemplars: vec![],
-            });
         }
 
         // The delta collection cycle resets.
@@ -356,23 +363,16 @@ impl<T: Number<T>> PrecomputedSum<T> {
         s_data.temporality = Temporality::Cumulative;
         s_data.is_monotonic = self.monotonic;
 
-        let values = match self.value_map.values.lock() {
-            Ok(v) => v,
-            Err(_) => return (0, None),
-        };
-
-        let n = values.len() + 1;
-        if n > s_data.data_points.capacity() {
-            s_data
-                .data_points
-                .reserve_exact(n - s_data.data_points.capacity());
+        let expected_capacity = self.value_map.values.len() + 1;
+        if expected_capacity > s_data.data_points.capacity() {
+            s_data.data_points.reserve_exact(expected_capacity - s_data.data_points.capacity());
         }
-        let mut new_reported = HashMap::with_capacity(n);
+
+        let mut new_reported = HashMap::with_capacity(expected_capacity);
         let mut reported = match self.reported.lock() {
             Ok(r) => r,
             Err(_) => return (0, None),
         };
-
         if self
             .value_map
             .has_no_value_attribute_value
@@ -388,19 +388,21 @@ impl<T: Number<T>> PrecomputedSum<T> {
         }
 
         let default = T::default();
-        for (attrs, value) in values.iter() {
-            let delta = *value - *reported.get(attrs).unwrap_or(&default);
+        self.value_map.values.iter().for_each(|entry| {
+            let attrs = entry.key().clone();
+            let value = *entry.value();
+            let delta = value - *reported.get(&attrs).unwrap_or(&default);
             if delta != default {
-                new_reported.insert(attrs.clone(), *value);
+                new_reported.insert(attrs.clone(), value);
             }
             s_data.data_points.push(DataPoint {
-                attributes: attrs.clone(),
+                attributes: attrs,
                 start_time: Some(prev_start),
                 time: Some(t),
                 value: delta,
                 exemplars: vec![],
             });
-        }
+        });
 
         *reported = new_reported;
         drop(reported); // drop before values guard is dropped
