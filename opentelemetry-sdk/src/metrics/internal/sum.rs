@@ -42,12 +42,6 @@ impl<T: Number<T>> ValueMap<T> {
 
 impl<T: Number<T>> ValueMap<T> {
     fn measure(&self, measurement: T, attrs: AttributeSet) {
-       // let mut duration1 = Instant::now().elapsed();
-       // let mut duration2 = Instant::now().elapsed();
-      //  let mut duration3 = Instant::now().elapsed();
-      //  let mut duration_2 =    Instant::now().elapsed();
-        // measure total time taken
-        let start = Instant::now();
 
         if attrs.is_empty() {
             self.no_attribute_value.add(measurement);
@@ -55,16 +49,9 @@ impl<T: Number<T>> ValueMap<T> {
                 .store(true, Ordering::Release);
         } else {
             let current_size = self.values.len();
-        //    duration2 = start.elapsed(); // End timing and get duration
-
             if is_under_cardinality_limit(current_size) {
-                // Use entry API to update or insert measurement atomically
-                //let start1 = Instant::now();
-          //      duration3 = start.elapsed(); // End timing and get duration
-            //    let start2 = Instant::now();
                 self.values.entry(attrs).and_modify(|e| *e += measurement).or_insert(measurement);
-             //   duration_2 = start2.elapsed(); // End timing and get duration
-             //   duration1 = start.elapsed(); // End timing and get duration            
+           
             } else {
                 // Handle cardinality limit exceeded case
                 self.values
@@ -74,12 +61,6 @@ impl<T: Number<T>> ValueMap<T> {
                 global::handle_error(MetricsError::Other("Warning: Maximum data points for metric stream exceeded. Entry added to overflow.".into()));
             }
         }
-        let duration = start.elapsed(); // End timing and get duration
-       // println!("Time elapsed in innermost measure nanoseconds: {}", duration2.as_nanos());
-      //  println!("Time elapsed in 2nd inner measure nanoseconds: {}", duration3.as_nanos());
-     //   println!("Time elapsed in 3rd inner measure nanoseconds: {}", duration1.as_nanos()); 
-     //   println!("Time elapsed in get and modify or insert measure nanoseconds: {}", duration_2.as_nanos());
-        println!("Time elapsed in outer measure nanoseconds: {}", duration.as_nanos());
     }
 }
 
