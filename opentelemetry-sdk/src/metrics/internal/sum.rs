@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::{
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock},
     time::SystemTime,
 };
 
@@ -32,6 +32,7 @@ struct ValueMap<T: Number<T>> {
     has_no_value_attribute_value: AtomicBool,
     no_attribute_value: T::AtomicTracker,
     total_unique_entries: AtomicUsize,
+    drain_lock: RwLock<()>,
 }
 
 impl<T: Number<T>> Default for ValueMap<T> {
@@ -53,6 +54,7 @@ impl<T: Number<T>> ValueMap<T> {
             has_no_value_attribute_value: AtomicBool::new(false),
             no_attribute_value: T::new_atomic_tracker(),
             total_unique_entries: AtomicUsize::new(0),
+            drain_lock: RwLock::new(()),
         }
     }
 
@@ -67,93 +69,63 @@ impl<T: Number<T>> ValueMap<T> {
         // Use the 8 least significant bits directly, avoiding the modulus operation.
         hasher.finish() as u8 as usize
     }
-
-    fn try_increment(&self) -> bool {
-        loop {
-            let current = self.total_unique_entries.load(Ordering::Acquire);
-            if is_under_cardinality_limit(current) {
-                // Attempt to increment atomically if old value is still current, else retry
-                match self.total_unique_entries.compare_exchange(
-                    current,
-                    current + 1,
-                    Ordering::AcqRel,
-                    Ordering::Acquire,
-                ) {
-                    Ok(_) => return true, // Increment successful
-                    Err(_) => continue, // Failed to increment due to concurrent modification, retry
-                }
-            } else {
-                return false; // Limit reached, do not increment
-            }
-        }
-    }
 }
 
 impl<T: Number<T>> ValueMap<T> {
     fn measure(&self, measurement: T, attrs: AttributeSet) {
         if attrs.is_empty() {
-            // Directly store measurements with no attributes.
+            // If there are no attributes, store the measurement directly and return.
             self.no_attribute_value.add(measurement);
-            self.has_no_value_attribute_value
-                .store(true, Ordering::Release);
-            return;
+            self.has_no_value_attribute_value.store(true, Ordering::Release);
+            return
         }
-
-        // Hash attributes to find the corresponding bucket.
         let bucket_index = Self::hash_to_bucket(&attrs);
-        let mut bucket_guard = self.buckets[bucket_index].lock().unwrap();
-        if let Some(bucket) = &mut *bucket_guard {
-            // Fast path: if attributes already exist, just update the value.
-            if let Some(value) = bucket.get_mut(&attrs) {
-                *value += measurement;
-                return;
-            }
-        }
-
-        // Attributes not present, release lock to attempt adding them.
-        drop(bucket_guard);
-
-        // Attempt to first increment the total unique entries if under limit.
-        let under_limit = self.try_increment();
-
-        // Determine the bucket index for the attributes
-        let (bucket_index, attrs) = if under_limit {
-            (bucket_index, attrs) // the index remains same
-        } else {
-            (OVERFLOW_BUCKET_INDEX, STREAM_OVERFLOW_ATTRIBUTE_SET.clone())
-        };
-        if under_limit {
-            // Reacquire lock to add new attributes or update existing ones.
-            let mut final_bucket_guard = self.buckets[bucket_index].lock().unwrap();
-            let bucket = final_bucket_guard.get_or_insert_with(HashMap::default);
-
-            // Double check if the attribute is present in bucket.
-            // This handles the case where another thread might have inserted the key
-            // while this thread was incrementing the global counter
-            match bucket.entry(attrs) {
-                Entry::Vacant(e) => {
-                    // The key still does not exist, insert the new measurement
-                    e.insert(measurement);
-                }
-                Entry::Occupied(mut e) => {
-                    // The key exists, update the measurement
-                    *e.get_mut() += measurement;
-                    // Correct the unique entries count as the thread's increment was redundant
-                    self.total_unique_entries.fetch_sub(1, Ordering::SeqCst);
+        {
+            let mut bucket_guard = self.buckets[bucket_index].lock().unwrap();
+            if let Some(bucket) = bucket_guard.as_mut() {
+                if let Some(entry) = bucket.get_mut(&attrs) {
+                    *entry += measurement;
+                    return; // Measurement added to an existing entry, exit early.
                 }
             }
-        } else {
-            // Handle overflow cases quietly to avoid log flooding.
-            let mut oveflow_bucket_guard = self.buckets[bucket_index].lock().unwrap();
-            let overflow_bucket = oveflow_bucket_guard.get_or_insert_with(HashMap::default);
-
-            overflow_bucket
-                .entry(attrs)
-                .and_modify(|e| *e += measurement)
-                .or_insert(measurement);
         }
+        let _guard = self.drain_lock.read().unwrap();
+        loop {
+            let current_count = self.total_unique_entries.load(Ordering::Acquire);
+            let under_limit = is_under_cardinality_limit(current_count);
+            if under_limit {
+                let mut bucket_guard = self.buckets[bucket_index].lock().unwrap();
+                let bucket = bucket_guard.get_or_insert_with(HashMap::default);
+
+                match bucket.entry(attrs.clone()) {
+                    Entry::Vacant(e) => {
+                    if is_under_cardinality_limit( self.total_unique_entries.fetch_add(1, Ordering::Acquire)) {
+                        e.insert(measurement);
+                        return; //new measurement inserted successfully
+                    } else {
+                        // Corect the unique count as we're over the limit
+                        self.total_unique_entries.fetch_sub(1, Ordering::Acquire);
+                        break;
+                    }
+                    } 
+                    Entry::Occupied(mut e) => {
+                        *e.get_mut() += measurement;
+                        return; // Measurement added to existing entry
+                    }
+                }
+            } else {
+                break; //proceeed to handle overflow outside the loop
+            }
+        }
+        // Handle overflow;
+        let mut overflow_bucket_guard = self.buckets[OVERFLOW_BUCKET_INDEX].lock().unwrap();
+        let overflow_bucket = overflow_bucket_guard.get_or_insert_with(HashMap::default);
+        overflow_bucket.entry(STREAM_OVERFLOW_ATTRIBUTE_SET.clone())
+            .and_modify(|e| *e += measurement)
+            .or_insert(measurement);
     }
-}
+
+    }
 
 /// Summarizes a set of measurements made as their arithmetic sum.
 pub(crate) struct Sum<T: Number<T>> {
@@ -221,12 +193,23 @@ impl<T: Number<T>> Sum<T> {
                 exemplars: vec![],
             });
         }
+        let mut drained_buckets = Vec::with_capacity(BUCKET_COUNT);
+        {
+            let _guard = self.value_map.drain_lock.write().unwrap();
+            for bucket_mutex in self.value_map.buckets.iter() {
+                let mut bucket = bucket_mutex.lock().unwrap();
+                let empty_bucket = HashMap::new();
+                drained_buckets.push(std::mem::replace(&mut *bucket, Some(empty_bucket)));
+                //decrement unique count by the number of entries in the bucket
+                self.value_map.total_unique_entries.fetch_sub(bucket.as_ref().unwrap().len(), Ordering::Relaxed);
+            }
+            // release the lock so that other threads can measure
+        }
 
-        for bucket_mutex in self.value_map.buckets.iter() {
-            match bucket_mutex.lock() {
-                Ok(mut locked_bucket) => {
-                    if let Some(ref mut bucket) = *locked_bucket {
-                        for (attrs, value) in bucket.drain() {
+        for bucket in drained_buckets.iter() {
+
+                    if let Some(bucket) = bucket {
+                        for (attrs, &value) in bucket {
                             // Correctly handle lock acquisition on self.start
                             let start_time = self.start.lock().map_or_else(
                                 |_| SystemTime::now(), // In case of an error, use SystemTime::now()
@@ -234,7 +217,7 @@ impl<T: Number<T>> Sum<T> {
                             );
 
                             s_data.data_points.push(DataPoint {
-                                attributes: attrs,
+                                attributes: attrs.clone(),
                                 start_time: Some(start_time),
                                 time: Some(t),
                                 value,
@@ -246,14 +229,7 @@ impl<T: Number<T>> Sum<T> {
                         }
                     }
                 }
-                Err(e) => {
-                    global::handle_error(MetricsError::Other(format!(
-                        "Failed to acquire lock on bucket due to: {:?}",
-                        e
-                    )));
-                }
-            }
-        }
+
 
         // The delta collection cycle resets.
         if let Ok(mut start) = self.start.lock() {
