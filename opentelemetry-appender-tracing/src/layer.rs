@@ -188,9 +188,10 @@ where
         _event: &tracing_core::Event<'_>,
         _ctx: tracing_subscriber::layer::Context<'_, S>,
     ) -> bool {
-        let severity = severity_of_level(_event.metadata().level());
-        self.logger
-            .event_enabled(severity, _event.metadata().target())
+        false
+        //let severity = severity_of_level(_event.metadata().level());
+        //self.logger
+        //   .event_enabled(severity, _event.metadata().target())
     }
 }
 
