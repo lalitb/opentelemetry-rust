@@ -11,10 +11,8 @@ use tracing_subscriber::Layer;
 const INSTRUMENTATION_LIBRARY_NAME: &str = "opentelemetry-appender-tracing";
 
 /// Visitor to record the fields from the event record.
-#[derive(Default)]
-struct EventVisitor {
-    log_record_attributes: Vec<(Key, AnyValue)>,
-    log_record_body: Option<AnyValue>,
+struct EventVisitor<'a, LR: LogRecord> {
+    log_record: &'a mut LR,
 }
 
 /// Logs from the log crate have duplicated attributes that we removed here.
@@ -37,10 +35,12 @@ fn get_filename(filepath: &str) -> &str {
     filepath
 }
 
-impl EventVisitor {
+impl <'a, LR: LogRecord> EventVisitor<'a, LR> {
+    fn new(log_record: &'a mut LR) -> Self {
+        EventVisitor{log_record}
+    }
     fn visit_metadata(&mut self, meta: &Metadata) {
-        self.log_record_attributes
-            .push(("name".into(), meta.name().into()));
+        self.log_record.add_attribute(Key::new("name"), AnyValue::from(meta.name()));
 
         #[cfg(feature = "experimental_metadata_attributes")]
         self.visit_experimental_metadata(meta);
