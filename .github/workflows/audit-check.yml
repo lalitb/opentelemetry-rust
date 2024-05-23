@@ -1,9 +1,10 @@
 name: Security Audit
 
 on:
+  pull_request:
   push:
     branches:
-      - audit-check
+    - main
     paths:
       - '**/Cargo.toml'
   schedule:
@@ -22,8 +23,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
       - uses: actions/checkout@v4
-
-      - name: Audit Check
+      - name: Audit Check for security vulnerabilities
         # https://github.com/rustsec/audit-check/issues/2
         uses: rustsec/audit-check@master
         with:
