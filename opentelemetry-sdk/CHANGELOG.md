@@ -13,6 +13,8 @@
 - Removed `XrayIdGenerator`, which was marked deprecated since 0.21.3. Use
   [`opentelemetry-aws`](https://crates.io/crates/opentelemetry-aws), version
   0.10.0 or newer.
+- Performance Improvement - Counter/UpDownCounter instruments internally use
+  `RwLock` instead of `Mutex` to reduce contention.
 
 - **Breaking** [1726](https://github.com/open-telemetry/opentelemetry-rust/pull/1726)
   Update `LogProcessor::emit() method to take mutable reference to LogData. This is breaking
@@ -25,6 +27,17 @@
  reference or owned`LogData`. If the exporter needs to process the log data
  asynchronously, it should clone the log data to ensure it can be safely processed without
  lifetime issues.
+
+- **Breaking** [#1830](https://github.com/open-telemetry/opentelemetry-rust/pull/1830/files) [Traces SDK] Improves 
+  performance by sending Resource information to processors (and exporters) once, instead of sending with every log. If you are an author
+  of Processor, Exporter, the following are *BREAKING* changes.
+    - Implement `set_resource` method in your custom SpanProcessor, which invokes exporter's `set_resource`.
+    - Implement `set_resource` method in your custom SpanExporter. This method should save the resource object
+      in original or serialized format, to be merged with every span event during export.
+    - `SpanData` doesn't have the resource attributes. The `SpanExporter::export()` method needs to merge it 
+      with the earlier preserved resource before export.
+
+- **Breaking** [1836](https://github.com/open-telemetry/opentelemetry-rust/pull/1836) `SpanProcessor::shutdown` now takes an immutable reference to self. Any reference can call shutdown on the processor. After the first call to `shutdown` the processor will not process any new spans. 
 
 ## v0.23.0
 
