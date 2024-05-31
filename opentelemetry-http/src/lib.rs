@@ -72,7 +72,12 @@ mod reqwest {
     impl HttpClient for reqwest::Client {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
             let request = request.try_into()?;
-            let mut response = self.execute(request).await?.error_for_status()?;
+            let mut response = match self.execute(request).await {
+                Ok(res) => res,
+                Err(e) => {
+                    return Err(HttpError::from(e));
+                }
+            };
             let headers = std::mem::take(response.headers_mut());
             let mut http_response = Response::builder()
                 .status(response.status())
@@ -87,7 +92,12 @@ mod reqwest {
     impl HttpClient for reqwest::blocking::Client {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
             let request = request.try_into()?;
-            let mut response = self.execute(request)?.error_for_status()?;
+            let mut response = match self.execute(request) {
+                Ok(res) => res,
+                Err(e) => {
+                    return Err(HttpError::from(e));
+                }
+            };
             let headers = std::mem::take(response.headers_mut());
             let mut http_response = Response::builder()
                 .status(response.status())
@@ -179,14 +189,23 @@ pub mod hyper {
                     .headers_mut()
                     .insert(http::header::AUTHORIZATION, authorization.clone());
             }
-            let mut response = time::timeout(self.timeout, self.inner.request(request)).await??;
-            let headers = std::mem::take(response.headers_mut());
-            let mut http_response = Response::builder()
-                .status(response.status())
-                .body(hyper::body::to_bytes(response.into_body()).await?)?;
-            *http_response.headers_mut() = headers;
+            match time::timeout(self.timeout, self.inner.request(request)).await {
+                Ok(Ok(mut response)) => {
+                    let headers = std::mem::take(response.headers_mut());
+                    let mut http_response = Response::builder()
+                        .status(response.status())
+                        .body(hyper::body::to_bytes(response.into_body()).await?)?;
+                    *http_response.headers_mut() = headers;
 
-            Ok(http_response.error_for_status()?)
+                    // Check if the response status is an error and return an appropriate error if so
+                    Ok(http_response.error_for_status()?)
+                }
+                Ok(Err(e)) => Err(HttpError::RequestFailed(e.to_string())),
+                Err(_) => {
+                    // Handle timeout error
+                    Err(HttpError::Timeout)
+                }
+            }
         }
     }
 }
