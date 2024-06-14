@@ -10,6 +10,7 @@ use super::OtlpHttpClient;
 #[async_trait]
 impl LogExporter for OtlpHttpClient {
     async fn export<'a>(&mut self, batch: Vec<std::borrow::Cow<'a, LogData>>) -> LogResult<()> {
+        println!("----->>> Otlp Log Exporter Http..");
         let client = self
             .client
             .lock()

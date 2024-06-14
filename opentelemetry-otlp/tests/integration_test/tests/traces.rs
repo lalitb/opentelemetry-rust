@@ -1,6 +1,7 @@
 #![cfg(unix)]
 
 use integration_test_runner::trace_asserter::{read_spans_from_json, TraceAsserter};
+use integration_test_runner::Protocol;
 use opentelemetry::global;
 use opentelemetry::global::shutdown_tracer_provider;
 use opentelemetry::trace::TraceError;
@@ -15,24 +16,55 @@ use std::fs::File;
 use std::io::Write;
 use std::os::unix::fs::MetadataExt;
 
-fn init_tracer_provider() -> Result<sdktrace::TracerProvider, TraceError> {
-    opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_exporter(opentelemetry_otlp::new_exporter().tonic())
-        .with_trace_config(
-            sdktrace::Config::default().with_resource(Resource::new(vec![KeyValue::new(
-                opentelemetry_semantic_conventions::resource::SERVICE_NAME,
-                "basic-otlp-tracing-example",
-            )])),
-        )
-        .install_batch(runtime::Tokio)
+trait ExporterBuilder: Send + Sync {
+    fn build(self: Box<Self>) -> Result<sdktrace::TracerProvider, TraceError>;
+}
+
+impl ExporterBuilder for opentelemetry_otlp::TonicExporterBuilder {
+    fn build(self: Box<Self>) -> Result<sdktrace::TracerProvider, TraceError> {
+        opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_trace_config(
+                sdktrace::Config::default().with_resource(Resource::new(vec![KeyValue::new(
+                    opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                    "basic-otlp-tracing-example",
+                )])),
+            )
+            .with_exporter(*self)
+            .install_batch(runtime::Tokio)
+    }
+}
+
+impl ExporterBuilder for opentelemetry_otlp::HttpExporterBuilder {
+    fn build(self: Box<Self>) -> Result<sdktrace::TracerProvider, TraceError> {
+        opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_exporter(*self)
+            .with_trace_config(
+                sdktrace::Config::default().with_resource(Resource::new(vec![KeyValue::new(
+                    opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                    "basic-otlp-tracing-example",
+                )])),
+            )
+            .install_batch(runtime::Tokio)
+    }
+}
+
+fn init_traces(protocol: &Protocol) -> Result<Box<dyn ExporterBuilder>, TraceError> {
+    let exporter: Box<dyn ExporterBuilder> = match protocol {
+        Protocol::Tonic => Box::new(opentelemetry_otlp::new_exporter().tonic()),
+        Protocol::Http => Box::new(opentelemetry_otlp::new_exporter().http()),
+    };
+
+    Ok(exporter)
 }
 
 const LEMONS_KEY: Key = Key::from_static_str("lemons");
 const ANOTHER_KEY: Key = Key::from_static_str("ex.com/another");
 
-pub async fn traces() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-    let tracer_provider = init_tracer_provider().expect("Failed to initialize tracer provider.");
+pub async fn traces(protocol: &Protocol) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    let exporter = init_traces(protocol).expect("Failed to initialize tracer provider.");
+    let tracer_provider = exporter.build().expect("Failed to build tracer provider.");
     global::set_tracer_provider(tracer_provider.clone());
 
     let tracer = global::tracer("ex.com/basic");

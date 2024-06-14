@@ -1,6 +1,7 @@
 #![cfg(unix)]
 
 use integration_test_runner::images::Collector;
+use integration_test_runner::Protocol;
 use std::fs::File;
 use std::os::unix::fs::PermissionsExt;
 use std::time::Duration;
@@ -51,11 +52,13 @@ impl TestSuite {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 #[ignore] // skip when running unit test
 async fn integration_tests() {
-    trace_integration_tests().await;
-    logs_integration_tests().await;
+    logs_integration_tests(Protocol::Http).await;
+    //trace_integration_tests(Protocol::Http).await;
+    logs_integration_tests(Protocol::Tonic).await;
+    //trace_integration_tests(Protocol::Tonic).await;
 }
 
-async fn trace_integration_tests() {
+async fn trace_integration_tests(protocol: Protocol) {
     let test_suites = [TestSuite::new("traces.json")];
     let mut collector_image = Collector::default();
     for test in test_suites.as_ref() {
@@ -83,7 +86,14 @@ async fn trace_integration_tests() {
     let collector_container = docker.run(image);
 
     tokio::time::sleep(Duration::from_secs(5)).await;
-    traces::traces().await.unwrap();
+    traces::traces(&protocol).await.unwrap_or_else(|e| {
+        eprintln!(
+            "Failed to run traces intergration test for: {:?}. Error: {:?}",
+            protocol.to_string(),
+            e
+        );
+        std::process::exit(1);
+    });
 
     // wait for file to flush to disks
     // ideally we should use volume mount but otel collector file exporter doesn't handle permission too well
@@ -97,7 +107,7 @@ async fn trace_integration_tests() {
     collector_container.stop();
 }
 
-async fn logs_integration_tests() {
+async fn logs_integration_tests(protocol: Protocol) {
     let test_suites = [TestSuite::new("logs.json")];
 
     let mut collector_image = Collector::default();
@@ -126,8 +136,14 @@ async fn logs_integration_tests() {
     let collector_container = docker.run(image);
 
     tokio::time::sleep(Duration::from_secs(5)).await;
-    logs::logs().await.unwrap();
-
+    logs::logs(&protocol).await.unwrap_or_else(|e| {
+        eprintln!(
+            "Failed to run logs intergration test for: {:?}. Error: {:?}",
+            protocol.to_string(),
+            e
+        );
+        std::process::exit(1);
+    });
     // wait for file to flush to disks
     // ideally we should use volume mount but otel collector file exporter doesn't handle permission too well
     // bind mount mitigate the issue by set up the permission correctly on host system

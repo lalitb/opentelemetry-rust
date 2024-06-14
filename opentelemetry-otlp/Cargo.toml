@@ -79,4 +79,4 @@ reqwest-rustls = ["reqwest", "opentelemetry-http/reqwest-rustls"]
 reqwest-rustls-webpki-roots = ["reqwest", "opentelemetry-http/reqwest-rustls-webpki-roots"]
 
 # test
-integration-testing = ["tonic", "prost", "tokio/full", "trace"]
+integration-testing = ["tonic", "prost", "tokio/full", "trace", "http-proto", "http-json"]
