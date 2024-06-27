@@ -24,7 +24,9 @@ pub trait LogExporter: Send + Sync + Debug {
         true
     }
     /// Set the resource for the exporter.
-    fn set_resource(&mut self, _resource: &Resource) {}
+    fn set_resource(&mut self, _resource: &Resource) -> LogResult<()> {
+        Ok(())
+    }
 }
 
 /// `LogData` represents a single log event without resource context.
