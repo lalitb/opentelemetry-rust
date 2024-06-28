@@ -41,7 +41,7 @@ impl<'a, LR: LogRecord> EventVisitor<'a, LR> {
     }
     fn visit_metadata(&mut self, meta: &Metadata) {
         self.log_record
-            .add_attribute(Key::new("name"), AnyValue::from(meta.name()));
+            .add_attribute(Key::new("name"), AnyValue::from(Cow::Borrowed(meta.name())));
 
         #[cfg(feature = "experimental_metadata_attributes")]
         self.visit_experimental_metadata(meta);
