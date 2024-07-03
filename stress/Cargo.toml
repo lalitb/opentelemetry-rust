@@ -47,6 +47,7 @@ tracing-core = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["registry", "std"] }
 num-format = "0.4.4"
 sysinfo = { version = "0.30.12", optional = true }
+core_affinity = "0.8"
 
 [features]
 stats = ["sysinfo"]

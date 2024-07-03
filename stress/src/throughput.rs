@@ -1,3 +1,4 @@
+use core_affinity;
 use num_format::{Locale, ToFormattedString};
 use std::env;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -57,7 +58,7 @@ where
         }
     }
 
-    println!("Number of threads: {}\n", num_threads);
+    println!("Number of threads: {}\n", num_threads + 1); // +1 for the main thread handle
     let mut handles = Vec::with_capacity(num_threads);
     let func_arc = Arc::new(func);
     let mut worker_stats_vec: Vec<WorkerStats> = Vec::new();
@@ -129,7 +130,11 @@ where
     for thread_index in 0..num_threads {
         let worker_stats_shared = Arc::clone(&worker_stats_shared);
         let func_arc_clone = Arc::clone(&func_arc);
+        let core_ids = core_affinity::get_core_ids().unwrap();
+        let core_id = core_ids[thread_index % core_ids.len()];
+
         let handle = thread::spawn(move || loop {
+            core_affinity::set_for_current(core_id);
             for _ in 0..BATCH_SIZE {
                 func_arc_clone();
             }
