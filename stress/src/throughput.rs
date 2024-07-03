@@ -1,4 +1,3 @@
-use core_affinity;
 use num_format::{Locale, ToFormattedString};
 use std::env;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -44,17 +43,11 @@ where
                 }
                 num_threads = arg_num;
             } else {
-                eprintln!(
-                    "Invalid number of threads: {}. Must be greater than 0.",
-                    arg_num
-                );
+                eprintln!("Invalid number of threads: {}. Must be greater than 0.", arg_num);
                 std::process::exit(1);
             }
         } else {
-            eprintln!(
-                "Invalid command line argument '{}'. Must be a positive integer.",
-                arg_str
-            );
+            eprintln!("Invalid command line argument '{}'. Must be a positive integer.", arg_str);
             std::process::exit(1);
         }
     }
@@ -127,13 +120,10 @@ where
 
     handles.push(handle_main_thread);
 
-    let core_ids = core_affinity::get_core_ids().unwrap();
     for thread_index in 0..num_threads {
         let worker_stats_for_thread = Arc::clone(&worker_stats_shared);
         let func_arc_clone = Arc::clone(&func_arc);
-        let core_id = core_ids[thread_index % core_ids.len()];
         let handle = thread::spawn(move || {
-            core_affinity::set_for_current(core_id);
             loop {
                 for _ in 0..BATCH_SIZE {
                     func_arc_clone();
