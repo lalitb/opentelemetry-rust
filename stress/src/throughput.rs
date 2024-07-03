@@ -17,8 +17,7 @@ static STOP: AtomicBool = AtomicBool::new(false);
 #[derive(Default)]
 struct WorkerStats {
     count: AtomicU64,
-    /// We use a padding for the struct to allow each thread to have exclusive access to each WorkerStat
-    /// Otherwise, there would be some cpu contention with threads needing to take ownership of the cache lines
+    // Padding to prevent false sharing
     padding: [u64; 15],
 }
 
@@ -27,7 +26,7 @@ where
     F: Fn() + Sync + Send + 'static,
 {
     ctrlc::set_handler(move || {
-        STOP.store(true, Ordering::SeqCst);
+        STOP.store(true, Ordering::Release);
     })
     .expect("Error setting Ctrl-C handler");
 
@@ -35,43 +34,45 @@ where
     let mut args_iter = env::args();
 
     if let Some(arg_str) = args_iter.nth(1) {
-        let arg = arg_str.parse::<usize>();
-
-        if !arg.is_ok() {
-            eprintln!("Invalid command line argument '{}' as number of threads. Make sure the value is a positive integer.", arg_str);
-            std::process::exit(1);
-        }
-
-        let arg_num = arg.unwrap();
-
-        if arg_num > 0 {
-            if arg_num > num_cpus::get() {
-                println!(
-                    "Specified {} threads which is larger than the number of logical cores ({})!",
-                    arg_num, num_threads
+        if let Ok(arg_num) = arg_str.parse::<usize>() {
+            if arg_num > 0 {
+                if arg_num > num_cpus::get() {
+                    println!(
+                        "Specified {} threads which is larger than the number of logical cores ({})!",
+                        arg_num, num_threads
+                    );
+                }
+                num_threads = arg_num;
+            } else {
+                eprintln!(
+                    "Invalid number of threads: {}. Must be greater than 0.",
+                    arg_num
                 );
+                std::process::exit(1);
             }
-            num_threads = arg_num as usize;
         } else {
-            eprintln!("Invalid command line argument {} as number of threads. Make sure the value is above 0 and less than or equal to number of available logical cores ({}).", arg_num, num_threads);
+            eprintln!(
+                "Invalid command line argument '{}'. Must be a positive integer.",
+                arg_str
+            );
             std::process::exit(1);
         }
     }
 
-    println!("Number of threads: {}\n", num_threads + 1); // +1 for the main thread handle
-    let mut handles = Vec::with_capacity(num_threads);
+    println!("Number of threads: {}\n", num_threads);
+    let mut handles = Vec::with_capacity(num_threads + 1); // +1 for the main thread handle
     let func_arc = Arc::new(func);
-    let mut worker_stats_vec: Vec<WorkerStats> = Vec::new();
+    let mut worker_stats_vec: Vec<WorkerStats> = Vec::with_capacity(num_threads);
 
     for _ in 0..num_threads {
         worker_stats_vec.push(WorkerStats::default());
     }
+
     let worker_stats_shared = Arc::new(worker_stats_vec);
     let worker_stats_shared_monitor = Arc::clone(&worker_stats_shared);
 
     let handle_main_thread = thread::spawn(move || {
         let mut start_time = Instant::now();
-        let mut end_time = start_time;
         let mut total_count_old: u64 = 0;
 
         #[cfg(feature = "stats")]
@@ -80,7 +81,11 @@ where
         let mut system = System::new_all();
 
         loop {
-            let elapsed = end_time.duration_since(start_time).as_secs();
+            if STOP.load(Ordering::Acquire) {
+                break;
+            }
+
+            let elapsed = start_time.elapsed().as_secs();
             if elapsed >= SLIDING_WINDOW_SIZE {
                 let total_count_u64: u64 = worker_stats_shared_monitor
                     .iter()
@@ -116,36 +121,32 @@ where
                 start_time = Instant::now();
             }
 
-            if STOP.load(Ordering::SeqCst) {
-                break;
-            }
-
-            end_time = Instant::now();
-            thread::sleep(Duration::from_millis(5000));
+            thread::sleep(Duration::from_millis(500));
         }
     });
 
     handles.push(handle_main_thread);
 
+    let core_ids = core_affinity::get_core_ids().unwrap();
     for thread_index in 0..num_threads {
-        let worker_stats_shared = Arc::clone(&worker_stats_shared);
+        let worker_stats_for_thread = Arc::clone(&worker_stats_shared);
         let func_arc_clone = Arc::clone(&func_arc);
-        let core_ids = core_affinity::get_core_ids().unwrap();
         let core_id = core_ids[thread_index % core_ids.len()];
-
-        let handle = thread::spawn(move || loop {
+        let handle = thread::spawn(move || {
             core_affinity::set_for_current(core_id);
-            for _ in 0..BATCH_SIZE {
-                func_arc_clone();
-            }
-            worker_stats_shared[thread_index]
-                .count
-                .fetch_add(BATCH_SIZE, Ordering::Relaxed);
-            if STOP.load(Ordering::SeqCst) {
-                break;
+            loop {
+                for _ in 0..BATCH_SIZE {
+                    func_arc_clone();
+                }
+                worker_stats_for_thread[thread_index]
+                    .count
+                    .fetch_add(BATCH_SIZE, Ordering::Relaxed);
+                if STOP.load(Ordering::Acquire) {
+                    break;
+                }
             }
         });
-        handles.push(handle)
+        handles.push(handle);
     }
 
     for handle in handles {
