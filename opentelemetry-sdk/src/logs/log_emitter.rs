@@ -22,8 +22,86 @@ use std::{sync::atomic::AtomicBool, time::SystemTime};
 
 use once_cell::sync::Lazy;
 
+///Compile time macro generation
+#[macro_export]
+macro_rules! impl_log_processor {
+    ($($processor:ty),*) => {
+        #[derive(Debug)]
+        pub enum LogProcessorEnum<R: RuntimeChannel + std::fmt::Debug> {
+            Simple(SimpleLogProcessor),
+            Batch(BatchLogProcessor<R>),
+            $(
+                $processor($processor),
+            )*
+        }
+
+        impl<R: RuntimeChannel + std::fmt::Debug> LogProcessor for LogProcessorEnum<R> {
+            fn emit(&self, data: &mut LogData) {
+                match self {
+                    LogProcessorEnum::Simple(p) => p.emit(data),
+                    LogProcessorEnum::Batch(p) => p.emit(data),
+                    $(
+                        LogProcessorEnum::$processor(p) => p.emit(data),
+                    )*
+                }
+            }
+
+            #[cfg(feature = "logs_level_enabled")]
+            fn event_enabled(&self, level: Severity, target: &str, name: &str) -> bool {
+                match self {
+                    LogProcessorEnum::Simple(p) => p.event_enabled(level, target, name),
+                    LogProcessorEnum::Batch(p) => p.event_enabled(level, target, name),
+                    $(
+                        LogProcessorEnum::$processor(p) => p.event_enabled(level, target, name),
+                    )*
+                }
+            }
+
+            fn set_resource(&self, resource: &Resource) {
+                match self {
+                    LogProcessorEnum::Simple(p) => p.set_resource(resource),
+                    LogProcessorEnum::Batch(p) => p.set_resource(resource),
+                    $(
+                        LogProcessorEnum::$processor(p) => p.set_resource(resource),
+                    )*
+                }
+            }
+
+            fn force_flush(&self) -> LogResult<()> {
+                match self {
+                    LogProcessorEnum::Simple(p) => p.force_flush(),
+                    LogProcessorEnum::Batch(p) => p.force_flush(),
+                    $(
+                        LogProcessorEnum::$processor(p) => p.force_flush(),
+                    )*
+                }
+            }
+
+            fn shutdown(&self) -> LogResult<()> {
+                match self {
+                    LogProcessorEnum::Simple(p) => p.shutdown(),
+                    LogProcessorEnum::Batch(p) => p.shutdown(),
+                    $(
+                        LogProcessorEnum::$processor(p) => p.shutdown(),
+                    )*
+                }
+            }
+        }
+
+        $(
+            impl From<$processor> for LogProcessorEnum {
+                fn from(p: $processor) -> Self {
+                    LogProcessorEnum::$processor(p)
+                }
+            }
+        )*
+    };
+}
+
+impl_log_processor!();
+
 // a no nop logger provider used as placeholder when the provider is shutdown
-static NOOP_LOGGER_PROVIDER: Lazy<LoggerProvider> = Lazy::new(|| LoggerProvider {
+static NOOP_LOGGER_PROVIDER: Lazy<LoggerProvider<NoopRuntimeChannel>> = Lazy::new(|| LoggerProvider {
     inner: Arc::new(LoggerProviderInner {
         processors: Vec::new(),
         resource: Resource::empty(),
@@ -33,8 +111,8 @@ static NOOP_LOGGER_PROVIDER: Lazy<LoggerProvider> = Lazy::new(|| LoggerProvider 
 
 #[derive(Debug, Clone)]
 /// Creator for `Logger` instances.
-pub struct LoggerProvider {
-    inner: Arc<LoggerProviderInner>,
+pub struct LoggerProvider<R: RuntimeChannel + std::fmt::Debug> {
+    inner: Arc<LoggerProviderInner<R>>,
     is_shutdown: Arc<AtomicBool>,
 }
 
@@ -45,7 +123,7 @@ const DEFAULT_COMPONENT_NAME: &str = "rust.opentelemetry.io/sdk/logger";
 // capacity for attributes to avoid reallocation in common scenarios.
 const PREALLOCATED_ATTRIBUTE_CAPACITY: usize = 8;
 
-impl opentelemetry::logs::LoggerProvider for LoggerProvider {
+impl<R: RuntimeChannel + std::fmt::Debug> opentelemetry::logs::LoggerProvider for LoggerProvider<R> {
     type Logger = Logger;
 
     /// Create a new versioned `Logger` instance.
@@ -88,13 +166,13 @@ impl opentelemetry::logs::LoggerProvider for LoggerProvider {
     }
 }
 
-impl LoggerProvider {
+impl<R: RuntimeChannel + std::fmt::Debug> LoggerProvider<R> {
     /// Create a new `LoggerProvider` builder.
     pub fn builder() -> Builder {
         Builder::default()
     }
 
-    pub(crate) fn log_processors(&self) -> &[Box<dyn LogProcessor>] {
+    pub(crate) fn log_processors(&self) ->  &[LogProcessorEnum<R>] {
         &self.inner.processors
     }
 
@@ -138,12 +216,12 @@ impl LoggerProvider {
 }
 
 #[derive(Debug)]
-struct LoggerProviderInner {
-    processors: Vec<Box<dyn LogProcessor>>,
+struct LoggerProviderInner<R: RuntimeChannel + std::fmt::Debug> {
+    processors: Vec<LogProcessorEnum<R>>,
     resource: Resource,
 }
 
-impl Drop for LoggerProviderInner {
+impl<R: RuntimeChannel + std::fmt::Debug> Drop for LoggerProviderInner<R> {
     fn drop(&mut self) {
         for processor in &mut self.processors {
             if let Err(err) = processor.shutdown() {
@@ -155,16 +233,16 @@ impl Drop for LoggerProviderInner {
 
 #[derive(Debug, Default)]
 /// Builder for provider attributes.
-pub struct Builder {
-    processors: Vec<Box<dyn LogProcessor>>,
+pub struct Builder<R: RuntimeChannel + std::fmt::Debug> {
+    processors: Vec<LogProcessorEnum<R>>,
     resource: Option<Resource>,
 }
 
-impl Builder {
+impl<R: RuntimeChannel + std::fmt::Debug> Builder<R> {
     /// The `LogExporter` that this provider should use.
     pub fn with_simple_exporter<T: LogExporter + 'static>(self, exporter: T) -> Self {
         let mut processors = self.processors;
-        processors.push(Box::new(SimpleLogProcessor::new(Box::new(exporter))));
+        processors.push(LogProcessorEnum::Simple(SimpleLogProcessor::new(Box::new(exporter))));
 
         Builder { processors, ..self }
     }
@@ -182,7 +260,7 @@ impl Builder {
     /// The `LogProcessor` that this provider should use.
     pub fn with_log_processor<T: LogProcessor + 'static>(self, processor: T) -> Self {
         let mut processors = self.processors;
-        processors.push(Box::new(processor));
+        processors.push(LogProcessorEnum::from(processor));
 
         Builder { processors, ..self }
     }
@@ -196,7 +274,7 @@ impl Builder {
     }
 
     /// Create a new provider from this configuration.
-    pub fn build(self) -> LoggerProvider {
+    pub fn build(self) -> LoggerProvider<R> {
         let resource = self.resource.unwrap_or_default();
 
         let logger_provider = LoggerProvider {
@@ -219,15 +297,15 @@ impl Builder {
 /// The object for emitting [`LogRecord`]s.
 ///
 /// [`LogRecord`]: opentelemetry::logs::LogRecord
-pub struct Logger {
+pub struct Logger<R: RuntimeChannel + std::fmt::Debug> {
     instrumentation_lib: Arc<InstrumentationLibrary>,
-    provider: LoggerProvider,
+    provider: LoggerProvider<R>,
 }
 
-impl Logger {
+impl<R: RuntimeChannel + std::fmt::Debug> Logger<R> {
     pub(crate) fn new(
         instrumentation_lib: Arc<InstrumentationLibrary>,
-        provider: LoggerProvider,
+        provider: LoggerProvider<R>,
     ) -> Self {
         Logger {
             instrumentation_lib,
@@ -236,7 +314,7 @@ impl Logger {
     }
 
     /// LoggerProvider associated with this logger.
-    pub fn provider(&self) -> &LoggerProvider {
+    pub fn provider(&self) -> &LoggerProvider<R> {
         &self.provider
     }
 
@@ -246,7 +324,7 @@ impl Logger {
     }
 }
 
-impl opentelemetry::logs::Logger for Logger {
+impl<R: RuntimeChannel + std::fmt::Debug> opentelemetry::logs::Logger for Logger<R> {
     type LogRecord = LogRecord;
 
     fn create_log_record(&self) -> Self::LogRecord {
@@ -367,7 +445,7 @@ mod tests {
     }
     #[test]
     fn test_logger_provider_default_resource() {
-        let assert_resource = |provider: &super::LoggerProvider,
+        let assert_resource = |provider: &super::LoggerProvider<RuntimeChannel>,
                                resource_key: &'static str,
                                expect: Option<&'static str>| {
             assert_eq!(
@@ -378,7 +456,7 @@ mod tests {
                 expect.map(|s| s.to_string())
             );
         };
-        let assert_telemetry_resource = |provider: &super::LoggerProvider| {
+        let assert_telemetry_resource = |provider: &super::LoggerProvider<RuntimeChannel>| {
             assert_eq!(
                 provider.resource().get(TELEMETRY_SDK_LANGUAGE.into()),
                 Some(Value::from("rust"))

@@ -249,3 +249,52 @@ impl RuntimeChannel for AsyncStd {
         async_std::channel::bounded(capacity)
     }
 }
+
+
+use std::sync::Arc;
+#[derive(Debug, Clone)]
+struct NoopRuntimeChannel;
+
+impl Runtime for NoopRuntimeChannel {
+    type Interval = futures_util::stream::Empty<()>;
+    type Delay = futures_util::future::Ready<()>;
+
+    fn interval(&self, _duration: Duration) -> Self::Interval {
+        futures_util::stream::empty()
+    }
+
+    fn spawn(&self, _future: BoxFuture<'static, ()>) {}
+
+    fn delay(&self, _duration: Duration) -> Self::Delay {
+        futures_util::future::ready(())
+    }
+}
+
+impl RuntimeChannel for NoopRuntimeChannel {
+    type Receiver<T: Debug + Send> = futures_util::stream::Empty<T>;
+    type Sender<T: Debug + Send> = NoopSender<T>;
+
+    fn batch_message_channel<T: Debug + Send>(
+        &self,
+        _capacity: usize,
+    ) -> (Self::Sender<T>, Self::Receiver<T>) {
+        (NoopSender::new(), futures_util::stream::empty())
+    }
+}
+
+#[derive(Debug)]
+struct NoopSender<T>(Arc<Mutex<std::marker::PhantomData<T>>>);
+
+impl<T: Debug + Send> TrySend for NoopSender<T> {
+    type Message = T;
+
+    fn try_send(&self, _item: Self::Message) -> Result<(), TrySendError> {
+        Err(TrySendError::ChannelClosed)
+    }
+}
+
+impl<T> NoopSender<T> {
+    fn new() -> Self {
+        NoopSender(Arc::new(Mutex::new(std::marker::PhantomData)))
+    }
+}
