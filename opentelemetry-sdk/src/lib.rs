@@ -133,6 +133,7 @@ pub mod metrics;
 pub mod propagation;
 pub mod resource;
 pub mod runtime;
+pub mod circularbuffer;
 #[cfg(any(feature = "testing", test))]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "testing", test))))]
 pub mod testing;
