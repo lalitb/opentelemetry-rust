@@ -1,7 +1,7 @@
-use std::fmt::Debug;
+use std::sync::atomic::{AtomicPtr, Ordering};
 use std::mem::MaybeUninit;
 use std::ptr;
-use std::sync::atomic::{AtomicPtr, Ordering};
+use std::fmt::Debug;
 
 struct Node<T> {
     data: MaybeUninit<T>,
@@ -72,13 +72,9 @@ impl<T: Clone + Debug, const CAPACITY: usize> AtomicCircularBuffer<T, CAPACITY> 
             }
 
             unsafe {
-                println!("Pushing data: {:?}", data);
+                println!( "Pushing data: {:?}", data);
                 (*head).data.as_mut_ptr().write(data.clone());
-                if self
-                    .head
-                    .compare_exchange_weak(head, next, Ordering::SeqCst, Ordering::SeqCst)
-                    .is_ok()
-                {
+                if self.head.compare_exchange_weak(head, next, Ordering::SeqCst, Ordering::SeqCst).is_ok() {
                     return Ok(());
                 } else {
                     // Undo the write if CAS fails
@@ -104,12 +100,8 @@ impl<T: Clone + Debug, const CAPACITY: usize> AtomicCircularBuffer<T, CAPACITY> 
             #[allow(unused)]
             let data = unsafe {
                 let data = (*expected_tail).data.assume_init_read();
-                if self
-                    .tail
-                    .compare_exchange_weak(expected_tail, next, Ordering::SeqCst, Ordering::SeqCst)
-                    .is_ok()
-                {
-                    println!("Poping data: {:?}", data);
+                if self.tail.compare_exchange_weak(expected_tail, next, Ordering::SeqCst, Ordering::SeqCst).is_ok() {
+                    println!( "Poping data: {:?}", data);
                     return Ok(data);
                 } else {
                     // CAS failed, retry
@@ -122,9 +114,9 @@ impl<T: Clone + Debug, const CAPACITY: usize> AtomicCircularBuffer<T, CAPACITY> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::AtomicUsize;
     use std::sync::{Arc, Barrier};
     use std::thread;
+    use std::sync::atomic::AtomicUsize;
 
     #[derive(Debug, PartialEq, Clone)]
     struct ComplexData {
@@ -133,13 +125,7 @@ mod tests {
         data: Vec<u8>,
     }
 
-    fn single_writer_single_reader<T: PartialEq + Clone + std::fmt::Debug + Send + Sync>(
-        buffer: &AtomicCircularBuffer<T, 3>,
-        item1: T,
-        item2: T,
-        item3: T,
-        item4: T,
-    ) {
+    fn single_writer_single_reader<T: PartialEq + Clone + std::fmt::Debug + Send + Sync>(buffer: &AtomicCircularBuffer<T, 3>, item1: T, item2: T, item3: T, item4: T) {
         assert!(buffer.pop().is_err());
 
         buffer.push(item1.clone()).unwrap();
@@ -153,11 +139,9 @@ mod tests {
         assert!(buffer.pop().is_err()); // Buffer should be empty
     }
 
-    fn multiple_writers_single_reader<
-        T: PartialEq + Clone + std::fmt::Debug + Send + Sync + 'static,
-    >(
-        buffer: Arc<AtomicCircularBuffer<T, 10>>,
-        item_gen: impl Fn(usize) -> T + Sync + Send + 'static + Clone,
+    fn multiple_writers_single_reader<T: PartialEq + Clone + std::fmt::Debug + Send + Sync + 'static>(
+        buffer: Arc<AtomicCircularBuffer<T, 10>>, 
+        item_gen: impl Fn(usize) -> T + Sync + Send + 'static + Clone
     ) {
         let num_writers = 5;
         let num_values = 20_usize;
@@ -205,41 +189,30 @@ mod tests {
 
         let read_values = reader.join().unwrap();
         assert_eq!(read_values.len(), num_writers * num_values);
-        assert_eq!(
-            total_written.load(Ordering::SeqCst),
-            num_writers * num_values
-        );
+        assert_eq!(total_written.load(Ordering::SeqCst), num_writers * num_values);
     }
 
-    fn buffer_full<T: Clone + std::fmt::Debug + Send + Sync>(
-        buffer: &AtomicCircularBuffer<T, 3>,
-        item1: T,
-        item2: T,
-        item3: T,
-        item4: T,
-    ) {
+    fn buffer_full<T: Clone + std::fmt::Debug + Send + Sync>(buffer: &AtomicCircularBuffer<T, 3>, item1: T, item2: T, item3: T, item4: T) {
         assert!(buffer.push(item1.clone()).is_ok());
         assert!(buffer.push(item2.clone()).is_ok());
         assert!(buffer.push(item3.clone()).is_ok());
         assert!(buffer.push(item4.clone()).is_err()); // Buffer should be full after 3 elements
     }
 
-    fn buffer_empty<T: Clone + std::fmt::Debug + Send + Sync>(
-        buffer: &AtomicCircularBuffer<T, 3>,
-        item: T,
-    ) {
+    fn buffer_empty<T: Clone + std::fmt::Debug + Send + Sync>(buffer: &AtomicCircularBuffer<T, 3>, item: T) {
         assert!(buffer.pop().is_err()); // Buffer should be empty
         buffer.push(item.clone()).unwrap();
         buffer.pop().unwrap();
         assert!(buffer.pop().is_err()); // Buffer should be empty again
     }
 
+    
     fn concurrent_push_pop<T: PartialEq + Clone + std::fmt::Debug + Send + Sync + 'static>(
         buffer: Arc<AtomicCircularBuffer<T, 5>>,
-        item_gen: impl Fn(usize) -> T + Sync + Send + 'static + Clone,
+        item_gen: impl Fn(usize) -> T + Sync + Send + 'static + Clone
     ) {
         let barrier = Arc::new(Barrier::new(3)); // 2 writers and 1 reader
-
+    
         let writer1 = {
             let buffer = Arc::clone(&buffer);
             let barrier = Arc::clone(&barrier);
@@ -253,7 +226,7 @@ mod tests {
                 }
             })
         };
-
+    
         let writer2 = {
             let buffer = Arc::clone(&buffer);
             let barrier = Arc::clone(&barrier);
@@ -267,7 +240,7 @@ mod tests {
                 }
             })
         };
-
+    
         let reader = {
             let buffer = Arc::clone(&buffer);
             let barrier = Arc::clone(&barrier);
@@ -284,10 +257,10 @@ mod tests {
                 read_values
             })
         };
-
+    
         writer1.join().unwrap();
         writer2.join().unwrap();
-
+    
         let read_values = reader.join().unwrap();
         assert_eq!(read_values.len(), 20);
         for i in 0..20 {
@@ -299,39 +272,23 @@ mod tests {
         //    if let Some(pos) = expected_values.iter().position(|x| x == value) {
         //        expected_values.remove(pos);
         //    }
-        // }
-        // assert!(expected_values.is_empty(), "Not all expected values were found in the read values");
+       // }
+       // assert!(expected_values.is_empty(), "Not all expected values were found in the read values");
     }
 
     #[test]
     fn test_single_writer_single_reader_primitive() {
         let buffer = AtomicCircularBuffer::<i32, 3>::new();
         single_writer_single_reader(&buffer, 1, 2, 3, 4);
-    }
+    } 
 
     #[test]
     fn test_single_writer_single_reader_complex() {
         let buffer = AtomicCircularBuffer::<ComplexData, 3>::new();
-        let item1 = ComplexData {
-            id: 1,
-            name: "Item 1".to_string(),
-            data: vec![1, 2, 3],
-        };
-        let item2 = ComplexData {
-            id: 2,
-            name: "Item 2".to_string(),
-            data: vec![4, 5, 6],
-        };
-        let item3 = ComplexData {
-            id: 3,
-            name: "Item 3".to_string(),
-            data: vec![7, 8, 9],
-        };
-        let item4 = ComplexData {
-            id: 4,
-            name: "Item 4".to_string(),
-            data: vec![10, 11, 12],
-        };
+        let item1 = ComplexData { id: 1, name: "Item 1".to_string(), data: vec![1, 2, 3] };
+        let item2 = ComplexData { id: 2, name: "Item 2".to_string(), data: vec![4, 5, 6] };
+        let item3 = ComplexData { id: 3, name: "Item 3".to_string(), data: vec![7, 8, 9] };
+        let item4 = ComplexData { id: 4, name: "Item 4".to_string(), data: vec![10, 11, 12] };
         single_writer_single_reader(&buffer, item1, item2, item3, item4);
     }
 
@@ -344,11 +301,7 @@ mod tests {
     #[test]
     fn test_multiple_writers_single_reader_complex() {
         let buffer = Arc::new(AtomicCircularBuffer::<ComplexData, 10>::new());
-        multiple_writers_single_reader(buffer, |i| ComplexData {
-            id: i,
-            name: format!("Item {}", i),
-            data: vec![i as u8],
-        });
+        multiple_writers_single_reader(buffer, |i| ComplexData { id: i, name: format!("Item {}", i), data: vec![i as u8] });
     }
 
     #[test]
@@ -360,26 +313,10 @@ mod tests {
     #[test]
     fn test_buffer_full_complex() {
         let buffer = AtomicCircularBuffer::<ComplexData, 3>::new();
-        let item1 = ComplexData {
-            id: 1,
-            name: "Item 1".to_string(),
-            data: vec![1, 2, 3],
-        };
-        let item2 = ComplexData {
-            id: 2,
-            name: "Item 2".to_string(),
-            data: vec![4, 5, 6],
-        };
-        let item3 = ComplexData {
-            id: 3,
-            name: "Item 3".to_string(),
-            data: vec![7, 8, 9],
-        };
-        let item4 = ComplexData {
-            id: 4,
-            name: "Item 4".to_string(),
-            data: vec![10, 11, 12],
-        };
+        let item1 = ComplexData { id: 1, name: "Item 1".to_string(), data: vec![1, 2, 3] };
+        let item2 = ComplexData { id: 2, name: "Item 2".to_string(), data: vec![4, 5, 6] };
+        let item3 = ComplexData { id: 3, name: "Item 3".to_string(), data: vec![7, 8, 9] };
+        let item4 = ComplexData { id: 4, name: "Item 4".to_string(), data: vec![10, 11, 12] };
         buffer_full(&buffer, item1, item2, item3, item4);
     }
 
@@ -392,11 +329,7 @@ mod tests {
     #[test]
     fn test_buffer_empty_complex() {
         let buffer = AtomicCircularBuffer::<ComplexData, 3>::new();
-        let item = ComplexData {
-            id: 1,
-            name: "Item 1".to_string(),
-            data: vec![1, 2, 3],
-        };
+        let item = ComplexData { id: 1, name: "Item 1".to_string(), data: vec![1, 2, 3] };
         buffer_empty(&buffer, item);
     }
 
@@ -406,10 +339,10 @@ mod tests {
         concurrent_push_pop(buffer, |i| ComplexData {
             id: i,
             name: format!("Item {}", i),
-            data: vec![i as u8],
+            data: vec![i as u8]
         });
     }
-
+    
     #[test]
     fn test_concurrent_push_pop_primitive() {
         let buffer = Arc::new(AtomicCircularBuffer::<i32, 5>::new());
