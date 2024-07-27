@@ -241,8 +241,8 @@ impl Logger {
     }
 
     /// Instrumentation library information of this logger.
-    pub fn instrumentation_library(&self) -> &InstrumentationLibrary {
-        &self.instrumentation_lib
+    pub fn instrumentation_library(&self) -> Arc<InstrumentationLibrary> {
+        self.instrumentation_lib.clone()
     }
 }
 
@@ -275,7 +275,7 @@ impl opentelemetry::logs::Logger for Logger {
 
         let mut data = LogData {
             record: log_record,
-            instrumentation: self.instrumentation_library().clone(),
+            instrumentation: self.instrumentation_library(),
         };
 
         for p in processors {

@@ -10,6 +10,7 @@ use opentelemetry::{
 };
 use std::borrow::Cow;
 use std::fmt::Debug;
+use std::sync::Arc;
 
 /// `LogExporter` defines the interface that log exporters should implement.
 #[async_trait]
@@ -33,7 +34,7 @@ pub struct LogData {
     /// Log record
     pub record: LogRecord,
     /// Instrumentation details for the emitter who produced this `LogEvent`.
-    pub instrumentation: InstrumentationLibrary,
+    pub instrumentation: Arc<InstrumentationLibrary>,
 }
 
 /// Describes the result of an export.

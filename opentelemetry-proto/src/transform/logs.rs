@@ -153,7 +153,9 @@ pub mod tonic {
                         .clone()
                         .map(Into::into)
                         .unwrap_or_default(),
-                    scope: Some((log_data.instrumentation, log_data.record.target.clone()).into()),
+                    scope: Some(
+                        (&*log_data.instrumentation, log_data.record.target.clone()).into(),
+                    ),
                     log_records: vec![log_data.record.into()],
                 }],
             }
@@ -186,7 +188,7 @@ pub mod tonic {
             .into_iter()
             .map(|(key, log_data)| ScopeLogs {
                 scope: Some(InstrumentationScope::from((
-                    &log_data.first().unwrap().instrumentation,
+                    &*log_data.first().unwrap().instrumentation,
                     Some(key),
                 ))),
                 schema_url: resource.schema_url.clone().unwrap_or_default(),
@@ -214,6 +216,7 @@ mod tests {
     use opentelemetry::logs::LogRecord as _;
     use opentelemetry_sdk::export::logs::LogData;
     use opentelemetry_sdk::{logs::LogRecord, Resource};
+    use std::sync::Arc;
     use std::time::SystemTime;
 
     fn create_test_log_data(instrumentation_name: &str, _message: &str) -> LogData {
@@ -221,10 +224,12 @@ mod tests {
         logrecord.set_timestamp(SystemTime::now());
         logrecord.set_observed_timestamp(SystemTime::now());
         LogData {
-            instrumentation: opentelemetry_sdk::InstrumentationLibrary::builder(
-                instrumentation_name.to_string(),
-            )
-            .build(),
+            instrumentation: Arc::new(
+                opentelemetry_sdk::InstrumentationLibrary::builder(
+                    instrumentation_name.to_string(),
+                )
+                .build(),
+            ),
             record: logrecord,
         }
     }

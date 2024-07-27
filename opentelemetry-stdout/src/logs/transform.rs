@@ -31,7 +31,7 @@ impl
         for sdk_log in sdk_logs {
             let resource_schema_url = sdk_resource.schema_url().map(|s| s.to_string().into());
             let schema_url = sdk_log.instrumentation.schema_url.clone();
-            let scope: Scope = sdk_log.instrumentation.clone().into();
+            let scope: Scope = (*sdk_log.instrumentation).clone().into();
             let resource: Resource = sdk_resource.into();
 
             let rl = resource_logs
