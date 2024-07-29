@@ -93,20 +93,20 @@ pub mod tonic {
                 severity_text: log_record.severity_text.map(Into::into).unwrap_or_default(),
                 body: log_record.body.map(Into::into),
                 attributes: {
-                    let mut attributes = log_record
+                    let mut attributes: Attributes = log_record
                         .attributes
-                        .map(Attributes::from_iter)
-                        .unwrap_or_default()
-                        .0;
+                        .iter()
+                        .map(|(key, value)| (key.clone(), value.clone()))
+                        .collect();
                     if let Some(event_name) = log_record.event_name.as_ref() {
-                        attributes.push(KeyValue {
+                        attributes.0.push(KeyValue {
                             key: "name".into(),
                             value: Some(AnyValue {
                                 value: Some(Value::StringValue(event_name.to_string())),
                             }),
                         })
                     }
-                    attributes
+                    attributes.0
                 },
                 dropped_attributes_count: 0,
                 flags: trace_context

@@ -135,7 +135,6 @@ impl From<opentelemetry_sdk::export::logs::LogData> for LogRecord {
                 let mut attributes = value
                     .record
                     .attributes
-                    .unwrap_or_default()
                     .into_iter()
                     .map(|(key, value)| (key, value).into())
                     .collect::<Vec<_>>();

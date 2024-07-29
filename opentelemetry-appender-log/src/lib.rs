@@ -938,7 +938,7 @@ mod tests {
         );
 
         let logs = exporter.get_emitted_logs().unwrap();
-        let attributes = &logs[0].record.attributes.as_ref().unwrap();
+        let attributes = &logs[0].record.attributes.as_ref();
 
         let get = |needle: &str| {
             attributes.iter().find_map(|(k, v)| {

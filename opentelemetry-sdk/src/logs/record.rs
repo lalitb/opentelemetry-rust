@@ -3,6 +3,7 @@ use opentelemetry::{
     trace::{SpanContext, SpanId, TraceFlags, TraceId},
     Key,
 };
+use smallvec::SmallVec;
 use std::{borrow::Cow, time::SystemTime};
 
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -34,7 +35,7 @@ pub struct LogRecord {
     pub body: Option<AnyValue>,
 
     /// Additional attributes associated with this record
-    pub attributes: Option<Vec<(Key, AnyValue)>>,
+    pub attributes: SmallVec<[(Key, AnyValue); 8]>,
 }
 
 impl opentelemetry::logs::LogRecord for LogRecord {
@@ -89,11 +90,7 @@ impl opentelemetry::logs::LogRecord for LogRecord {
         K: Into<Key>,
         V: Into<AnyValue>,
     {
-        if let Some(ref mut attrs) = self.attributes {
-            attrs.push((key.into(), value.into()));
-        } else {
-            self.attributes = Some(vec![(key.into(), value.into())]);
-        }
+        self.attributes.push((key.into(), value.into()));
     }
 }
 
@@ -184,9 +181,9 @@ mod tests {
     #[test]
     fn test_set_attributes() {
         let mut log_record = LogRecord::default();
-        let attributes = vec![(Key::new("key"), AnyValue::String("value".into()))];
+        let attributes = [(Key::new("key"), AnyValue::String("value".into()))];
         log_record.add_attributes(attributes.clone());
-        assert_eq!(log_record.attributes, Some(attributes));
+        assert_eq!(log_record.attributes, attributes.into());
     }
 
     #[test]
@@ -195,7 +192,7 @@ mod tests {
         log_record.add_attribute("key", "value");
         assert_eq!(
             log_record.attributes,
-            Some(vec![(Key::new("key"), AnyValue::String("value".into()))])
+            [(Key::new("key"), AnyValue::String("value".into()))].into()
         );
     }
 
@@ -230,7 +227,7 @@ mod tests {
             severity_text: Some(Cow::Borrowed("ERROR")),
             severity_number: Some(Severity::Error),
             body: Some(AnyValue::String("Test body".into())),
-            attributes: Some(vec![(Key::new("key"), AnyValue::String("value".into()))]),
+            attributes: vec![(Key::new("key"), AnyValue::String("value".into()))].into(),
             trace_context: Some(TraceContext {
                 trace_id: TraceId::from_u128(1),
                 span_id: SpanId::from_u64(1),

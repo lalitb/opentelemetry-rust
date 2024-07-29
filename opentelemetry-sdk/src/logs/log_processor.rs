@@ -816,7 +816,7 @@ mod tests {
     impl LogProcessor for FirstProcessor {
         fn emit(&self, data: &mut LogData) {
             // add attribute
-            data.record.attributes.get_or_insert(vec![]).push((
+            data.record.attributes.push((
                 Key::from_static_str("processed_by"),
                 AnyValue::String("FirstProcessor".into()),
             ));
@@ -847,11 +847,9 @@ mod tests {
 
     impl LogProcessor for SecondProcessor {
         fn emit(&self, data: &mut LogData) {
-            assert!(data.record.attributes.as_ref().map_or(false, |attrs| {
-                attrs.iter().any(|(key, value)| {
-                    key.as_str() == "processed_by"
-                        && value == &AnyValue::String("FirstProcessor".into())
-                })
+            assert!(data.record.attributes.iter().any(|(key, value)| {
+                key.as_str() == "processed_by"
+                    && value == &AnyValue::String("FirstProcessor".into())
             }));
             assert!(
                 data.record.body.clone().unwrap()
@@ -902,18 +900,12 @@ mod tests {
         let first_log = &first_processor_logs.lock().unwrap()[0];
         let second_log = &second_processor_logs.lock().unwrap()[0];
 
-        assert!(first_log.record.attributes.iter().any(|attrs| {
-            attrs.iter().any(|(key, value)| {
-                key.as_str() == "processed_by"
-                    && value == &AnyValue::String("FirstProcessor".into())
-            })
+        assert!(first_log.record.attributes.iter().any(|(key, value)| {
+            key.as_str() == "processed_by" && value == &AnyValue::String("FirstProcessor".into())
         }));
 
-        assert!(second_log.record.attributes.iter().any(|attrs| {
-            attrs.iter().any(|(key, value)| {
-                key.as_str() == "processed_by"
-                    && value == &AnyValue::String("FirstProcessor".into())
-            })
+        assert!(second_log.record.attributes.iter().any(|(key, value)| {
+            key.as_str() == "processed_by" && value == &AnyValue::String("FirstProcessor".into())
         }));
         assert!(
             first_log.record.body.clone().unwrap()

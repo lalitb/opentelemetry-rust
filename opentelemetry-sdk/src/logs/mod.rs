@@ -80,14 +80,9 @@ mod tests {
             .expect("Atleast one log is expected to be present.");
         assert_eq!(log.instrumentation.name, "test-logger");
         assert_eq!(log.record.severity_number, Some(Severity::Error));
-        let attributes: Vec<(Key, AnyValue)> = log
-            .record
-            .attributes
-            .clone()
-            .expect("Attributes are expected");
-        assert_eq!(attributes.len(), 10);
+        assert_eq!(log.record.attributes.len(), 10);
         for i in 1..=10 {
-            assert!(log.record.attributes.clone().unwrap().contains(&(
+            assert!(log.record.attributes.clone().contains(&(
                 Key::new(format!("key{}", i)),
                 AnyValue::String(format!("value{}", i).into())
             )));

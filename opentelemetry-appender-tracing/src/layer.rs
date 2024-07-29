@@ -252,11 +252,7 @@ mod tests {
         assert!(log.record.trace_context.is_none());
 
         // Validate attributes
-        let attributes: Vec<(Key, AnyValue)> = log
-            .record
-            .attributes
-            .clone()
-            .expect("Attributes are expected");
+        let attributes = log.record.attributes.clone();
         #[cfg(not(feature = "experimental_metadata_attributes"))]
         assert_eq!(attributes.len(), 3);
         #[cfg(feature = "experimental_metadata_attributes")]
@@ -348,11 +344,7 @@ mod tests {
         );
 
         // validate attributes.
-        let attributes: Vec<(Key, AnyValue)> = log
-            .record
-            .attributes
-            .clone()
-            .expect("Attributes are expected");
+        let attributes = log.record.attributes.clone();
         #[cfg(not(feature = "experimental_metadata_attributes"))]
         assert_eq!(attributes.len(), 3);
         #[cfg(feature = "experimental_metadata_attributes")]
