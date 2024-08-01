@@ -7,7 +7,7 @@ mod record;
 pub use log_emitter::{Builder, Logger, LoggerProvider};
 pub use log_processor::{
     BatchConfig, BatchConfigBuilder, BatchLogProcessor, BatchLogProcessorBuilder, LogProcessor,
-    SimpleLogProcessor,
+    LogProcessors, SimpleLogProcessor,
 };
 pub use record::{LogRecord, TraceContext};
 
@@ -34,7 +34,9 @@ mod tests {
         let exporter: InMemoryLogsExporter = InMemoryLogsExporter::default();
         let logger_provider = LoggerProvider::builder()
             .with_resource(resource.clone())
-            .with_log_processor(SimpleLogProcessor::new(Box::new(exporter.clone())))
+            .with_log_processor(LogProcessors::Simple(SimpleLogProcessor::new(Box::new(
+                exporter.clone(),
+            ))))
             .build();
 
         // Act

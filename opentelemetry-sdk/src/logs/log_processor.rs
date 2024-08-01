@@ -503,6 +503,144 @@ enum BatchMessage {
     SetResource(Arc<Resource>),
 }
 
+///! Base LogProcessors enum with predefined processors
+#[derive(Debug)]
+pub enum LogProcessors {
+    ///!simple log processor
+    Simple(SimpleLogProcessor),
+    ///!batch log processor
+    Batch(Box<dyn LogProcessor>),
+    // Custom processors will be added via the macro
+    Custom1(Box<dyn LogProcessor>),
+    Custom2(Box<dyn LogProcessor>),
+    // Rest added by the macro
+}
+
+impl LogProcessor for LogProcessors {
+    fn emit(&self, data: &mut LogData) {
+        match self {
+            LogProcessors::Simple(processor) => processor.emit(data),
+            LogProcessors::Batch(processor) => processor.emit(data),
+            LogProcessors::Custom1(processor) => processor.emit(data),
+            LogProcessors::Custom2(processor) => processor.emit(data),
+            // Match arms for additional processors
+        }
+    }
+
+    fn force_flush(&self) -> LogResult<()> {
+        match self {
+            LogProcessors::Simple(processor) => processor.force_flush(),
+            LogProcessors::Batch(processor) => processor.force_flush(),
+            LogProcessors::Custom1(processor) => processor.force_flush(),
+            LogProcessors::Custom2(processor) => processor.force_flush(),
+            // Match arms for additional processors
+        }
+    }
+
+    fn shutdown(&self) -> LogResult<()> {
+        match self {
+            LogProcessors::Simple(processor) => processor.shutdown(),
+            LogProcessors::Batch(processor) => processor.shutdown(),
+            LogProcessors::Custom1(processor) => processor.shutdown(),
+            LogProcessors::Custom2(processor) => processor.shutdown(),
+            // Match arms for additional processors
+        }
+    }
+
+    fn set_resource(&self, resource: &Resource) {
+        match self {
+            LogProcessors::Simple(processor) => processor.set_resource(resource),
+            LogProcessors::Batch(processor) => processor.set_resource(resource),
+            LogProcessors::Custom1(processor) => processor.set_resource(resource),
+            LogProcessors::Custom2(processor) => processor.set_resource(resource),
+            // Match arms for additional processors
+        }
+    }
+
+    #[cfg(feature = "logs_level_enabled")]
+    fn event_enabled(&self, level: Severity, target: &str, name: &str) -> bool {
+        match self {
+            LogProcessors::Simple(processor) => processor.event_enabled(level, target, name),
+            LogProcessors::Batch(processor) => processor.event_enabled(level, target, name),
+            LogProcessors::Custom1(processor) => processor.event_enabled(level, target, name),
+            LogProcessors::Custom2(processor) => processor.event_enabled(level, target, name),
+            // Match arms for additional processors
+        }
+    }
+}
+
+///! Macro to define LogProcessors enum with custom processors
+#[macro_export]
+macro_rules! define_log_processors {
+    (
+        $(
+            $name:ident($processor:ty),
+        )*
+    ) => {
+        #[derive(Debug)]
+        pub(crate) enum LogProcessors {
+            Simple(SimpleLogProcessor),
+            Batch(Box<dyn LogProcessor>),
+            $(
+                $name($processor),
+            )*
+        }
+
+        impl LogProcessor for LogProcessors {
+            fn emit(&self, data: &mut LogData) {
+                match self {
+                    LogProcessors::Simple(processor) => processor.emit(data),
+                    LogProcessors::Batch(processor) => processor.emit(data),
+                    $(
+                        LogProcessors::$name(processor) => processor.emit(data),
+                    )*
+                }
+            }
+
+            fn force_flush(&self) -> LogResult<()> {
+                match self {
+                    LogProcessors::Simple(processor) => processor.force_flush(),
+                    LogProcessors::Batch(processor) => processor.force_flush(),
+                    $(
+                        LogProcessors::$name(processor) => processor.force_flush(),
+                    )*
+                }
+            }
+
+            fn shutdown(&self) -> LogResult<()> {
+                match self {
+                    LogProcessors::Simple(processor) => processor.shutdown(),
+                    LogProcessors::Batch(processor) => processor.shutdown(),
+                    $(
+                        LogProcessors::$name(processor) => processor.shutdown(),
+                    )*
+                }
+            }
+
+            fn set_resource(&self, resource: &Resource) {
+                match self {
+                    LogProcessors::Simple(processor) => processor.set_resource(resource),
+                    LogProcessors::Batch(processor) => processor.set_resource(resource),
+                    $(
+                        LogProcessors::$name(processor) => processor.set_resource(resource),
+                    )*
+                }
+            }
+
+            #[cfg(feature = "logs_level_enabled")]
+            fn event_enabled(&self, level: Severity, target: &str, name: &str) -> bool {
+                match self {
+                    LogProcessors::Simple(processor) => processor.event_enabled(level, target, name),
+                    LogProcessors::Batch(processor) => processor.event_enabled(level, target, name),
+                    $(
+                        LogProcessors::$name(processor) => processor.event_enabled(level, target, name),
+                    )*
+                }
+            }
+        }
+    };
+}
+
 #[cfg(all(test, feature = "testing", feature = "logs"))]
 mod tests {
     use super::{
@@ -517,7 +655,8 @@ mod tests {
                 OTEL_BLRP_EXPORT_TIMEOUT_DEFAULT, OTEL_BLRP_MAX_EXPORT_BATCH_SIZE_DEFAULT,
                 OTEL_BLRP_MAX_QUEUE_SIZE_DEFAULT, OTEL_BLRP_SCHEDULE_DELAY_DEFAULT,
             },
-            BatchConfig, BatchConfigBuilder, LogProcessor, LoggerProvider, SimpleLogProcessor,
+            BatchConfig, BatchConfigBuilder, LogProcessor, LogProcessors, LoggerProvider,
+            SimpleLogProcessor,
         },
         runtime,
         testing::logs::InMemoryLogsExporter,
@@ -525,9 +664,11 @@ mod tests {
     };
     use async_trait::async_trait;
     use opentelemetry::logs::AnyValue;
+    use opentelemetry::logs::LoggerProvider as _;
     #[cfg(feature = "logs_level_enabled")]
     use opentelemetry::logs::Severity;
-    use opentelemetry::logs::{Logger, LoggerProvider as _};
+    //use opentelemetry::logs::{Logger, LoggerProvider as _};
+    use opentelemetry::logs::Logger as _;
     use opentelemetry::Key;
     use opentelemetry::{logs::LogResult, KeyValue};
     use std::borrow::Cow;
@@ -721,7 +862,7 @@ mod tests {
         };
         let processor = SimpleLogProcessor::new(Box::new(exporter.clone()));
         let _ = LoggerProvider::builder()
-            .with_log_processor(processor)
+            .with_log_processor(LogProcessors::Simple(processor))
             .with_resource(Resource::new(vec![
                 KeyValue::new("k1", "v1"),
                 KeyValue::new("k2", "v3"),
@@ -738,13 +879,13 @@ mod tests {
         let exporter = MockLogExporter {
             resource: Arc::new(Mutex::new(None)),
         };
-        let processor = BatchLogProcessor::new(
+        let processor = Box::new(BatchLogProcessor::new(
             Box::new(exporter.clone()),
             BatchConfig::default(),
             runtime::Tokio,
-        );
+        ));
         let provider = LoggerProvider::builder()
-            .with_log_processor(processor)
+            .with_log_processor(LogProcessors::Batch(processor))
             .with_resource(Resource::new(vec![
                 KeyValue::new("k1", "v1"),
                 KeyValue::new("k2", "v3"),
@@ -878,16 +1019,16 @@ mod tests {
         let first_processor_logs = Arc::new(Mutex::new(Vec::new()));
         let second_processor_logs = Arc::new(Mutex::new(Vec::new()));
 
-        let first_processor = FirstProcessor {
+        let first_processor = Box::new(FirstProcessor {
             logs: Arc::clone(&first_processor_logs),
-        };
-        let second_processor = SecondProcessor {
+        });
+        let second_processor = Box::new(SecondProcessor {
             logs: Arc::clone(&second_processor_logs),
-        };
+        });
 
         let logger_provider = LoggerProvider::builder()
-            .with_log_processor(first_processor)
-            .with_log_processor(second_processor)
+            .with_log_processor(LogProcessors::Custom1(first_processor))
+            .with_log_processor(LogProcessors::Custom2(second_processor))
             .build();
 
         let logger = logger_provider.logger("test-logger");

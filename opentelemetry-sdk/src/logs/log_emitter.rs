@@ -1,4 +1,6 @@
-use super::{BatchLogProcessor, LogProcessor, LogRecord, SimpleLogProcessor, TraceContext};
+use super::{
+    BatchLogProcessor, LogProcessor, LogProcessors, LogRecord, SimpleLogProcessor, TraceContext,
+};
 use crate::{
     export::logs::{LogData, LogExporter},
     runtime::RuntimeChannel,
@@ -94,7 +96,7 @@ impl LoggerProvider {
         Builder::default()
     }
 
-    pub(crate) fn log_processors(&self) -> &[Box<dyn LogProcessor>] {
+    pub(crate) fn log_processors(&self) -> &[LogProcessors] {
         &self.inner.processors
     }
 
@@ -139,7 +141,7 @@ impl LoggerProvider {
 
 #[derive(Debug)]
 struct LoggerProviderInner {
-    processors: Vec<Box<dyn LogProcessor>>,
+    processors: Vec<LogProcessors>,
     resource: Resource,
 }
 
@@ -156,7 +158,7 @@ impl Drop for LoggerProviderInner {
 #[derive(Debug, Default)]
 /// Builder for provider attributes.
 pub struct Builder {
-    processors: Vec<Box<dyn LogProcessor>>,
+    processors: Vec<LogProcessors>,
     resource: Option<Resource>,
 }
 
@@ -164,25 +166,30 @@ impl Builder {
     /// The `LogExporter` that this provider should use.
     pub fn with_simple_exporter<T: LogExporter + 'static>(self, exporter: T) -> Self {
         let mut processors = self.processors;
-        processors.push(Box::new(SimpleLogProcessor::new(Box::new(exporter))));
+        processors.push(LogProcessors::Simple(SimpleLogProcessor::new(Box::new(
+            exporter,
+        ))));
 
         Builder { processors, ..self }
     }
 
     /// The `LogExporter` setup using a default `BatchLogProcessor` that this provider should use.
-    pub fn with_batch_exporter<T: LogExporter + 'static, R: RuntimeChannel>(
+    pub fn with_batch_exporter<T: LogExporter + 'static, R: RuntimeChannel + 'static>(
         self,
         exporter: T,
         runtime: R,
     ) -> Self {
+        let mut processors = self.processors;
         let batch = BatchLogProcessor::builder(exporter, runtime).build();
-        self.with_log_processor(batch)
+        processors.push(LogProcessors::Batch(Box::new(batch)));
+
+        Builder { processors, ..self }
     }
 
     /// The `LogProcessor` that this provider should use.
-    pub fn with_log_processor<T: LogProcessor + 'static>(self, processor: T) -> Self {
+    pub fn with_log_processor(self, processor: LogProcessors) -> Self {
         let mut processors = self.processors;
-        processors.push(Box::new(processor));
+        processors.push(processor);
 
         Builder { processors, ..self }
     }
@@ -475,11 +482,24 @@ mod tests {
         assert_eq!(no_service_name.resource().len(), 0);
     }
 
+    //use crate::define_log_processors;
+    //define_log_processors!(
+    //    Shutdown(ShutdownTestLogProcessor),
+    //);
+
     #[test]
     fn shutdown_test() {
+        println!("before calling log_processor macro");
+        //define_log_processors!(
+        //    Shutdown(ShutdownTestLogProcessor),
+        //);
+        println!("after calling log_processor macro");
+
         let counter = Arc::new(AtomicU64::new(0));
+
+        let processor = ShutdownTestLogProcessor::new(counter.clone());
         let logger_provider = LoggerProvider::builder()
-            .with_log_processor(ShutdownTestLogProcessor::new(counter.clone()))
+            .with_log_processor(LogProcessors::Custom1(Box::new(processor)))
             .build();
 
         let logger1 = logger_provider.logger("test-logger1");
@@ -503,7 +523,9 @@ mod tests {
     fn shutdown_idempotent_test() {
         let counter = Arc::new(AtomicU64::new(0));
         let logger_provider = LoggerProvider::builder()
-            .with_log_processor(ShutdownTestLogProcessor::new(counter.clone()))
+            .with_log_processor(LogProcessors::Custom1(Box::new(
+                ShutdownTestLogProcessor::new(counter.clone()),
+            )))
             .build();
 
         let shutdown_res = logger_provider.shutdown();
@@ -526,10 +548,10 @@ mod tests {
         let shutdown_called = Arc::new(Mutex::new(false));
         let flush_called = Arc::new(Mutex::new(false));
         let logger_provider = LoggerProvider::builder()
-            .with_log_processor(LazyLogProcessor::new(
+            .with_log_processor(LogProcessors::Custom1(Box::new(LazyLogProcessor::new(
                 shutdown_called.clone(),
                 flush_called.clone(),
-            ))
+            ))))
             .build();
         //set_logger_provider(logger_provider);
         let logger1 = logger_provider.logger("test-logger1");
