@@ -166,10 +166,10 @@ const fn severity_of_level(level: Level) -> Severity {
     }
 }
 
-fn log_attributes(kvs: impl log::kv::Source) -> Vec<(Key, AnyValue)> {
-    struct AttributeVisitor(Vec<(Key, AnyValue)>);
+fn log_attributes<'a>(kvs: impl log::kv::Source + 'a) -> Vec<(Key, AnyValue<'a>)> {
+    struct AttributeVisitor<'a>(Vec<(Key, AnyValue<'a>)>);
 
-    impl<'kvs> log::kv::VisitSource<'kvs> for AttributeVisitor {
+    impl<'a, 'kvs: 'a> log::kv::VisitSource<'kvs> for AttributeVisitor<'a> {
         fn visit_pair(
             &mut self,
             key: log::kv::Key<'kvs>,

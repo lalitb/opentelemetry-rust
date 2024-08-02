@@ -55,20 +55,20 @@ impl LogRecord for NoopLogRecord {
     #[inline]
     fn set_severity_number(&mut self, _number: Severity) {}
     #[inline]
-    fn set_body(&mut self, _body: AnyValue) {}
+    fn set_body<'a>(&mut self, _body: AnyValue<'a>) {}
     #[inline]
-    fn add_attributes<I, K, V>(&mut self, _attributes: I)
+    fn add_attributes<'a, I, K, V>(&mut self, _attributes: I)
     where
         I: IntoIterator<Item = (K, V)>,
         K: Into<Key>,
-        V: Into<AnyValue>,
+        V: Into<AnyValue<'a>>,
     {
     }
     #[inline]
-    fn add_attribute<K, V>(&mut self, _key: K, _value: V)
+    fn add_attribute<'a, K, V>(&mut self, _key: K, _value: V)
     where
         K: Into<Key>,
-        V: Into<AnyValue>,
+        V: Into<AnyValue<'a>>,
     {
     }
 

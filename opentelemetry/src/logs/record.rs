@@ -31,25 +31,25 @@ pub trait LogRecord {
     fn set_severity_number(&mut self, number: Severity);
 
     /// Sets the message body of the log.
-    fn set_body(&mut self, body: AnyValue);
+    fn set_body<'a>(&mut self, body: AnyValue<'a>);
 
     /// Adds multiple attributes.
-    fn add_attributes<I, K, V>(&mut self, attributes: I)
+    fn add_attributes<'a, I, K, V>(&mut self, attributes: I)
     where
         I: IntoIterator<Item = (K, V)>,
         K: Into<Key>,
-        V: Into<AnyValue>;
+        V: Into<AnyValue<'a>>;
 
     /// Adds a single attribute.
-    fn add_attribute<K, V>(&mut self, key: K, value: V)
+    fn add_attribute<'a, K, V>(&mut self, key: K, value: V)
     where
         K: Into<Key>,
-        V: Into<AnyValue>;
+        V: Into<AnyValue<'a>>;
 }
 
 /// Value types for representing arbitrary values in a log record.
 #[derive(Debug, Clone, PartialEq)]
-pub enum AnyValue {
+pub enum AnyValue<'a> {
     /// An integer value
     Int(i64),
     /// A double value
@@ -61,15 +61,17 @@ pub enum AnyValue {
     /// A byte array
     Bytes(Vec<u8>),
     /// An array of `Any` values
-    ListAny(Vec<AnyValue>),
+    ListAny(Vec<AnyValue<'a>>),
     /// A map of string keys to `Any` values, arbitrarily nested.
-    Map(HashMap<Key, AnyValue>),
+    Map(HashMap<Key, AnyValue<'a>>),
+    /// Cow AnyValue
+    CowString(Cow<'a, str>),
 }
 
 macro_rules! impl_trivial_from {
     ($t:ty, $variant:path) => {
-        impl From<$t> for AnyValue {
-            fn from(val: $t) -> AnyValue {
+        impl<'a> From<$t> for AnyValue<'a> {
+            fn from(val: $t) -> AnyValue<'a> {
                 $variant(val.into())
             }
         }
@@ -89,20 +91,21 @@ impl_trivial_from!(f64, AnyValue::Double);
 impl_trivial_from!(f32, AnyValue::Double);
 
 impl_trivial_from!(String, AnyValue::String);
-impl_trivial_from!(Cow<'static, str>, AnyValue::String);
+//impl_trivial_from!(Cow<'static, str>, AnyValue::String);
+impl_trivial_from!(Cow<'a, str>, AnyValue::CowString);
 impl_trivial_from!(&'static str, AnyValue::String);
 impl_trivial_from!(StringValue, AnyValue::String);
 
 impl_trivial_from!(bool, AnyValue::Boolean);
 
-impl<T: Into<AnyValue>> FromIterator<T> for AnyValue {
+impl<'a, T: Into<AnyValue<'a>>> FromIterator<T> for AnyValue<'a> {
     /// Creates an [`AnyValue::ListAny`] value from a sequence of `Into<AnyValue>` values.
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         AnyValue::ListAny(iter.into_iter().map(Into::into).collect())
     }
 }
 
-impl<K: Into<Key>, V: Into<AnyValue>> FromIterator<(K, V)> for AnyValue {
+impl<'a, K: Into<Key>, V: Into<AnyValue<'a>>> FromIterator<(K, V)> for AnyValue<'a> {
     /// Creates an [`AnyValue::Map`] value from a sequence of key-value pairs
     /// that can be converted into a `Key` and `AnyValue` respectively.
     fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self {
@@ -112,7 +115,7 @@ impl<K: Into<Key>, V: Into<AnyValue>> FromIterator<(K, V)> for AnyValue {
     }
 }
 
-impl From<Value> for AnyValue {
+impl<'a> From<Value> for AnyValue<'a> {
     fn from(value: Value) -> Self {
         match value {
             Value::Bool(b) => b.into(),
