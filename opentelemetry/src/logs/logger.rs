@@ -1,4 +1,4 @@
-use std::{borrow::Cow, sync::Arc};
+use std::borrow::Cow;
 
 use crate::{logs::LogRecord, InstrumentationLibrary, InstrumentationLibraryBuilder, KeyValue};
 
@@ -113,7 +113,7 @@ pub trait LoggerProvider {
     /// );
     /// let logger = provider.library_logger(library);
     /// ```
-    fn library_logger(&self, library: Arc<InstrumentationLibrary>) -> Self::Logger;
+    fn library_logger(&self, library: InstrumentationLibrary) -> Self::Logger;
 
     /// Returns a new logger with the given name.
     ///
@@ -151,7 +151,6 @@ impl<'a, T: LoggerProvider + ?Sized> LoggerBuilder<'a, T> {
     }
 
     pub fn build(self) -> T::Logger {
-        self.provider
-            .library_logger(Arc::new(self.library_builder.build()))
+        self.provider.library_logger(self.library_builder.build())
     }
 }

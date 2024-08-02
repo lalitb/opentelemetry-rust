@@ -78,7 +78,7 @@ mod tests {
         let log = exported_logs
             .first()
             .expect("Atleast one log is expected to be present.");
-        assert_eq!(log.instrumentation.name, "test-logger");
+        assert_eq!(log.instrumentation.inner.name, "test-logger");
         assert_eq!(log.record.severity_number, Some(Severity::Error));
         let attributes: Vec<(Key, AnyValue)> = log
             .record
@@ -106,10 +106,10 @@ mod tests {
             .with_attributes(vec![(KeyValue::new("test_k", "test_v"))])
             .build();
         let instrumentation_library = logger.instrumentation_library();
-        let attributes = &instrumentation_library.attributes;
-        assert_eq!(instrumentation_library.name, "test_logger");
+        let attributes = &instrumentation_library.inner.attributes;
+        assert_eq!(instrumentation_library.inner.name, "test_logger");
         assert_eq!(
-            instrumentation_library.schema_url,
+            instrumentation_library.inner.schema_url,
             Some("https://opentelemetry.io/schema/1.0.0".into())
         );
         assert_eq!(attributes.len(), 1);
@@ -128,10 +128,10 @@ mod tests {
             Some(vec![(KeyValue::new("test_k", "test_v"))]),
         );
         let instrumentation_library = logger.instrumentation_library();
-        let attributes = &instrumentation_library.attributes;
-        assert_eq!(instrumentation_library.version, Some("v1.2.3".into()));
+        let attributes = &instrumentation_library.inner.attributes;
+        assert_eq!(instrumentation_library.inner.version, Some("v1.2.3".into()));
         assert_eq!(
-            instrumentation_library.schema_url,
+            instrumentation_library.inner.schema_url,
             Some("https://opentelemetry.io/schema/1.0.0".into())
         );
         assert_eq!(attributes.len(), 1);

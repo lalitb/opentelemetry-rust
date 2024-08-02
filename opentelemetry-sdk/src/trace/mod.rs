@@ -82,7 +82,7 @@ mod tests {
         assert_eq!(exported_spans.len(), 1);
         let span = &exported_spans[0];
         assert_eq!(span.name, "span_name_updated");
-        assert_eq!(span.instrumentation_lib.name, "test_tracer");
+        assert_eq!(span.instrumentation_lib.inner.name, "test_tracer");
         assert_eq!(span.attributes.len(), 1);
         assert_eq!(span.events.len(), 1);
         assert_eq!(span.events[0].name, "test-event");
@@ -117,7 +117,7 @@ mod tests {
         assert_eq!(exported_spans.len(), 1);
         let span = &exported_spans[0];
         assert_eq!(span.name, "span_name");
-        assert_eq!(span.instrumentation_lib.name, "test_tracer");
+        assert_eq!(span.instrumentation_lib.inner.name, "test_tracer");
         assert_eq!(span.attributes.len(), 1);
         assert_eq!(span.events.len(), 1);
         assert_eq!(span.events[0].name, "test-event");
@@ -154,7 +154,7 @@ mod tests {
         let span = &exported_spans[0];
         assert_eq!(span.name, "span_name");
         assert_eq!(span.span_kind, SpanKind::Server);
-        assert_eq!(span.instrumentation_lib.name, "test_tracer");
+        assert_eq!(span.instrumentation_lib.inner.name, "test_tracer");
         assert_eq!(span.attributes.len(), 1);
         assert_eq!(span.events.len(), 1);
         assert_eq!(span.events[0].name, "test-event");
@@ -331,7 +331,7 @@ mod tests {
             .with_attributes(vec![KeyValue::new("test_k", "test_v")])
             .build();
         let instrumentation_library = tracer.instrumentation_library();
-        let attributes = &instrumentation_library.attributes;
+        let attributes = &instrumentation_library.inner.attributes;
         assert_eq!(attributes.len(), 1);
         assert_eq!(attributes[0].key, "test_k".into());
         assert_eq!(attributes[0].value, "test_v".into());
@@ -348,11 +348,11 @@ mod tests {
             Some(vec![(KeyValue::new("test_k", "test_v"))]),
         );
         let instrumentation_library = tracer.instrumentation_library();
-        let attributes = &instrumentation_library.attributes;
-        assert_eq!(instrumentation_library.name, "test_tracer");
-        assert_eq!(instrumentation_library.version, Some("v1.2.3".into()));
+        let attributes = &instrumentation_library.inner.attributes;
+        assert_eq!(instrumentation_library.inner.name, "test_tracer");
+        assert_eq!(instrumentation_library.inner.version, Some("v1.2.3".into()));
         assert_eq!(
-            instrumentation_library.schema_url,
+            instrumentation_library.inner.schema_url,
             Some("https://opentelemetry.io/schema/1.0.0".into())
         );
         assert_eq!(attributes.len(), 1);

@@ -526,13 +526,13 @@ mod tests {
         );
 
         let scope = &resource_metrics[0].scope_metrics[0].scope;
-        assert_eq!(scope.name, "test.meter");
-        assert_eq!(scope.version, Some(Cow::Borrowed("v0.1.0")));
-        assert_eq!(scope.schema_url, Some(Cow::Borrowed("schema_url")));
+        assert_eq!(scope.inner.name, "test.meter");
+        assert_eq!(scope.inner.version, Some(Cow::Borrowed("v0.1.0")));
+        assert_eq!(scope.inner.schema_url, Some(Cow::Borrowed("schema_url")));
 
         // This is validating current behavior, but it is not guaranteed to be the case in the future,
         // as this is a user error and SDK reserves right to change this behavior.
-        assert_eq!(scope.attributes, vec![KeyValue::new("key", "value1")]);
+        assert_eq!(scope.inner.attributes, vec![KeyValue::new("key", "value1")]);
 
         let metric = &resource_metrics[0].scope_metrics[0].metrics[0];
         assert_eq!(metric.name, "my_counter");
@@ -1447,7 +1447,7 @@ mod tests {
     ) -> Option<&'a ScopeMetrics> {
         metrics
             .iter()
-            .find(|&scope_metric| scope_metric.scope.name == name)
+            .find(|&scope_metric| scope_metric.scope.inner.name == name)
     }
 
     struct TestContext {

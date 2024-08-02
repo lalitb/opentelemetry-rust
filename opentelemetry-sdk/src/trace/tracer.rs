@@ -34,8 +34,8 @@ impl fmt::Debug for Tracer {
     /// Omitting `provider` here is necessary to avoid cycles.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Tracer")
-            .field("name", &self.instrumentation_lib.name)
-            .field("version", &self.instrumentation_lib.version)
+            .field("name", &self.instrumentation_lib.inner.name)
+            .field("version", &self.instrumentation_lib.inner.version)
             .finish()
     }
 }

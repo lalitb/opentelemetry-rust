@@ -79,7 +79,7 @@ impl opentelemetry::logs::LoggerProvider for LoggerProvider {
         builder.build()
     }
 
-    fn library_logger(&self, library: Arc<InstrumentationLibrary>) -> Self::Logger {
+    fn library_logger(&self, library: InstrumentationLibrary) -> Self::Logger {
         // If the provider is shutdown, new logger will refer a no-op logger provider.
         if self.is_shutdown.load(Ordering::Relaxed) {
             return Logger::new(library, NOOP_LOGGER_PROVIDER.clone());
@@ -220,13 +220,13 @@ impl Builder {
 ///
 /// [`LogRecord`]: opentelemetry::logs::LogRecord
 pub struct Logger {
-    instrumentation_lib: Arc<InstrumentationLibrary>,
+    instrumentation_lib: InstrumentationLibrary,
     provider: LoggerProvider,
 }
 
 impl Logger {
     pub(crate) fn new(
-        instrumentation_lib: Arc<InstrumentationLibrary>,
+        instrumentation_lib: InstrumentationLibrary,
         provider: LoggerProvider,
     ) -> Self {
         Logger {
@@ -293,7 +293,7 @@ impl opentelemetry::logs::Logger for Logger {
                 || processor.event_enabled(
                     level,
                     target,
-                    self.instrumentation_library().name.as_ref(),
+                    self.instrumentation_library().inner.name.as_ref(),
                 );
         }
         enabled

@@ -138,13 +138,14 @@ impl Instrument {
     }
 
     pub(crate) fn matches_scope(&self, other: &Instrument) -> bool {
-        (self.scope.name.is_empty() || self.scope.name.as_ref() == other.scope.name.as_ref())
-            && (self.scope.version.is_none()
-                || self.scope.version.as_ref().map(AsRef::as_ref)
-                    == other.scope.version.as_ref().map(AsRef::as_ref))
-            && (self.scope.schema_url.is_none()
-                || self.scope.schema_url.as_ref().map(AsRef::as_ref)
-                    == other.scope.schema_url.as_ref().map(AsRef::as_ref))
+        (self.scope.inner.name.is_empty()
+            || self.scope.inner.name.as_ref() == other.scope.inner.name.as_ref())
+            && (self.scope.inner.version.is_none()
+                || self.scope.inner.version.as_ref().map(AsRef::as_ref)
+                    == other.scope.inner.version.as_ref().map(AsRef::as_ref))
+            && (self.scope.inner.schema_url.is_none()
+                || self.scope.inner.schema_url.as_ref().map(AsRef::as_ref)
+                    == other.scope.inner.schema_url.as_ref().map(AsRef::as_ref))
     }
 }
 
@@ -368,7 +369,7 @@ impl<T> Observable<T> {
         if &self.id.inner.scope != scope {
             return Err(MetricsError::Other(format!(
                 "invalid registration: observable {} from Meter {:?}, registered with Meter {}",
-                self.id.inner.name, self.id.inner.scope, scope.name,
+                self.id.inner.name, self.id.inner.scope, scope.inner.name,
             )));
         }
 

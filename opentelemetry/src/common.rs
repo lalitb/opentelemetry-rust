@@ -448,9 +448,16 @@ pub trait ExportError: std::error::Error + Send + Sync + 'static {
 /// See the [instrumentation libraries] spec for more information.
 ///
 /// [instrumentation libraries]: https://github.com/open-telemetry/opentelemetry-specification/blob/v1.9.0/specification/overview.md#instrumentation-libraries
+#[non_exhaustive]
+#[derive(Debug, Default, Clone)]
+pub struct InstrumentationLibrary {
+    /// Inner
+    pub inner: Arc<InstrumentationLibraryInner>,
+}
+
 #[derive(Debug, Default, Clone)]
 #[non_exhaustive]
-pub struct InstrumentationLibrary {
+pub struct InstrumentationLibraryInner {
     /// The library name.
     ///
     /// This should be the name of the crate providing the instrumentation.
@@ -482,17 +489,13 @@ impl Eq for InstrumentationLibrary {}
 
 impl PartialEq for InstrumentationLibrary {
     fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
-            && self.version == other.version
-            && self.schema_url == other.schema_url
+        Arc::ptr_eq(&self.inner, &other.inner)
     }
 }
 
 impl hash::Hash for InstrumentationLibrary {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-        self.version.hash(state);
-        self.schema_url.hash(state);
+        Arc::as_ptr(&self.inner).hash(state)
     }
 }
 
@@ -507,21 +510,26 @@ impl InstrumentationLibrary {
         schema_url: Option<impl Into<Cow<'static, str>>>,
         attributes: Option<Vec<KeyValue>>,
     ) -> InstrumentationLibrary {
-        InstrumentationLibrary {
+        let inner = InstrumentationLibraryInner {
             name: name.into(),
             version: version.map(Into::into),
             schema_url: schema_url.map(Into::into),
             attributes: attributes.unwrap_or_default(),
+        };
+        InstrumentationLibrary {
+            inner: Arc::new(inner),
         }
     }
 
     /// Create a new builder to create an [InstrumentationLibrary]
     pub fn builder<T: Into<Cow<'static, str>>>(name: T) -> InstrumentationLibraryBuilder {
         InstrumentationLibraryBuilder {
-            name: name.into(),
-            version: None,
-            schema_url: None,
-            attributes: None,
+            inner: Arc::new(InstrumentationLibraryInner {
+                name: name.into(),
+                version: None,
+                schema_url: None,
+                attributes: vec![],
+            }),
         }
     }
 }
@@ -539,13 +547,7 @@ impl InstrumentationLibrary {
 /// [instrumentation libraries]: https://github.com/open-telemetry/opentelemetry-specification/blob/v1.9.0/specification/overview.md#instrumentation-libraries
 #[derive(Debug)]
 pub struct InstrumentationLibraryBuilder {
-    name: Cow<'static, str>,
-
-    version: Option<Cow<'static, str>>,
-
-    schema_url: Option<Cow<'static, str>>,
-
-    attributes: Option<Vec<KeyValue>>,
+    inner: Arc<InstrumentationLibraryInner>,
 }
 
 impl InstrumentationLibraryBuilder {
@@ -559,7 +561,7 @@ impl InstrumentationLibraryBuilder {
     ///     .build();
     /// ```
     pub fn with_version(mut self, version: impl Into<Cow<'static, str>>) -> Self {
-        self.version = Some(version.into());
+        Arc::get_mut(&mut self.inner).unwrap().version = Some(version.into());
         self
     }
 
@@ -573,7 +575,7 @@ impl InstrumentationLibraryBuilder {
     ///     .build();
     /// ```
     pub fn with_schema_url(mut self, schema_url: impl Into<Cow<'static, str>>) -> Self {
-        self.schema_url = Some(schema_url.into());
+        Arc::get_mut(&mut self.inner).unwrap().schema_url = Some(schema_url.into());
         self
     }
 
@@ -592,17 +594,12 @@ impl InstrumentationLibraryBuilder {
     where
         I: IntoIterator<Item = KeyValue>,
     {
-        self.attributes = Some(attributes.into_iter().collect());
+        Arc::get_mut(&mut self.inner).unwrap().attributes = attributes.into_iter().collect();
         self
     }
 
     /// Create a new [InstrumentationLibrary] from this configuration
     pub fn build(self) -> InstrumentationLibrary {
-        InstrumentationLibrary {
-            name: self.name,
-            version: self.version,
-            schema_url: self.schema_url,
-            attributes: self.attributes.unwrap_or_default(),
-        }
+        InstrumentationLibrary { inner: self.inner }
     }
 }
