@@ -64,9 +64,14 @@ pub mod tonic {
                 }
             } else {
                 InstrumentationScope {
-                    name: library.name.into_owned(),
-                    version: library.version.map(Cow::into_owned).unwrap_or_default(),
-                    attributes: Attributes::from(library.attributes).0,
+                    name: library.inner.name.clone().into_owned(),
+                    version: library
+                        .inner
+                        .version
+                        .clone()
+                        .map(Cow::into_owned)
+                        .unwrap_or_default(),
+                    attributes: Attributes::from(library.inner.attributes.clone()).0,
                     ..Default::default()
                 }
             }
@@ -95,13 +100,14 @@ pub mod tonic {
                 }
             } else {
                 InstrumentationScope {
-                    name: library.name.to_string(),
+                    name: library.inner.name.to_string(),
                     version: library
+                        .inner
                         .version
                         .as_ref()
                         .map(ToString::to_string)
                         .unwrap_or_default(),
-                    attributes: Attributes::from(library.attributes.clone()).0,
+                    attributes: Attributes::from(library.inner.attributes.clone()).0,
                     ..Default::default()
                 }
             }

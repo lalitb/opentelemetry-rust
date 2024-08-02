@@ -221,9 +221,15 @@ pub(crate) struct Scope {
 impl From<opentelemetry_sdk::Scope> for Scope {
     fn from(value: opentelemetry_sdk::Scope) -> Self {
         Scope {
-            name: value.name,
-            version: value.version,
-            attributes: value.attributes.into_iter().map(Into::into).collect(),
+            name: value.inner.name.clone(),
+            version: value.inner.version.clone(),
+            attributes: value
+                .inner
+                .attributes
+                .clone()
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             dropped_attributes_count: 0,
         }
     }

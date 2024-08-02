@@ -17,7 +17,7 @@ impl SpanData {
         let mut resource_spans = HashMap::<AttributeSet, ResourceSpans>::new();
         for sdk_span in sdk_spans {
             let resource_schema_url = sdk_resource.schema_url().map(|s| s.to_string().into());
-            let schema_url = sdk_span.instrumentation_lib.schema_url.clone();
+            let schema_url = sdk_span.instrumentation_lib.inner.schema_url.clone();
             let scope = sdk_span.instrumentation_lib.clone().into();
             let resource: Resource = sdk_resource.into();
 

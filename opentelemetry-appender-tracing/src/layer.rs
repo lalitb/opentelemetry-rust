@@ -245,7 +245,10 @@ mod tests {
             .expect("Atleast one log is expected to be present.");
 
         // Validate common fields
-        assert_eq!(log.instrumentation.name, "opentelemetry-appender-tracing");
+        assert_eq!(
+            log.instrumentation.inner.name,
+            "opentelemetry-appender-tracing"
+        );
         assert_eq!(log.record.severity_number, Some(Severity::Error));
 
         // Validate trace context is none.
@@ -314,7 +317,7 @@ mod tests {
 
         logger_provider.force_flush();
 
-        // Assert TODO: move to helper methods
+        // Assert TODO: move to helper methodss
         let exported_logs = exporter
             .get_emitted_logs()
             .expect("Logs are expected to be exported.");
@@ -324,7 +327,10 @@ mod tests {
             .expect("Atleast one log is expected to be present.");
 
         // validate common fields.
-        assert_eq!(log.instrumentation.name, "opentelemetry-appender-tracing");
+        assert_eq!(
+            log.instrumentation.inner.name,
+            "opentelemetry-appender-tracing"
+        );
         assert_eq!(log.record.severity_number, Some(Severity::Error));
 
         // validate trace context.
@@ -407,7 +413,10 @@ mod tests {
             .expect("Atleast one log is expected to be present.");
 
         // Validate common fields
-        assert_eq!(log.instrumentation.name, "opentelemetry-appender-tracing");
+        assert_eq!(
+            log.instrumentation.inner.name,
+            "opentelemetry-appender-tracing"
+        );
         assert_eq!(log.record.severity_number, Some(Severity::Error));
 
         // Validate trace context is none.
@@ -486,7 +495,10 @@ mod tests {
             .expect("Atleast one log is expected to be present.");
 
         // validate common fields.
-        assert_eq!(log.instrumentation.name, "opentelemetry-appender-tracing");
+        assert_eq!(
+            log.instrumentation.inner.name,
+            "opentelemetry-appender-tracing"
+        );
         assert_eq!(log.record.severity_number, Some(Severity::Error));
 
         // validate trace context.

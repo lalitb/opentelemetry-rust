@@ -149,6 +149,7 @@ pub mod tonic {
                 scope_logs: vec![ScopeLogs {
                     schema_url: log_data
                         .instrumentation
+                        .inner
                         .schema_url
                         .clone()
                         .map(Into::into)
@@ -176,7 +177,7 @@ pub mod tonic {
                     .record
                     .target
                     .clone()
-                    .unwrap_or_else(|| log.instrumentation.name.clone());
+                    .unwrap_or_else(|| log.instrumentation.inner.name.clone());
                 scope_map.entry(key).or_default().push(log);
                 scope_map
             },

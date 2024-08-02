@@ -51,7 +51,7 @@ struct ScopeMetrics {
 
 impl From<data::ScopeMetrics> for ScopeMetrics {
     fn from(value: data::ScopeMetrics) -> Self {
-        let schema_url = value.scope.schema_url.clone();
+        let schema_url = value.scope.inner.schema_url.clone();
         ScopeMetrics {
             scope: value.scope.into(),
             metrics: value.metrics.into_iter().map(Into::into).collect(),
