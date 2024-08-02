@@ -80,6 +80,7 @@ impl<'a, LR: LogRecord> tracing::field::Visit for EventVisitor<'a, LR> {
         if is_duplicated_metadata(field.name()) {
             return;
         }
+        println!("record_Debug..");
         if field.name() == "message" {
             self.log_record.set_body(format!("{:?}", value).into());
         } else {

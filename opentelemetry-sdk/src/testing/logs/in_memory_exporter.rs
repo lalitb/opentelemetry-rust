@@ -57,7 +57,7 @@ pub struct LogDataWithResource {
     /// Log record
     pub record: LogRecord,
     /// Instrumentation details for the emitter who produced this `LogData`.
-    pub instrumentation: InstrumentationLibrary,
+    pub instrumentation: Arc<InstrumentationLibrary>,
     /// Resource for the emitter who produced this `LogData`.
     pub resource: Cow<'static, Resource>,
 }

@@ -275,7 +275,7 @@ impl opentelemetry::logs::Logger for Logger {
 
         let mut data = LogData {
             record: log_record,
-            instrumentation: self.instrumentation_library().clone(),
+            instrumentation: self.instrumentation_lib.clone(),
         };
 
         for p in processors {
