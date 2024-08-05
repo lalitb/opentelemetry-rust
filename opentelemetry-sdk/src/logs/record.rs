@@ -1,18 +1,9 @@
-use crate::growable_array::GrowableArray;
 use opentelemetry::{
     logs::{AnyValue, Severity},
     trace::{SpanContext, SpanId, TraceFlags, TraceId},
     Key,
 };
 use std::{borrow::Cow, time::SystemTime};
-
-// According to a Go-specific study mentioned on https://go.dev/blog/slog,
-// up to 5 attributes is the most common case.
-const PREALLOCATED_ATTRIBUTE_CAPACITY: usize = 5;
-
-/// A vector of `Option<(Key, AnyValue)>` with default capacity.
-pub(crate) type AttributesGrowableArray =
-    GrowableArray<Option<(Key, AnyValue)>, PREALLOCATED_ATTRIBUTE_CAPACITY>;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 #[non_exhaustive]
@@ -43,7 +34,7 @@ pub struct LogRecord {
     pub body: Option<AnyValue>,
 
     /// Additional attributes associated with this record
-    pub(crate) attributes: AttributesGrowableArray,
+    pub(crate) attributes: Option<Vec<(Key, AnyValue)>>,
 }
 
 impl opentelemetry::logs::LogRecord for LogRecord {
@@ -98,29 +89,31 @@ impl opentelemetry::logs::LogRecord for LogRecord {
         K: Into<Key>,
         V: Into<AnyValue>,
     {
-        self.attributes.push(Some((key.into(), value.into())));
+        if let Some(ref mut attrs) = self.attributes {
+            attrs.push((key.into(), value.into()));
+        } else {
+            self.attributes = Some(vec![(key.into(), value.into())]);
+        }
     }
 }
 
 impl LogRecord {
-    /// Provides an iterator over the attributes.
+    /// Provides an iterator over the attributes in the `LogRecord`.
     pub fn attributes_iter(&self) -> impl Iterator<Item = &(Key, AnyValue)> {
-        self.attributes.iter().filter_map(|opt| opt.as_ref())
+        self.attributes
+            .as_ref()
+            .map_or_else(|| [].iter(), |attrs| attrs.iter())
     }
 
     /// Returns the number of attributes in the `LogRecord`.
     pub fn attributes_len(&self) -> usize {
-        self.attributes.len()
+        self.attributes.as_ref().map_or(0, |attrs| attrs.len())
     }
 
-    /// Checks if the `LogRecord` contains the specified attribute.
+    /// Returns true if the `LogRecord` contains the specified attribute.
     pub fn attributes_contains(&self, key: &Key, value: &AnyValue) -> bool {
-        self.attributes.iter().any(|opt| {
-            if let Some((k, v)) = opt {
-                k == key && v == value
-            } else {
-                false
-            }
+        self.attributes.as_ref().map_or(false, |attrs| {
+            attrs.iter().any(|(k, v)| k == key && v == value)
         })
     }
 }
@@ -214,7 +207,6 @@ mod tests {
         let mut log_record = LogRecord::default();
         let attributes = vec![(Key::new("key"), AnyValue::String("value".into()))];
         log_record.add_attributes(attributes.clone());
-
         for (key, value) in attributes {
             assert!(log_record.attributes_contains(&key, &value));
         }
@@ -224,7 +216,6 @@ mod tests {
     fn test_set_attribute() {
         let mut log_record = LogRecord::default();
         log_record.add_attribute("key", "value");
-
         let key = Key::new("key");
         let value = AnyValue::String("value".into());
         assert!(log_record.attributes_contains(&key, &value));
@@ -261,11 +252,7 @@ mod tests {
             severity_text: Some(Cow::Borrowed("ERROR")),
             severity_number: Some(Severity::Error),
             body: Some(AnyValue::String("Test body".into())),
-            attributes: {
-                let mut hybrid_vec = AttributesGrowableArray::new();
-                hybrid_vec.push(Some((Key::new("key"), AnyValue::String("value".into()))));
-                hybrid_vec
-            },
+            attributes: Some(vec![(Key::new("key"), AnyValue::String("value".into()))]),
             trace_context: Some(TraceContext {
                 trace_id: TraceId::from_u128(1),
                 span_id: SpanId::from_u64(1),

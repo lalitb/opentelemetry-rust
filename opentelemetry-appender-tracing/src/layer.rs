@@ -266,7 +266,6 @@ mod tests {
             &Key::new("user_email"),
             &AnyValue::String("otel@opentelemetry.io".into())
         ));
-
         #[cfg(feature = "experimental_metadata_attributes")]
         {
             assert!(log.record.attributes_contains(
@@ -285,7 +284,6 @@ mod tests {
                 .attributes_iter()
                 .map(|(key, _)| key.clone())
                 .collect();
-
             assert!(attributes_key.contains(&Key::new("code.filepath")));
             assert!(attributes_key.contains(&Key::new("code.lineno")));
             assert!(attributes_key.contains(&Key::new("log.target")));
@@ -386,7 +384,6 @@ mod tests {
             // The other 3 experimental_metadata_attributes are too unstable to check their value.
             // Ex.: The path will be different on a Windows and Linux machine.
             // Ex.: The line can change easily if someone makes changes in this source file.
-
             let attributes_key: Vec<Key> = log
                 .record
                 .attributes_iter()
@@ -529,7 +526,6 @@ mod tests {
             TraceFlags::SAMPLED
         );
 
-        // validate attributes.
         // Attributes can be polluted when we don't use this feature.
         #[cfg(feature = "experimental_metadata_attributes")]
         assert_eq!(log.record.attributes_len(), 5);

@@ -621,7 +621,7 @@ mod any_value {
 
         fn end(self) -> Result<Self::Ok, Self::Error> {
             Ok(Some(AnyValue::Map({
-                let mut variant = HashMap::default();
+                let mut variant = HashMap::new();
                 variant.insert(Key::from(self.variant), AnyValue::ListAny(self.value));
                 variant
             })))
@@ -713,7 +713,7 @@ mod any_value {
 
         fn end(self) -> Result<Self::Ok, Self::Error> {
             Ok(Some(AnyValue::Map({
-                let mut variant = HashMap::default();
+                let mut variant = HashMap::new();
                 variant.insert(Key::from(self.variant), AnyValue::Map(self.value));
                 variant
             })))
@@ -948,6 +948,7 @@ mod tests {
                 }
             })
         };
+
         assert_eq!(
             AnyValue::String(StringValue::from("a string")),
             get("str_value").unwrap()
@@ -1030,7 +1031,7 @@ mod tests {
 
             assert_eq!(
                 AnyValue::Map({
-                    let mut map = HashMap::default();
+                    let mut map = HashMap::new();
 
                     map.insert(Key::from("a"), AnyValue::Int(1));
                     map.insert(Key::from("b"), AnyValue::Int(1));
@@ -1043,7 +1044,7 @@ mod tests {
 
             assert_eq!(
                 AnyValue::Map({
-                    let mut map = HashMap::default();
+                    let mut map = HashMap::new();
 
                     map.insert(Key::from("a"), AnyValue::Int(1));
                     map.insert(Key::from("b"), AnyValue::Int(1));
@@ -1066,7 +1067,8 @@ mod tests {
 
             assert_eq!(
                 AnyValue::Map({
-                    let mut map = HashMap::default();
+                    let mut map = HashMap::new();
+
                     map.insert(Key::from("Newtype"), AnyValue::Int(42));
 
                     map
@@ -1076,12 +1078,12 @@ mod tests {
 
             assert_eq!(
                 AnyValue::Map({
-                    let mut map = HashMap::default();
+                    let mut map = HashMap::new();
 
                     map.insert(
                         Key::from("Struct"),
                         AnyValue::Map({
-                            let mut map = HashMap::default();
+                            let mut map = HashMap::new();
 
                             map.insert(Key::from("a"), AnyValue::Int(1));
                             map.insert(Key::from("b"), AnyValue::Int(1));
@@ -1098,7 +1100,7 @@ mod tests {
 
             assert_eq!(
                 AnyValue::Map({
-                    let mut map = HashMap::default();
+                    let mut map = HashMap::new();
 
                     map.insert(
                         Key::from("Tuple"),
