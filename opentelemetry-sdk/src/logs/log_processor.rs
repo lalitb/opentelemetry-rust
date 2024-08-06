@@ -529,7 +529,7 @@ mod tests {
         Resource,
     };
     use async_trait::async_trait;
-    use opentelemetry::logs::AnyValue;
+    use opentelemetry::logs::{AnyValue, LogRecord};
     #[cfg(feature = "logs_level_enabled")]
     use opentelemetry::logs::Severity;
     use opentelemetry::logs::{Logger, LoggerProvider as _};
@@ -826,10 +826,11 @@ mod tests {
             }
 
             // Add attribute
-            data.record.attributes.push(Some((
+            data.record.add_attribute(
                 Key::from_static_str("processed_by"),
                 AnyValue::String("FirstProcessor".into()),
-            )));
+            );
+
 
             // Update body
             data.record.body = Some(AnyValue::String("Updated by FirstProcessor".into()));
@@ -858,13 +859,8 @@ mod tests {
 
     impl LogProcessor for SecondProcessor {
         fn emit(&self, data: &mut LogData) {
-            assert!(data.record.attributes.iter().any(|attr| {
-                if let Some((key, value)) = attr {
-                    key.as_str() == "processed_by"
-                        && *value == AnyValue::String("FirstProcessor".into())
-                } else {
-                    false
-                }
+            assert!(data.record.attributes_iter().any(|(key, value)| {
+                key.as_str() == "processed_by" && *value == AnyValue::String("FirstProcessor".into())
             }));
             assert!(
                 data.record.body.clone().unwrap()
@@ -915,22 +911,12 @@ mod tests {
         let first_log = &first_processor_logs.lock().unwrap()[0];
         let second_log = &second_processor_logs.lock().unwrap()[0];
 
-        assert!(first_log.record.attributes.iter().any(|attr| {
-            if let Some((key, value)) = attr {
-                key.as_str() == "processed_by"
-                    && *value == AnyValue::String("FirstProcessor".into())
-            } else {
-                false
-            }
+        assert!(first_log.record.attributes_iter().any(|(key, value)| {
+            key.as_str() == "processed_by" && *value == AnyValue::String("FirstProcessor".into())
         }));
-
-        assert!(second_log.record.attributes.iter().any(|attr| {
-            if let Some((key, value)) = attr {
-                key.as_str() == "processed_by"
-                    && *value == AnyValue::String("FirstProcessor".into())
-            } else {
-                false
-            }
+        
+        assert!(second_log.record.attributes_iter().any(|(key, value)| {
+            key.as_str() == "processed_by" && *value == AnyValue::String("FirstProcessor".into())
         }));
 
         assert!(

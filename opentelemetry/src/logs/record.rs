@@ -66,6 +66,13 @@ pub enum AnyValue {
     Map(HashMap<Key, AnyValue>),
 }
 
+impl Default for AnyValue {
+    fn default() -> Self {
+        // Provide a default value for AnyValue
+        AnyValue::String("".into()) 
+    }
+}
+
 macro_rules! impl_trivial_from {
     ($t:ty, $variant:path) => {
         impl From<$t> for AnyValue {

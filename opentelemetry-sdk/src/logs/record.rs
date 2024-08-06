@@ -10,9 +10,19 @@ use std::{borrow::Cow, time::SystemTime};
 // up to 5 attributes is the most common case.
 const PREALLOCATED_ATTRIBUTE_CAPACITY: usize = 5;
 
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct KeyValue(Key, AnyValue);
+
+// Implement Default for the newtype KeyValue
+impl Default for KeyValue {
+    fn default() -> Self {
+        KeyValue(Key::default(), AnyValue::default())
+    }
+}
+
 /// A vector of `Option<(Key, AnyValue)>` with default capacity.
 pub(crate) type AttributesGrowableArray =
-    GrowableArray<Option<(Key, AnyValue)>, PREALLOCATED_ATTRIBUTE_CAPACITY>;
+    GrowableArray<KeyValue, PREALLOCATED_ATTRIBUTE_CAPACITY>;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 #[non_exhaustive]
@@ -98,14 +108,14 @@ impl opentelemetry::logs::LogRecord for LogRecord {
         K: Into<Key>,
         V: Into<AnyValue>,
     {
-        self.attributes.push(Some((key.into(), value.into())));
+        self.attributes.push(KeyValue(key.into(), value.into()));
     }
 }
 
 impl LogRecord {
     /// Provides an iterator over the attributes.
-    pub fn attributes_iter(&self) -> impl Iterator<Item = &(Key, AnyValue)> {
-        self.attributes.iter().filter_map(|opt| opt.as_ref())
+    pub fn attributes_iter(&self) -> impl Iterator<Item = (&Key, &AnyValue)> {
+        self.attributes.iter().map(|kv| (&kv.0, &kv.1))
     }
 
     #[allow(dead_code)]
@@ -117,13 +127,7 @@ impl LogRecord {
     #[allow(dead_code)]
     /// Checks if the `LogRecord` contains the specified attribute.
     pub(crate) fn attributes_contains(&self, key: &Key, value: &AnyValue) -> bool {
-        self.attributes.iter().any(|opt| {
-            if let Some((k, v)) = opt {
-                k == key && v == value
-            } else {
-                false
-            }
-        })
+        self.attributes.iter().any(|kv| &kv.0 == key && &kv.1 == value)
     }
 }
 
@@ -263,7 +267,7 @@ mod tests {
             body: Some(AnyValue::String("Test body".into())),
             attributes: {
                 let mut hybrid_vec = AttributesGrowableArray::new();
-                hybrid_vec.push(Some((Key::new("key"), AnyValue::String("value".into()))));
+                hybrid_vec.push(KeyValue(Key::new("key"), AnyValue::String("value".into())));
                 hybrid_vec
             },
             trace_context: Some(TraceContext {

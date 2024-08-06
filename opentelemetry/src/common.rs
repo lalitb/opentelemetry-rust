@@ -78,6 +78,13 @@ impl Key {
     }
 }
 
+// In the crate where Key is defined
+impl Default for Key {
+    fn default() -> Self {
+        Key::new("") 
+    }
+}
+
 impl From<&'static str> for Key {
     /// Convert a `&str` to a `Key`.
     fn from(key_str: &'static str) -> Self {
