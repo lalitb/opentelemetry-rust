@@ -137,6 +137,59 @@ impl LogProcessor for SimpleLogProcessor {
     }
 }
 
+/// A [LogProcessor] that passes logs to the configured `LogExporter`, as soon
+/// as they are emitted, without any batching, and locking. 
+#[derive(Debug)]
+pub struct SimpleConcurrentProcessor<E: LogExporter> {
+    exporter: Box<E>,
+    is_shutdown: AtomicBool,
+}
+
+impl<E: LogExporter> SimpleConcurrentProcessor<E>  {
+    ///! constructor
+    pub fn new(exporter: E) -> Self {
+        SimpleConcurrentProcessor {
+            exporter: Box::new(exporter),
+            is_shutdown: AtomicBool::new(false),
+        }
+    }
+}
+
+impl<E: LogExporter> LogProcessor for SimpleConcurrentProcessor<E> {
+    fn emit(&self, data: &mut LogData) {
+        // noop after shutdown
+        if self.is_shutdown.load(std::sync::atomic::Ordering::Relaxed) {
+            return;
+        }
+        _ = self.exporter.export_sync(vec![Cow::Borrowed(data)]);
+    }
+
+    // This is a no-op as this processor doesn't keep anything
+    // in memory to be flushed out.
+    fn force_flush(&self) -> LogResult<()> {
+        Ok(())
+    }
+
+    // Shutdown the processor and return
+    // No shutdown is invoked on the exporter as it is not required.
+    fn shutdown(&self) -> LogResult<()> {
+        self.is_shutdown
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+        Ok(())
+    }
+
+    #[cfg(feature = "logs_level_enabled")]
+    fn event_enabled(
+        &self,
+        level: opentelemetry::logs::Severity,
+        target: &str,
+        name: &str,
+    ) -> bool {
+        self.exporter.event_enabled(level, target, name)
+    }
+}
+
+
 /// A [`LogProcessor`] that asynchronously buffers log records and reports
 /// them at a pre-configured interval.
 pub struct BatchLogProcessor<R: RuntimeChannel> {

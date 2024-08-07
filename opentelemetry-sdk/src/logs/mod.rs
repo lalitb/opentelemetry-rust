@@ -7,7 +7,7 @@ mod record;
 pub use log_emitter::{Builder, Logger, LoggerProvider};
 pub use log_processor::{
     BatchConfig, BatchConfigBuilder, BatchLogProcessor, BatchLogProcessorBuilder, LogProcessor,
-    SimpleLogProcessor,
+    SimpleLogProcessor, SimpleConcurrentProcessor,
 };
 pub use record::{LogRecord, TraceContext};
 
