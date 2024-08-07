@@ -140,22 +140,21 @@ impl LogProcessor for SimpleLogProcessor {
 /// A [LogProcessor] that passes logs to the configured `LogExporter`, as soon
 /// as they are emitted, without any batching, and locking. 
 #[derive(Debug)]
-pub struct SimpleConcurrentProcessor<E: LogExporter> {
-    exporter: Box<E>,
+pub struct SimpleConcurrentProcessor{
+    exporter: Box<dyn LogExporter + Sync>,
     is_shutdown: AtomicBool,
 }
 
-impl<E: LogExporter> SimpleConcurrentProcessor<E>  {
-    ///! constructor
-    pub fn new(exporter: E) -> Self {
+impl SimpleConcurrentProcessor {
+    pub fn new(exporter: Box<dyn LogExporter + Sync>) -> Self {
         SimpleConcurrentProcessor {
-            exporter: Box::new(exporter),
+            exporter,
             is_shutdown: AtomicBool::new(false),
         }
     }
 }
 
-impl<E: LogExporter> LogProcessor for SimpleConcurrentProcessor<E> {
+impl LogProcessor for SimpleConcurrentProcessor {
     fn emit(&self, data: &mut LogData) {
         // noop after shutdown
         if self.is_shutdown.load(std::sync::atomic::Ordering::Relaxed) {
@@ -186,6 +185,10 @@ impl<E: LogExporter> LogProcessor for SimpleConcurrentProcessor<E> {
         name: &str,
     ) -> bool {
         self.exporter.event_enabled(level, target, name)
+    }
+
+    fn set_resource(&self, resource: &Resource) {
+        self.exporter.set_resource(resource);
     }
 }
 
@@ -558,6 +561,80 @@ enum BatchMessage {
     Shutdown(oneshot::Sender<ExportResult>),
     /// Set the resource for the exporter.
     SetResource(Arc<Resource>),
+}
+
+enum LogProcessorEnum<E: LogExporter, R: RuntimeChannel> {
+    SimpleLogProcessor(SimpleLogProcessor),
+    SimpleConcurrentProcessor(SimpleConcurrentProcessor<E>),
+    Batch(BatchLogProcessor<R>),
+    DynLogProcessor(Box<dyn LogProcessor>),
+}
+
+impl<E: LogExporter, R: RuntimeChannel> fmt::Debug for LogProcessorEnum<E, R> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LogProcessorEnum::SimpleLogProcessor(processor) => {
+                f.debug_tuple("SimpleLogProcessor").field(processor).finish()
+            }
+            LogProcessorEnum::SimpleConcurrentProcessor(processor) => {
+                f.debug_tuple("SimpleConcurrentProcessor").field(processor).finish()
+            }
+            LogProcessorEnum::Batch(_) => {
+                f.debug_tuple("BatchLogProcessor").field(&"BatchLogProcessor").finish()
+            }
+            LogProcessorEnum::DynLogProcessor(processor) => {
+                f.debug_tuple("DynLogProcessor").field(processor).finish()
+            }
+        }
+    }
+}
+
+impl<E: LogExporter + 'static, R: RuntimeChannel + 'static> LogProcessor for LogProcessorEnum<E, R> {
+    fn emit(&self, data: &mut LogData) {
+        match self {
+            LogProcessorEnum::SimpleLogProcessor(processor) => processor.emit(data),
+            LogProcessorEnum::SimpleConcurrentProcessor(processor) => processor.emit(data),
+            LogProcessorEnum::Batch(processor) => processor.emit(data),
+            LogProcessorEnum::DynLogProcessor(processor) => processor.emit(data),
+        }
+    }
+
+    fn force_flush(&self) -> LogResult<()> {
+        match self {
+            LogProcessorEnum::SimpleLogProcessor(processor) => processor.force_flush(),
+            LogProcessorEnum::SimpleConcurrentProcessor(processor) => processor.force_flush(),
+            LogProcessorEnum::Batch(processor) => processor.force_flush(),
+            LogProcessorEnum::DynLogProcessor(processor) => processor.force_flush(),
+        }
+    }
+
+    fn shutdown(&self) -> LogResult<()> {
+        match self {
+            LogProcessorEnum::SimpleLogProcessor(processor) => processor.shutdown(),
+            LogProcessorEnum::SimpleConcurrentProcessor(processor) => processor.shutdown(),
+            LogProcessorEnum::Batch(processor) => processor.shutdown(),
+            LogProcessorEnum::DynLogProcessor(processor) => processor.shutdown(),
+        }
+    }
+
+    #[cfg(feature = "logs_level_enabled")]
+    fn event_enabled(&self, level: Severity, target: &str, name: &str) -> bool {
+        match self {
+            LogProcessorEnum::SimpleLogProcessor(processor) => processor.event_enabled(level, target, name),
+            LogProcessorEnum::SimpleConcurrentProcessor(processor) => processor.event_enabled(level, target, name),
+            LogProcessorEnum::Batch(processor) => processor.event_enabled(level, target, name),
+            LogProcessorEnum::DynLogProcessor(processor) => processor.event_enabled(level, target, name),
+        }
+    }
+
+    fn set_resource(&self, resource: &Resource) {
+        match self {
+            LogProcessorEnum::SimpleLogProcessor(processor) => processor.set_resource(resource),
+            LogProcessorEnum::SimpleConcurrentProcessor(processor) => processor.set_resource(resource),
+            LogProcessorEnum::Batch(processor) => processor.set_resource(resource),
+            LogProcessorEnum::DynLogProcessor(processor) => processor.set_resource(resource),
+        }
+    }
 }
 
 #[cfg(all(test, feature = "testing", feature = "logs"))]
