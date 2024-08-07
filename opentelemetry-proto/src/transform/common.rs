@@ -42,6 +42,42 @@ pub mod tonic {
     #[cfg(any(feature = "trace", feature = "logs"))]
     use opentelemetry_sdk::Resource;
 
+    use std::sync::Arc;
+    impl
+        From<(
+            Arc<opentelemetry_sdk::InstrumentationLibrary>,
+            Option<Cow<'static, str>>,
+        )> for InstrumentationScope
+    {
+        fn from(
+            data: (
+                Arc<opentelemetry_sdk::InstrumentationLibrary>,
+                Option<Cow<'static, str>>,
+            ),
+        ) -> Self {
+            let (library, target) = data;
+            if let Some(t) = target {
+                InstrumentationScope {
+                    name: t.to_string(),
+                    version: String::new(),
+                    attributes: vec![],
+                    ..Default::default()
+                }
+            } else {
+                InstrumentationScope {
+                    name: library.name.clone().into_owned(),
+                    version: library
+                        .version
+                        .clone()
+                        .map(Cow::into_owned)
+                        .unwrap_or_default(),
+                    attributes: Attributes::from(library.attributes.clone()).0,
+                    ..Default::default()
+                }
+            }
+        }
+    }
+
     impl
         From<(
             opentelemetry_sdk::InstrumentationLibrary,

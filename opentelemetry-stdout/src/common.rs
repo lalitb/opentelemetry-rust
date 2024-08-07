@@ -8,6 +8,7 @@ use std::{
 use chrono::{LocalResult, TimeZone, Utc};
 use ordered_float::OrderedFloat;
 use serde::{Serialize, Serializer};
+use std::sync::Arc;
 
 #[derive(Debug, Serialize, Clone, Hash, Eq, PartialEq)]
 pub(crate) struct AttributeSet(pub BTreeMap<Key, Value>);
@@ -230,6 +231,22 @@ pub(crate) struct Scope {
     dropped_attributes_count: u64,
 }
 
+impl From<Arc<opentelemetry_sdk::Scope>> for Scope {
+    fn from(value: Arc<opentelemetry_sdk::Scope>) -> Self {
+        Scope {
+            name: value.name.clone(),
+            version: value.version.clone(),
+            attributes: value
+                .attributes
+                .clone()
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            dropped_attributes_count: 0,
+        }
+    }
+}
+
 impl From<opentelemetry_sdk::Scope> for Scope {
     fn from(value: opentelemetry_sdk::Scope) -> Self {
         Scope {
@@ -240,7 +257,6 @@ impl From<opentelemetry_sdk::Scope> for Scope {
         }
     }
 }
-
 pub(crate) fn as_human_readable<S>(time: &SystemTime, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,

@@ -2,6 +2,8 @@
 use crate::logs::LogRecord;
 use crate::Resource;
 use async_trait::async_trait;
+use std::sync::Arc;
+
 #[cfg(feature = "logs_level_enabled")]
 use opentelemetry::logs::Severity;
 use opentelemetry::{
@@ -33,7 +35,7 @@ pub struct LogData {
     /// Log record
     pub record: LogRecord,
     /// Instrumentation details for the emitter who produced this `LogEvent`.
-    pub instrumentation: InstrumentationLibrary,
+    pub instrumentation: Arc<InstrumentationLibrary>,
 }
 
 /// Describes the result of an export.

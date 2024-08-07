@@ -241,7 +241,7 @@ impl Logger {
     }
 
     /// Instrumentation library information of this logger.
-    pub fn instrumentation_library(&self) -> &InstrumentationLibrary {
+    pub fn instrumentation_library(&self) -> &Arc<InstrumentationLibrary> {
         &self.instrumentation_lib
     }
 }
