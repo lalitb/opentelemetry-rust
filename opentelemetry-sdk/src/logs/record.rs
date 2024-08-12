@@ -34,8 +34,12 @@ pub struct LogRecord {
     pub body: Option<AnyValue>,
 
     /// Additional attributes associated with this record
-    pub(crate) attributes: Option<Vec<(Key, AnyValue)>>,
+    pub(crate) attributes: [Option<(Key, AnyValue)>; MAX_ATTRIBUTES],
+    pub(crate) attributes_count: usize,
 }
+
+// Assuming a constant maximum size for the attributes array
+pub(crate) const MAX_ATTRIBUTES: usize = 8;
 
 impl opentelemetry::logs::LogRecord for LogRecord {
     fn set_event_name<T>(&mut self, name: T)
@@ -89,11 +93,11 @@ impl opentelemetry::logs::LogRecord for LogRecord {
         K: Into<Key>,
         V: Into<AnyValue>,
     {
-        if let Some(ref mut attrs) = self.attributes {
-            attrs.push((key.into(), value.into()));
-        } else {
-            self.attributes = Some(vec![(key.into(), value.into())]);
+        if (self.attributes_count + 1) > MAX_ATTRIBUTES {
+            return;
         }
+        self.attributes[self.attributes_count] = Some((key.into(), value.into()));
+        self.attributes_count += 1;
     }
 }
 
@@ -102,21 +106,24 @@ impl LogRecord {
     pub fn attributes_iter(&self) -> impl Iterator<Item = &(Key, AnyValue)> {
         self.attributes
             .as_ref()
-            .map_or_else(|| [].iter(), |attrs| attrs.iter())
+            .into_iter()
+            .flat_map(|attrs| attrs.iter().take(self.attributes_count))
     }
 
     #[allow(dead_code)]
     /// Returns the number of attributes in the `LogRecord`.
     pub(crate) fn attributes_len(&self) -> usize {
-        self.attributes.as_ref().map_or(0, |attrs| attrs.len())
+        self.attributes.len()
     }
 
     #[allow(dead_code)]
     /// Returns true if the `LogRecord` contains the specified attribute.
     pub(crate) fn attributes_contains(&self, key: &Key, value: &AnyValue) -> bool {
-        self.attributes.as_ref().map_or(false, |attrs| {
-            attrs.iter().any(|(k, v)| k == key && v == value)
-        })
+        self.attributes
+            .iter()
+            .take(self.attributes_count) // Only consider up to attributes_count elements
+            .filter_map(|opt| opt.as_ref()) // Filter out None values and get the Some references
+            .any(|(k, v)| k == key && v == value)
     }
 }
 
@@ -254,7 +261,17 @@ mod tests {
             severity_text: Some(Cow::Borrowed("ERROR")),
             severity_number: Some(Severity::Error),
             body: Some(AnyValue::String("Test body".into())),
-            attributes: Some(vec![(Key::new("key"), AnyValue::String("value".into()))]),
+            attributes: [
+                Some((Key::new("key"), AnyValue::String("value".into()))),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            ],
+            attributes_count: 1,
             trace_context: Some(TraceContext {
                 trace_id: TraceId::from_u128(1),
                 span_id: SpanId::from_u64(1),

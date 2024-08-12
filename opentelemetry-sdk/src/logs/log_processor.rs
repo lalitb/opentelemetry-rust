@@ -528,9 +528,9 @@ mod tests {
         Resource,
     };
     use async_trait::async_trait;
-    use opentelemetry::logs::AnyValue;
     #[cfg(feature = "logs_level_enabled")]
     use opentelemetry::logs::Severity;
+    use opentelemetry::logs::{AnyValue, LogRecord};
     use opentelemetry::logs::{Logger, LoggerProvider as _};
     use opentelemetry::Key;
     use opentelemetry::{logs::LogResult, KeyValue};
@@ -820,10 +820,10 @@ mod tests {
     impl LogProcessor for FirstProcessor {
         fn emit(&self, data: &mut LogData) {
             // add attribute
-            data.record.attributes.get_or_insert(vec![]).push((
+            data.record.add_attribute(
                 Key::from_static_str("processed_by"),
                 AnyValue::String("FirstProcessor".into()),
-            ));
+            );
             // update body
             data.record.body = Some("Updated by FirstProcessor".into());
 
@@ -851,16 +851,10 @@ mod tests {
 
     impl LogProcessor for SecondProcessor {
         fn emit(&self, data: &mut LogData) {
-            assert!(data.record.attributes.as_ref().map_or(false, |attrs| {
-                attrs.iter().any(|(key, value)| {
-                    key.as_str() == "processed_by"
-                        && value == &AnyValue::String("FirstProcessor".into())
-                })
-            }));
-            assert!(
-                data.record.body.clone().unwrap()
-                    == AnyValue::String("Updated by FirstProcessor".into())
-            );
+            assert!(data.record.attributes_contains(
+                &Key::from_static_str("processed_by"),
+                &AnyValue::String("Updated by FirstProcessor".into())
+            ));
             self.logs.lock().unwrap().push(data.clone());
         }
 

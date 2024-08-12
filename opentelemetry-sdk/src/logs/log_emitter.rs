@@ -43,7 +43,6 @@ const DEFAULT_COMPONENT_NAME: &str = "rust.opentelemetry.io/sdk/logger";
 // According to a Go-specific study mentioned on https://go.dev/blog/slog,
 // up to 5 attributes is the most common case. We have chosen 8 as the default
 // capacity for attributes to avoid reallocation in common scenarios.
-const PREALLOCATED_ATTRIBUTE_CAPACITY: usize = 8;
 
 impl opentelemetry::logs::LoggerProvider for LoggerProvider {
     type Logger = Logger;
@@ -252,7 +251,6 @@ impl opentelemetry::logs::Logger for Logger {
     fn create_log_record(&self) -> Self::LogRecord {
         // Reserve attributes memory for perf optimization. This may change in future.
         LogRecord {
-            attributes: Some(Vec::with_capacity(PREALLOCATED_ATTRIBUTE_CAPACITY)),
             ..Default::default()
         }
     }
