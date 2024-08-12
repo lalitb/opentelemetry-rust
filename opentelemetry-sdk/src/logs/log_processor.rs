@@ -75,35 +75,33 @@ pub trait LogProcessor: Send + Sync + Debug {
 /// debugging and testing. For scenarios requiring higher
 /// performance/throughput, consider using [BatchLogProcessor].
 #[derive(Debug)]
-pub struct SimpleLogProcessor {
-    exporter: Mutex<Box<dyn LogExporter>>,
+pub struct SimpleLogProcessor<E: LogExporter> {
+    exporter: Mutex<E>,
     is_shutdown: AtomicBool,
 }
 
-impl SimpleLogProcessor {
-    pub(crate) fn new(exporter: Box<dyn LogExporter>) -> Self {
+impl<E: LogExporter> SimpleLogProcessor<E> {
+    pub(crate) fn new(exporter: E) -> Self {
         SimpleLogProcessor {
-            exporter: Mutex::new(exporter),
+            exporter: Mutex::<E>::new(exporter),
             is_shutdown: AtomicBool::new(false),
         }
     }
 }
 
-impl LogProcessor for SimpleLogProcessor {
+impl<E: LogExporter> LogProcessor for SimpleLogProcessor<E> {
     fn emit(&self, data: &mut LogData) {
         // noop after shutdown
         if self.is_shutdown.load(std::sync::atomic::Ordering::Relaxed) {
             return;
         }
-
         let result = self
             .exporter
             .lock()
             .map_err(|_| LogError::Other("simple logprocessor mutex poison".into()))
             .and_then(|mut exporter| {
                 futures_executor::block_on(exporter.export(vec![Cow::Borrowed(data)]))
-            });
-        if let Err(err) = result {
+            });        if let Err(err) = result {
             global::handle_error(err);
         }
     }
@@ -122,7 +120,7 @@ impl LogProcessor for SimpleLogProcessor {
             Err(LogError::Other(
                 "simple logprocessor mutex poison during shutdown".into(),
             ))
-        }
+        }        
     }
 
     fn set_resource(&self, resource: &Resource) {
@@ -563,9 +561,9 @@ enum BatchMessage {
     SetResource(Arc<Resource>),
 }
 
-enum LogProcessorEnum<E: LogExporter, R: RuntimeChannel> {
-    SimpleLogProcessor(SimpleLogProcessor),
-    SimpleConcurrentProcessor(SimpleConcurrentProcessor<E>),
+enum LogProcessorEnum<E1: LogExporter, E2: LogExporter, R: RuntimeChannel> {
+    SimpleLogProcessor(SimpleLogProcessor<E1>),
+    SimpleConcurrentProcessor(SimpleConcurrentProcessor<E2>),
     Batch(BatchLogProcessor<R>),
     DynLogProcessor(Box<dyn LogProcessor>),
 }
