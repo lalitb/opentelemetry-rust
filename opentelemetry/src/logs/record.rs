@@ -2,7 +2,7 @@ use crate::{Array, Key, StringValue, Value};
 use std::{borrow::Cow, collections::HashMap, time::SystemTime};
 
 /// SDK implemented trait for managing log records
-pub trait LogRecord {
+pub trait LogRecord<'a> {
     /// Sets the `event_name` of a record
     fn set_event_name<T>(&mut self, _name: T)
     where
@@ -31,25 +31,25 @@ pub trait LogRecord {
     fn set_severity_number(&mut self, number: Severity);
 
     /// Sets the message body of the log.
-    fn set_body(&mut self, body: AnyValue);
+    fn set_body(&mut self, body: AnyValue<'a>);
 
     /// Adds multiple attributes.
     fn add_attributes<I, K, V>(&mut self, attributes: I)
     where
         I: IntoIterator<Item = (K, V)>,
         K: Into<Key>,
-        V: Into<AnyValue>;
+        V: Into<AnyValue<'a>>;
 
     /// Adds a single attribute.
     fn add_attribute<K, V>(&mut self, key: K, value: V)
     where
         K: Into<Key>,
-        V: Into<AnyValue>;
+        V: Into<AnyValue<'a>>;
 }
 
 /// Value types for representing arbitrary values in a log record.
 #[derive(Debug, Clone, PartialEq)]
-pub enum AnyValue {
+pub enum AnyValue<'a> {
     /// An integer value
     Int(i64),
     /// A double value
@@ -64,6 +64,8 @@ pub enum AnyValue {
     ListAny(Box<Vec<AnyValue>>),
     /// A map of string keys to `Any` values, arbitrarily nested.
     Map(Box<HashMap<Key, AnyValue>>),
+    /// A borrowed or owned string value
+    CowStr(Cow<'a, str>),
 }
 
 macro_rules! impl_trivial_from {
