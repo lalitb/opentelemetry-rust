@@ -816,11 +816,12 @@ mod tests {
     struct FirstProcessor {
         pub(crate) logs: Arc<Mutex<Vec<LogData>>>,
     }
+    use smallvec::smallvec;
 
     impl LogProcessor for FirstProcessor {
         fn emit(&self, data: &mut LogData) {
             // add attribute
-            data.record.attributes.get_or_insert(vec![]).push((
+            data.record.attributes.get_or_insert(smallvec![]).push((
                 Key::from_static_str("processed_by"),
                 AnyValue::String("FirstProcessor".into()),
             ));

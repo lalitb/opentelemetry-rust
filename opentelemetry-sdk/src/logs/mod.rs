@@ -80,7 +80,7 @@ mod tests {
             .expect("Atleast one log is expected to be present.");
         assert_eq!(log.instrumentation.name, "test-logger");
         assert_eq!(log.record.severity_number, Some(Severity::Error));
-        let attributes: Vec<(Key, AnyValue)> = log
+        let attributes= log
             .record
             .attributes
             .clone()

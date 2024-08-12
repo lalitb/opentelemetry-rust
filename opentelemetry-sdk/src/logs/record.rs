@@ -4,6 +4,8 @@ use opentelemetry::{
     Key,
 };
 use std::{borrow::Cow, time::SystemTime};
+use smallvec::{SmallVec, smallvec};
+
 
 #[derive(Debug, Default, Clone, PartialEq)]
 #[non_exhaustive]
@@ -34,7 +36,7 @@ pub struct LogRecord {
     pub body: Option<AnyValue>,
 
     /// Additional attributes associated with this record
-    pub(crate) attributes: Option<Vec<(Key, AnyValue)>>,
+    pub(crate) attributes: Option<SmallVec<[(Key, AnyValue); 4]>>
 }
 
 impl opentelemetry::logs::LogRecord for LogRecord {
@@ -92,7 +94,7 @@ impl opentelemetry::logs::LogRecord for LogRecord {
         if let Some(ref mut attrs) = self.attributes {
             attrs.push((key.into(), value.into()));
         } else {
-            self.attributes = Some(vec![(key.into(), value.into())]);
+            self.attributes = Some(smallvec![(key.into(), value.into())]);
         }
     }
 }
@@ -254,7 +256,7 @@ mod tests {
             severity_text: Some(Cow::Borrowed("ERROR")),
             severity_number: Some(Severity::Error),
             body: Some(AnyValue::String("Test body".into())),
-            attributes: Some(vec![(Key::new("key"), AnyValue::String("value".into()))]),
+            attributes: Some(smallvec![(Key::new("key"), AnyValue::String("value".into()))]),
             trace_context: Some(TraceContext {
                 trace_id: TraceId::from_u128(1),
                 span_id: SpanId::from_u64(1),
