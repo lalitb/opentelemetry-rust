@@ -46,7 +46,7 @@ serde_json = { workspace = true, optional = true }
 [dev-dependencies]
 tokio-stream = { workspace = true, features = ["net"] }
 # need tokio runtime to run smoke tests.
-opentelemetry_sdk = { features = ["trace", "rt-tokio", "testing"], path = "../opentelemetry-sdk" }
+opentelemetry_sdk = { features = ["rt-tokio", "testing"], path = "../opentelemetry-sdk" }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 futures-util = { workspace = true }
 temp-env = { workspace = true }
@@ -72,12 +72,12 @@ tls-roots = ["tls", "tonic/tls-roots"]
 tls-webpki-roots = ["tls", "tonic/tls-webpki-roots"]
 
 # http binary
-http-proto = ["prost", "opentelemetry-http", "opentelemetry-proto/gen-tonic-messages", "http", "trace", "metrics"]
-http-json = ["serde_json", "prost", "opentelemetry-http", "opentelemetry-proto/gen-tonic-messages", "opentelemetry-proto/with-serde", "http", "trace", "metrics"]
+http-proto = ["prost", "opentelemetry-http", "opentelemetry-proto/gen-tonic-messages", "http", "trace", "metrics", "logs"]
+http-json = ["serde_json", "prost", "opentelemetry-http", "opentelemetry-proto/gen-tonic-messages", "opentelemetry-proto/with-serde", "http", "trace", "metrics", "logs"]
 reqwest-blocking-client = ["reqwest/blocking", "opentelemetry-http/reqwest"]
 reqwest-client = ["reqwest", "opentelemetry-http/reqwest"]
 reqwest-rustls = ["reqwest", "opentelemetry-http/reqwest-rustls"]
 reqwest-rustls-webpki-roots = ["reqwest", "opentelemetry-http/reqwest-rustls-webpki-roots"]
 
 # test
-integration-testing = ["tonic", "prost", "tokio/full", "trace"]
+integration-testing = ["tonic", "prost", "tokio/full", "trace", "logs"]

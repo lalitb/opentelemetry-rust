@@ -47,7 +47,6 @@ rand = { workspace = true }
 [[bench]]
 name = "metrics"
 harness = false
-required-features = ["metrics"]
 
 [[bench]]
 name = "attributes"
