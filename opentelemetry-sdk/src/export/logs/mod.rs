@@ -27,6 +27,7 @@ pub trait LogExporter: Send + Sync + Debug {
     fn set_resource(&mut self, _resource: &Resource) {}
 }
 
+/// `LogData` represents a single log event without resource context.
 #[derive(Clone, Debug)]
 pub struct LogData<'a> {
     /// Log record, which can be borrowed or owned.
