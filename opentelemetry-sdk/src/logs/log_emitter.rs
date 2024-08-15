@@ -266,8 +266,8 @@ impl opentelemetry::logs::Logger for Logger {
         }
 
         let mut data = LogData {
-            record: log_record,
-            instrumentation: self.instrumentation_library().clone(),
+            record: Cow::Borrowed(&log_record),
+            instrumentation: Cow::Borrowed(self.instrumentation_library()),
         };
 
         for p in processors {
@@ -328,7 +328,7 @@ mod tests {
     }
 
     impl LogProcessor for ShutdownTestLogProcessor {
-        fn emit(&self, _data: &mut LogData) {
+        fn emit(&self, _data: &mut LogData<'_>) {
             self.is_shutdown
                 .lock()
                 .map(|is_shutdown| {
@@ -563,7 +563,7 @@ mod tests {
     }
 
     impl LogProcessor for LazyLogProcessor {
-        fn emit(&self, _data: &mut LogData) {
+        fn emit(&self, _data: &mut LogData<'_>) {
             // nothing to do.
         }
 

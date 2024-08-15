@@ -55,7 +55,7 @@ pub trait LogProcessor: Send + Sync + Debug {
     ///
     /// # Parameters
     /// - `data`: A mutable reference to `LogData` representing the log record.
-    fn emit(&self, data: &mut LogData);
+    fn emit(&self, data: &mut LogData<'_>);
     /// Force the logs lying in the cache to be exported.
     fn force_flush(&self) -> LogResult<()>;
     /// Shuts down the processor.
@@ -90,7 +90,7 @@ impl SimpleLogProcessor {
 }
 
 impl LogProcessor for SimpleLogProcessor {
-    fn emit(&self, data: &mut LogData) {
+    fn emit(&self, data: &mut LogData<'_>) {
         // noop after shutdown
         if self.is_shutdown.load(std::sync::atomic::Ordering::Relaxed) {
             return;
@@ -152,10 +152,14 @@ impl<R: RuntimeChannel> Debug for BatchLogProcessor<R> {
 }
 
 impl<R: RuntimeChannel> LogProcessor for BatchLogProcessor<R> {
-    fn emit(&self, data: &mut LogData) {
+    fn emit(&self, data: &mut LogData<'_>) {
+        let owned_data = LogData {
+            record: Cow::Owned(data.record.clone().into_owned()),
+            instrumentation: Cow::Owned(data.instrumentation.clone().into_owned()),
+        };
         let result = self
             .message_sender
-            .try_send(BatchMessage::ExportLog(data.clone()));
+            .try_send(BatchMessage::ExportLog(owned_data));
 
         if let Err(err) = result {
             global::handle_error(LogError::Other(err.into()));
@@ -307,7 +311,7 @@ async fn export_with_timeout<'a, R, E>(
     time_out: Duration,
     exporter: &mut E,
     runtime: &R,
-    batch: Vec<Cow<'a, LogData>>,
+    batch: Vec<Cow<'a, LogData<'a>>>,
 ) -> ExportResult
 where
     R: RuntimeChannel,
@@ -497,7 +501,7 @@ where
 #[derive(Debug)]
 enum BatchMessage {
     /// Export logs, usually called when the log is emitted.
-    ExportLog(LogData),
+    ExportLog(LogData<'static>),
     /// Flush the current buffer to the backend, it can be triggered by
     /// pre configured interval or a call to `force_push` function.
     Flush(Option<oneshot::Sender<ExportResult>>),
@@ -545,7 +549,7 @@ mod tests {
 
     #[async_trait]
     impl LogExporter for MockLogExporter {
-        async fn export<'a>(&mut self, _batch: Vec<Cow<'a, LogData>>) -> LogResult<()> {
+        async fn export<'a>(&mut self, _batch: Vec<Cow<'a, LogData<'a>>>) -> LogResult<()> {
             Ok(())
         }
 
@@ -814,21 +818,29 @@ mod tests {
 
     #[derive(Debug)]
     struct FirstProcessor {
-        pub(crate) logs: Arc<Mutex<Vec<LogData>>>,
+        pub(crate) logs: Arc<Mutex<Vec<LogData<'static>>>>,
     }
 
     impl LogProcessor for FirstProcessor {
-        fn emit(&self, data: &mut LogData) {
+        fn emit(&self, data: &mut LogData<'_>) {
+            // Ensure the record is owned before modifying
+            let record = data.record.to_mut();
             // Add attribute
-            data.record.add_attribute(
+            record.add_attribute(
                 Key::from_static_str("processed_by"),
                 AnyValue::String("FirstProcessor".into()),
             );
 
             // Update body
-            data.record.body = Some(AnyValue::String("Updated by FirstProcessor".into()));
+            record.body = Some(AnyValue::String("Updated by FirstProcessor".into()));
 
-            self.logs.lock().unwrap().push(data.clone()); // Clone as the LogProcessor is storing the data.
+            // Convert the modified LogData to an owned version
+            let owned_data = LogData {
+                record: Cow::Owned(record.clone()), // Since record is already owned, no need to clone deeply
+                instrumentation: Cow::Owned(data.instrumentation.clone().into_owned()),
+            };
+
+            self.logs.lock().unwrap().push(owned_data); // Clone as the LogProcessor is storing the data.
         }
 
         #[cfg(feature = "logs_level_enabled")]
@@ -847,11 +859,11 @@ mod tests {
 
     #[derive(Debug)]
     struct SecondProcessor {
-        pub(crate) logs: Arc<Mutex<Vec<LogData>>>,
+        pub(crate) logs: Arc<Mutex<Vec<LogData<'static>>>>,
     }
 
     impl LogProcessor for SecondProcessor {
-        fn emit(&self, data: &mut LogData) {
+        fn emit(&self, data: &mut LogData<'_>) {
             assert!(data.record.attributes_contains(
                 &Key::from_static_str("processed_by"),
                 &AnyValue::String("FirstProcessor".into())
@@ -860,7 +872,13 @@ mod tests {
                 data.record.body.clone().unwrap()
                     == AnyValue::String("Updated by FirstProcessor".into())
             );
-            self.logs.lock().unwrap().push(data.clone());
+            // Convert the modified LogData to an owned version before storing it
+            let record = data.record.to_mut();
+            let owned_data = LogData {
+                record: Cow::Owned(record.clone()), // Convert the record to owned
+                instrumentation: Cow::Owned(data.instrumentation.clone().into_owned()),
+            };
+            self.logs.lock().unwrap().push(owned_data);
         }
 
         #[cfg(feature = "logs_level_enabled")]
