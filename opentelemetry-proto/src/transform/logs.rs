@@ -139,7 +139,7 @@ pub mod tonic {
 
     impl
         From<(
-            opentelemetry_sdk::export::logs::LogData,
+            opentelemetry_sdk::export::logs::LogData<'_>,
             &ResourceAttributesWithSchema,
         )> for ResourceLogs
     {
@@ -172,7 +172,7 @@ pub mod tonic {
     }
 
     pub fn group_logs_by_resource_and_scope(
-        logs: Vec<opentelemetry_sdk::export::logs::LogData>,
+        logs: Vec<opentelemetry_sdk::export::logs::LogData<'_>>,
         resource: &ResourceAttributesWithSchema,
     ) -> Vec<ResourceLogs> {
         // Group logs by target or instrumentation name
@@ -180,14 +180,14 @@ pub mod tonic {
             HashMap::new(),
             |mut scope_map: HashMap<
                 Cow<'static, str>,
-                Vec<&opentelemetry_sdk::export::logs::LogData>,
+                Vec<&opentelemetry_sdk::export::logs::LogData<'_>>,
             >,
              log| {
                 let key = log
                     .record
                     .target
                     .clone()
-                    .unwrap_or_else(|| log.instrumentation.name.clone());
+                    .unwrap_or_else(|| log.instrumentation.name.clone().into_owned());
                 scope_map.entry(key).or_default().push(log);
                 scope_map
             },
@@ -203,7 +203,7 @@ pub mod tonic {
                 schema_url: resource.schema_url.clone().unwrap_or_default(),
                 log_records: log_data
                     .into_iter()
-                    .map(|log_data| log_data.record.clone().into())
+                    .map(|log_data| log_data.record.clone().clone().into_owned())
                     .collect(),
             })
             .collect();
