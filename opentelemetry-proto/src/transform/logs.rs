@@ -166,7 +166,7 @@ pub mod tonic {
                         .unwrap_or_default(),
                     scope: Some(
                         (
-                            log_data.instrumentation.to_owned(),
+                            log_data.instrumentation.into_owned(),
                             log_data.record.target.clone(),
                         )
                             .into(),
@@ -237,18 +237,21 @@ mod tests {
     use opentelemetry::logs::LogRecord as _;
     use opentelemetry_sdk::export::logs::LogData;
     use opentelemetry_sdk::{logs::LogRecord, Resource};
+    use std::borrow::Cow;
     use std::time::SystemTime;
 
-    fn create_test_log_data(instrumentation_name: &str, _message: &str) -> LogData {
+    fn create_test_log_data<'a>(instrumentation_name: &str, _message: &str) -> LogData<'a> {
         let mut logrecord = LogRecord::default();
         logrecord.set_timestamp(SystemTime::now());
         logrecord.set_observed_timestamp(SystemTime::now());
         LogData {
-            instrumentation: opentelemetry_sdk::InstrumentationLibrary::builder(
-                instrumentation_name.to_string(),
-            )
-            .build(),
-            record: logrecord,
+            instrumentation: Cow::Owned(
+                opentelemetry_sdk::InstrumentationLibrary::builder(
+                    instrumentation_name.to_string(),
+                )
+                .build(),
+            ),
+            record: Cow::Owned(logrecord),
         }
     }
 

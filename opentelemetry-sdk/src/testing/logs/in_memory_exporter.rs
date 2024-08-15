@@ -37,18 +37,20 @@ use std::sync::{Arc, Mutex};
 ///# }
 /// ```
 ///
-
-#[derive(Debug, Clone)]
-pub struct OwnedLogData {
-    pub record: LogRecord,
-    pub instrumentation: InstrumentationLibrary,
-}
-
 #[derive(Clone, Debug)]
 pub struct InMemoryLogsExporter {
     logs: Arc<Mutex<Vec<OwnedLogData>>>,
     resource: Arc<Mutex<Resource>>,
     should_reset_on_shutdown: bool,
+}
+
+/// `OwnedLogData` represents a single log event without resource context.
+#[derive(Debug, Clone)]
+pub struct OwnedLogData {
+    /// Log record, which can be borrowed or owned.
+    pub record: LogRecord,
+    /// Instrumentation details for the emitter who produced this `LogEvent`.
+    pub instrumentation: InstrumentationLibrary,
 }
 
 impl Default for InMemoryLogsExporter {
