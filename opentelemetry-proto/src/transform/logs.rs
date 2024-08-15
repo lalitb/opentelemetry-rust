@@ -164,8 +164,14 @@ pub mod tonic {
                         .clone()
                         .map(Into::into)
                         .unwrap_or_default(),
-                    scope: Some((log_data.instrumentation, log_data.record.target.clone()).into()),
-                    log_records: vec![log_data.record.into()],
+                    scope: Some(
+                        (
+                            log_data.instrumentation.to_owned(),
+                            log_data.record.target.clone(),
+                        )
+                            .into(),
+                    ),
+                    log_records: vec![log_data.record.into_owned().into()],
                 }],
             }
         }
@@ -183,11 +189,10 @@ pub mod tonic {
                 Vec<&opentelemetry_sdk::export::logs::LogData<'_>>,
             >,
              log| {
-                let key = log
-                    .record
-                    .target
-                    .clone()
-                    .unwrap_or_else(|| log.instrumentation.name.clone().into_owned());
+                let key =
+                    log.record.target.clone().unwrap_or_else(|| {
+                        Cow::Owned(log.instrumentation.name.clone().into_owned())
+                    });
                 scope_map.entry(key).or_default().push(log);
                 scope_map
             },
@@ -197,13 +202,20 @@ pub mod tonic {
             .into_iter()
             .map(|(key, log_data)| ScopeLogs {
                 scope: Some(InstrumentationScope::from((
-                    &log_data.first().unwrap().instrumentation,
-                    Some(key),
+                    Cow::Owned(
+                        log_data
+                            .first()
+                            .unwrap()
+                            .instrumentation
+                            .clone()
+                            .into_owned(),
+                    ),
+                    Some(key.into_owned().into()),
                 ))),
                 schema_url: resource.schema_url.clone().unwrap_or_default(),
                 log_records: log_data
                     .into_iter()
-                    .map(|log_data| log_data.record.clone().clone().into_owned())
+                    .map(|log_data| log_data.record.clone().into_owned().into())
                     .collect(),
             })
             .collect();
