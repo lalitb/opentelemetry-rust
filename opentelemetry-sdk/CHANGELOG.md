@@ -56,7 +56,6 @@
     /// Instrumentation details for the emitter who produced this `LogEvent`.
     pub instrumentation: Cow<'a, InstrumentationLibrary>,
   }
-
  ```
   - Impact: This change introduces lifetime parameters to LogData, allowing for more flexible
     ownership and borrowing of LogRecord and InstrumentationLibrary instances. However, this 
