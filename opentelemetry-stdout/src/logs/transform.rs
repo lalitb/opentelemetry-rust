@@ -155,7 +155,7 @@ impl From<opentelemetry_sdk::export::logs::LogData<'_>> for LogRecord {
                 .map(|u| u as u32)
                 .unwrap_or_default(),
             dropped_attributes_count: 0,
-            severity_text: value.record.severity_text.clone(),
+            severity_text: value.record.severity_text,
             body: value.record.body.clone().map(|a| a.into()),
         }
     }
