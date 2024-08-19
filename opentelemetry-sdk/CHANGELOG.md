@@ -25,6 +25,45 @@
   [#2021](https://github.com/open-telemetry/opentelemetry-rust/pull/2021)
 - Provide default implementation for `event_enabled` method in `LogProcessor`
   trait that returns `true` always.
+- **Breaking** : The `LogData` structure used in the `Exporter::exporter` interface 
+  has been modified to introduce lifetime parameters. 
+  This change affects the export method signature and the LogData struct itself.
+ [#1965](https://github.com/open-telemetry/opentelemetry-rust/pull/1965/files)
+ Earlier:
+ ```rust
+  pub trait LogExporter: Send + Sync + Debug {
+    async fn export<'a>(&mut self, batch: Vec<Cow<'a, LogData>>) -> LogResult<()>;
+  }
+
+  #[derive(Clone, Debug)]
+  pub struct LogData {
+    /// Log record
+    pub record: LogRecord,
+    /// Instrumentation details for the emitter who produced this `LogEvent`.
+    pub instrumentation: InstrumentationLibrary,
+  } 
+ ```
+ After:
+ ```rust
+  pub trait LogExporter: Send + Sync + Debug {
+    async fn export<'a>(&mut self, batch: Vec<Cow<'a, LogData<'a>>>) -> LogResult<()>;
+  }
+
+  #[derive(Clone, Debug)]
+  pub struct LogData<'a> {
+    /// Log record, which can be borrowed or owned.
+    pub record: Cow<'a, LogRecord>,
+    /// Instrumentation details for the emitter who produced this `LogEvent`.
+    pub instrumentation: Cow<'a, InstrumentationLibrary>,
+  }
+ ```
+  - Impact: This change introduces lifetime parameters to LogData, allowing for more flexible
+    ownership and borrowing of LogRecord and InstrumentationLibrary instances. However, this 
+    change breaks compatibility with existing implementations of the LogExporter trait.
+  - Upgrade Instructions : To adapt to this change, update your LogExporter implementations 
+    to accommodate the new lifetime parameters in the `LogData` struct and the `export` method 
+    signature.
+
 
 ## v0.24.1
 
