@@ -1,4 +1,5 @@
-use crate::{Array, Key, StringValue, Value};
+use super::StringValue as LogStringValue;
+use crate::Key;
 use std::{borrow::Cow, collections::HashMap, time::SystemTime};
 
 /// SDK implemented trait for managing log records
@@ -27,101 +28,118 @@ pub trait LogRecord {
     fn set_severity_number(&mut self, number: Severity);
 
     /// Sets the message body of the log.
-    fn set_body(&mut self, body: AnyValue);
+    fn set_body(&mut self, body: AnyValue<'_>);
 
     /// Adds multiple attributes.
-    fn add_attributes<I, K, V>(&mut self, attributes: I)
+    fn add_attributes<'a, I, K, V>(&mut self, attributes: I)
     where
         I: IntoIterator<Item = (K, V)>,
         K: Into<Key>,
-        V: Into<AnyValue>;
+        V: Into<AnyValue<'a>>;
 
     /// Adds a single attribute.
-    fn add_attribute<K, V>(&mut self, key: K, value: V)
+    fn add_attribute<'a, K, V>(&mut self, key: K, value: V)
     where
         K: Into<Key>,
-        V: Into<AnyValue>;
+        V: Into<AnyValue<'a>>;
 }
 
 /// Value types for representing arbitrary values in a log record.
 #[derive(Debug, Clone, PartialEq)]
-pub enum AnyValue {
+pub enum AnyValue<'a> {
     /// An integer value
     Int(i64),
     /// A double value
     Double(f64),
     /// A string value
-    String(StringValue),
+    String(LogStringValue<'a>),
     /// A boolean value
     Boolean(bool),
     /// A byte array
     Bytes(Box<Vec<u8>>),
     /// An array of `Any` values
-    ListAny(Box<Vec<AnyValue>>),
+    ListAny(Box<Vec<AnyValue<'a>>>),
     /// A map of string keys to `Any` values, arbitrarily nested.
-    Map(Box<HashMap<Key, AnyValue>>),
+    Map(Box<HashMap<Key, AnyValue<'a>>>),
 }
 
 macro_rules! impl_trivial_from {
     ($t:ty, $variant:path) => {
-        impl From<$t> for AnyValue {
-            fn from(val: $t) -> AnyValue {
+        impl<'a> From<$t> for AnyValue<'a> {
+            fn from(val: $t) -> AnyValue<'a> {
                 $variant(val.into())
             }
         }
     };
 }
 
+// Integer types
 impl_trivial_from!(i8, AnyValue::Int);
 impl_trivial_from!(i16, AnyValue::Int);
 impl_trivial_from!(i32, AnyValue::Int);
 impl_trivial_from!(i64, AnyValue::Int);
-
 impl_trivial_from!(u8, AnyValue::Int);
 impl_trivial_from!(u16, AnyValue::Int);
 impl_trivial_from!(u32, AnyValue::Int);
 
+// Floating-point types
 impl_trivial_from!(f64, AnyValue::Double);
 impl_trivial_from!(f32, AnyValue::Double);
 
-impl_trivial_from!(String, AnyValue::String);
-impl_trivial_from!(Cow<'static, str>, AnyValue::String);
-impl_trivial_from!(&'static str, AnyValue::String);
-impl_trivial_from!(StringValue, AnyValue::String);
-
+// Boolean type
 impl_trivial_from!(bool, AnyValue::Boolean);
 
-impl<T: Into<AnyValue>> FromIterator<T> for AnyValue {
-    /// Creates an [`AnyValue::ListAny`] value from a sequence of `Into<AnyValue>` values.
+// String-related types
+impl<'a> From<String> for AnyValue<'a> {
+    fn from(val: String) -> AnyValue<'a> {
+        AnyValue::String(LogStringValue::from(val))
+    }
+}
+
+impl<'a> From<&'a str> for AnyValue<'a> {
+    fn from(val: &'a str) -> AnyValue<'a> {
+        AnyValue::String(LogStringValue::from(val))
+    }
+}
+
+impl<'a> From<Cow<'a, str>> for AnyValue<'a> {
+    fn from(val: Cow<'a, str>) -> AnyValue<'a> {
+        AnyValue::String(LogStringValue::from(val))
+    }
+}
+
+impl<'a> From<LogStringValue<'a>> for AnyValue<'a> {
+    fn from(val: LogStringValue<'a>) -> AnyValue<'a> {
+        AnyValue::String(val)
+    }
+}
+
+// Implementation for static string references explicitly using StringValue
+impl<'a> AnyValue<'a> {
+    pub fn from_static_str(s: &'static str) -> Self {
+        AnyValue::String(LogStringValue::from_static(s))
+    }
+}
+
+// Implementation for byte array
+impl<'a> From<Vec<u8>> for AnyValue<'a> {
+    fn from(val: Vec<u8>) -> AnyValue<'a> {
+        AnyValue::Bytes(Box::new(val))
+    }
+}
+
+// Implementing FromIterator for lists and maps
+impl<'a, T: Into<AnyValue<'a>>> FromIterator<T> for AnyValue<'a> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         AnyValue::ListAny(Box::new(iter.into_iter().map(Into::into).collect()))
     }
 }
 
-impl<K: Into<Key>, V: Into<AnyValue>> FromIterator<(K, V)> for AnyValue {
-    /// Creates an [`AnyValue::Map`] value from a sequence of key-value pairs
-    /// that can be converted into a `Key` and `AnyValue` respectively.
+impl<'a, K: Into<Key>, V: Into<AnyValue<'a>>> FromIterator<(K, V)> for AnyValue<'a> {
     fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self {
         AnyValue::Map(Box::new(HashMap::from_iter(
             iter.into_iter().map(|(k, v)| (k.into(), v.into())),
         )))
-    }
-}
-
-impl From<Value> for AnyValue {
-    fn from(value: Value) -> Self {
-        match value {
-            Value::Bool(b) => b.into(),
-            Value::I64(i) => i.into(),
-            Value::F64(f) => f.into(),
-            Value::String(s) => s.into(),
-            Value::Array(a) => match a {
-                Array::Bool(b) => AnyValue::from_iter(b),
-                Array::F64(f) => AnyValue::from_iter(f),
-                Array::I64(i) => AnyValue::from_iter(i),
-                Array::String(s) => AnyValue::from_iter(s),
-            },
-        }
     }
 }
 

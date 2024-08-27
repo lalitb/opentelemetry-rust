@@ -10,10 +10,12 @@ use thiserror::Error;
 mod logger;
 mod noop;
 mod record;
+mod stringvalue;
 
 pub use logger::{Logger, LoggerProvider};
 pub use noop::NoopLoggerProvider;
 pub use record::{AnyValue, LogRecord, Severity};
+pub use stringvalue::StringValue;
 
 /// Describe the result of operations in log SDK.
 pub type LogResult<T> = Result<T, LogError>;
