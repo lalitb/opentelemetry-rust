@@ -89,6 +89,7 @@ impl<'a, LR: LogRecord> tracing::field::Visit for EventVisitor<'a, LR> {
     }
 
     fn record_str(&mut self, field: &tracing_core::Field, value: &str) {
+        use std::sync::Arc;
         #[cfg(feature = "experimental_metadata_attributes")]
         if is_duplicated_metadata(field.name()) {
             return;
@@ -100,8 +101,9 @@ impl<'a, LR: LogRecord> tracing::field::Visit for EventVisitor<'a, LR> {
 
         //TODO: Fix heap allocation. Check if lifetime of &str can be used
         // to optimize sync exporter scenario.
+        let arc_str: Arc<str> = Arc::from(value);
         self.log_record
-            .add_attribute(Key::new(field.name()), AnyValue::from(value.to_owned()));
+            .add_attribute(Key::new(field.name()), AnyValue::String(arc_str.into()));
     }
 
     fn record_bool(&mut self, field: &tracing_core::Field, value: bool) {
