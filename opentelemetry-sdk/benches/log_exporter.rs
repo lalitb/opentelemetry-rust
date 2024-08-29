@@ -14,14 +14,14 @@ use std::sync::Mutex;
 use std::time::SystemTime;
 
 use async_trait::async_trait;
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use opentelemetry::logs::{LogRecord as _, LogResult, Logger as _, LoggerProvider as _, Severity};
 
 use opentelemetry::InstrumentationLibrary;
-use opentelemetry_sdk::logs::LogProcessor;
-use opentelemetry_sdk::logs::LogRecord;
+use opentelemetry_sdk::export::logs::LogBatch;
 use opentelemetry_sdk::logs::LoggerProvider;
+use opentelemetry_sdk::logs::{LogProcessor, LogRecord};
 use pprof::criterion::{Output, PProfProfiler};
 use std::fmt::Debug;
 
@@ -29,11 +29,11 @@ use std::fmt::Debug;
 // cargo bench --bench log_exporter
 #[async_trait]
 pub trait LogExporterWithFuture: Send + Sync + Debug {
-    async fn export(&mut self, batch: &[(&LogRecord, &InstrumentationLibrary)]);
+    async fn export(&mut self, batch: LogBatch<'_>);
 }
 
 pub trait LogExporterWithoutFuture: Send + Sync + Debug {
-    fn export(&mut self, batch: &[(&LogRecord, &InstrumentationLibrary)]);
+    fn export(&mut self, batch: LogBatch<'_>);
 }
 
 #[derive(Debug)]
@@ -41,13 +41,13 @@ struct NoOpExporterWithFuture {}
 
 #[async_trait]
 impl LogExporterWithFuture for NoOpExporterWithFuture {
-    async fn export(&mut self, _batch: &[(&LogRecord, &InstrumentationLibrary)]) {}
+    async fn export(&mut self, _batch: LogBatch<'_>) {}
 }
 
 #[derive(Debug)]
 struct NoOpExporterWithoutFuture {}
 impl LogExporterWithoutFuture for NoOpExporterWithoutFuture {
-    fn export(&mut self, _batch: &[(&LogRecord, &InstrumentationLibrary)]) {}
+    fn export(&mut self, _batch: LogBatch<'_>) {}
 }
 
 #[derive(Debug)]
@@ -65,8 +65,10 @@ impl ExportingProcessorWithFuture {
 
 impl LogProcessor for ExportingProcessorWithFuture {
     fn emit(&self, record: &mut LogRecord, library: &InstrumentationLibrary) {
+        let batch = &[(record as &LogRecord, library)];
+        let bind = LogBatch::new(batch);
         let mut exporter = self.exporter.lock().expect("lock error");
-        futures_executor::block_on(exporter.export(&[(record, library)]));
+        futures_executor::block_on(black_box(exporter.export(bind)));
     }
 
     fn force_flush(&self) -> LogResult<()> {
@@ -93,10 +95,9 @@ impl ExportingProcessorWithoutFuture {
 
 impl LogProcessor for ExportingProcessorWithoutFuture {
     fn emit(&self, record: &mut LogRecord, library: &InstrumentationLibrary) {
-        self.exporter
-            .lock()
-            .expect("lock error")
-            .export(&[(record, library)]);
+        let batch = &[(record as &LogRecord, library)];
+        let bind = LogBatch::new(batch);
+        black_box(self.exporter.lock().expect("lock error").export(bind));
     }
 
     fn force_flush(&self) -> LogResult<()> {
