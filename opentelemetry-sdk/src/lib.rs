@@ -137,6 +137,7 @@ pub mod runtime;
 #[cfg(any(feature = "testing", test))]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "testing", test))))]
 pub mod testing;
+/// custom thread runtime
 pub mod thread_runtime;
 
 #[allow(deprecated)]

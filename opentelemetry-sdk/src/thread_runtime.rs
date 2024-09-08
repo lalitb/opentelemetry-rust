@@ -90,6 +90,7 @@ impl TimeSchedulers {
 }
 
 /// CustomInterval: A stream that ticks at fixed intervals using a background thread.
+#[derive(Debug)]
 pub struct CustomInterval {
     receiver: mpsc::Receiver<()>,
 }
@@ -106,6 +107,7 @@ impl Stream for CustomInterval {
 }
 
 /// CustomDelay: A future that resolves after a fixed delay using a background thread.
+#[derive(Debug)]
 pub struct CustomDelay {
     receiver: mpsc::Receiver<()>,
 }
@@ -153,12 +155,14 @@ impl Runtime for CustomThreadRuntime {
     }
 }
 
-/// Messaging system for sending and receiving batch messages.
+/// Messaging system for sending batch messages.
 #[derive(Debug)]
 pub struct CustomSender<T: Debug + Send> {
     tx: mpsc::Sender<T>,
 }
 
+/// Messaging system for receiving batch messages.
+#[derive(Debug)]
 pub struct CustomReceiver<T: Debug + Send> {
     rx: mpsc::Receiver<T>,
 }
@@ -188,7 +192,7 @@ impl RuntimeChannel for CustomThreadRuntime {
 
     fn batch_message_channel<T: Debug + Send>(
         &self,
-        capacity: usize,
+        _capacity: usize,
     ) -> (Self::Sender<T>, Self::Receiver<T>) {
         // Use mpsc to create a bounded channel
         let (tx, rx) = mpsc::channel();
