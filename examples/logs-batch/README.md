@@ -1,4 +1,4 @@
-# OpenTelemetry Log Appender for log -  Example
+# OpenTelemetry Log Appender for log -  Example using Batch Log Processor and thread runtime
 
 This example shows how to use the opentelemetry-appender-log crate, which is a
 [logging
