@@ -158,7 +158,7 @@ impl Runtime for CustomThreadRuntime {
 /// Messaging system for sending batch messages.
 #[derive(Debug)]
 pub struct CustomSender<T: Debug + Send> {
-    tx: mpsc::Sender<T>,
+    tx: mpsc::SyncSender<T>,
 }
 
 /// Messaging system for receiving batch messages.
@@ -179,9 +179,16 @@ impl<T: Debug + Send> Stream for CustomReceiver<T> {
     type Item = T;
 
     fn poll_next(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        match self.rx.recv() {
+        // Use `try_recv` instead of `recv` to avoid blocking
+        match self.rx.try_recv() {
             Ok(item) => Poll::Ready(Some(item)),
-            Err(_) => Poll::Ready(None),
+            Err(mpsc::TryRecvError::Empty) => {
+                // No message is available yet, so we'll return `Poll::Pending`
+                // and recheck after a short sleep to avoid busy-waiting.
+                thread::sleep(Duration::from_millis(10)); // Adjust sleep duration if needed
+                Poll::Pending
+            }
+            Err(mpsc::TryRecvError::Disconnected) => Poll::Ready(None), // Channel is closed, terminate the stream
         }
     }
 }
@@ -192,10 +199,10 @@ impl RuntimeChannel for CustomThreadRuntime {
 
     fn batch_message_channel<T: Debug + Send>(
         &self,
-        _capacity: usize,
+        capacity: usize,
     ) -> (Self::Sender<T>, Self::Receiver<T>) {
         // Use mpsc to create a bounded channel
-        let (tx, rx) = mpsc::channel();
+        let (tx, rx) = mpsc::sync_channel(capacity);
         (
             CustomSender { tx },   // Sender part
             CustomReceiver { rx }, // Receiver part

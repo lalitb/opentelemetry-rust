@@ -154,10 +154,9 @@ impl<R: RuntimeChannel> Debug for BatchLogProcessor<R> {
 
 impl<R: RuntimeChannel> LogProcessor for BatchLogProcessor<R> {
     fn emit(&self, record: &mut LogRecord, instrumentation: &InstrumentationLibrary) {
-        let result = self.message_sender.try_send(BatchMessage::ExportLog((
-            record.clone(),
-            instrumentation.clone(),
-        )));
+        let result: Result<(), crate::runtime::TrySendError> = self.message_sender.try_send(
+            BatchMessage::ExportLog((record.clone(), instrumentation.clone())),
+        );
 
         if let Err(err) = result {
             global::handle_error(LogError::Other(err.into()));

@@ -8,7 +8,7 @@ use opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 fn main() {
     // Setup LoggerProvider with a stdout exporter
     let exporter = opentelemetry_stdout::LogExporter::default();
-    let runtime = CustomThreadRuntime::new(1); // 1 worker thread
+    let runtime = CustomThreadRuntime::new(2); // 1 worker thread
     let logger_provider = LoggerProvider::builder()
         .with_resource(Resource::new([KeyValue::new(
             SERVICE_NAME,
@@ -24,6 +24,14 @@ fn main() {
 
     // Emit logs using macros from the log crate.
     // These logs gets piped through OpenTelemetry bridge and gets exported to stdout.
-    error!(target: "my-target", "hello from {}. My price is {}", "apple", 2.99);
+    // 10 error events
+    for i in 0..10000 {
+        error!(target: "my-target", "hello from {}. My price is {} at itr {}", "apple", 2.99, i);
+        //sleep 1 sec every 100 secs
+        if i % 10 == 0 {
+            std::thread::sleep(std::time::Duration::from_secs(1));
+        }
+    }
+    println!("Flushing logs explicitly before exiting..");
     logger_provider.force_flush();
 }
