@@ -1,6 +1,6 @@
 //! Context extensions for tracing
 use crate::{
-    global,
+    global::{self, Pillar, Component},
     trace::{Span, SpanContext, Status},
     Context, ContextGuard, KeyValue,
 };
@@ -14,6 +14,8 @@ use std::{
     sync::Mutex,
     task::{Context as TaskContext, Poll},
 };
+use crate::{otel_log_error, otel_log_info};
+
 
 const NOOP_SPAN: SynchronizedSpan = SynchronizedSpan {
     span_context: SpanContext::NONE,
@@ -55,7 +57,7 @@ impl SpanRef<'_> {
         if let Some(ref inner) = self.0.inner {
             match inner.lock() {
                 Ok(mut locked) => f(&mut locked),
-                Err(err) => global::handle_error(err),
+                Err(err) => otel_log_info!(err, Pillar::Trace, Component::Context),
             }
         }
     }
