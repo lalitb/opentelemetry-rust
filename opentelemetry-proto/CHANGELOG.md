@@ -2,6 +2,11 @@
 
 ## vNext
 
+## v0.26.1
+Released 2024-Oct-2
+
+ - Pin tonic to v0.12.3
+
 ## v0.26.0
 Released 2024-Sep-30
 
