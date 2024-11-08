@@ -33,9 +33,11 @@ for CRATE in $WORKSPACE_CRATES; do
         # Update dependency versions among workspace crates
         for DEP in $WORKSPACE_CRATES; do
             DEP_NAME=$(basename "$DEP")
-            if grep -qE "^\s*\"$DEP_NAME\"" "$CARGO_TOML"; then
+
+            # Match dependencies with a specified version key and not just `workspace = true`
+            if grep -qE "^\s*\"$DEP_NAME\" = \{.*version = " "$CARGO_TOML"; then
                 echo "Updating dependency $DEP_NAME version in $CRATE to $NEW_VERSION"
-                sed -i -E "s/\"$DEP_NAME\" = \{ version = \".*\"/\"$DEP_NAME\" = { version = \"$NEW_VERSION\"/" "$CARGO_TOML"
+                sed -i -E "s/(\"$DEP_NAME\" = \{[^}]*)(version = \").*\"/\1version = \"$NEW_VERSION\"/" "$CARGO_TOML"
                 DEPENDENCY_UPDATED=true
             fi
         done
