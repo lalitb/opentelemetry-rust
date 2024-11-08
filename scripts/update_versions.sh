@@ -1,67 +1,153 @@
 #!/bin/bash
 
-# Check for version argument
-if [ -z "$1" ]; then
+set -euo pipefail
+
+# Print usage information
+print_usage() {
     echo "Usage: $0 <new_version>"
-    exit 1
-fi
+    echo "Updates versions and changelogs for all OpenTelemetry crates in the workspace"
+    echo
+    echo "Arguments:"
+    echo "  new_version    The new version number (e.g., 1.0.0)"
+}
 
-NEW_VERSION=$1
-WORKSPACE_MANIFEST="Cargo.toml"
+# Validate semantic version format
+validate_version() {
+    local version=$1
+    if ! echo "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'; then
+        echo "Error: Version must be in semantic versioning format (X.Y.Z)"
+        exit 1
+    fi
+}
 
-# Retrieve workspace member directories that start with "opentelemetry" or "opentelemetry-"
-WORKSPACE_CRATES=$(find . -type f -name "Cargo.toml" -exec dirname {} \; | grep -E '^./opentelemetry(-|$)' | sed 's|./||')
+# Update changelog for a crate
+update_changelog() {
+    local crate=$1
+    local new_version=$2
+    local changelog="$crate/CHANGELOG.md"
+    local dependency_updated=$3
 
-# Update each crate version and dependencies
-for CRATE in $WORKSPACE_CRATES; do
-    CARGO_TOML="$CRATE/Cargo.toml"
-    CHANGELOG="$CRATE/CHANGELOG.md"
-    DEPENDENCY_UPDATED=false
-
-    if [ -f "$CARGO_TOML" ]; then
-        # Check if the current version already matches the new version
-        CURRENT_VERSION=$(grep -E '^version = "' "$CARGO_TOML" | sed -E 's/version = "(.*)"/\1/')
-        if [ "$CURRENT_VERSION" == "$NEW_VERSION" ]; then
-            echo "Version for $CRATE is already $NEW_VERSION, skipping."
-        else
-            # Update the crate's version, but skip `rust-version`
-            echo "Updating version for $CRATE to $NEW_VERSION"
-            sed -i.bak -E "/^rust-version =/!s/^version = \".*\"/version = \"$NEW_VERSION\"/" "$CARGO_TOML"
-
-            # Update dependencies with a specified version key in any section, excluding `rust-version`
-            perl -i.bak -pe "
-                if (/version = \"\d+\.\d+(\.\d+)?\"/ && !/rust-version/) {
-                    s/version = \"\d+\.\d+(\.\d+)?\"/version = \"$NEW_VERSION\"/g;
-                    \$DEPENDENCY_UPDATED = 1;
-                }
-            " "$CARGO_TOML" && DEPENDENCY_UPDATED=true
-
-            rm "$CARGO_TOML.bak"
-        fi
-    else
-        echo "Cargo.toml not found for $CRATE, skipping."
+    if [ ! -f "$changelog" ]; then
+        echo "Warning: CHANGELOG.md not found for $crate"
+        return
     fi
 
-    # Update the changelog only if the "vNext" section exists
-    if [ -f "$CHANGELOG" ]; then
-        if grep -q "## $NEW_VERSION" "$CHANGELOG"; then
-            echo "Changelog for $CRATE already has version $NEW_VERSION, skipping."
-        else
-            echo "Updating changelog for $CRATE"
-            # Replace "vNext" with the new version, then add an empty vNext section at the top
-            sed -i.bak -E "s/^## vNext/## $NEW_VERSION/" "$CHANGELOG"
-            sed -i "1s/^/# Changelog\n\n## vNext\n\n/" "$CHANGELOG"
-
-            # Add entry for dependency updates if there are any
-            if [ "$DEPENDENCY_UPDATED" = true ]; then
-                echo "- Updated dependencies to version $NEW_VERSION" >> "$CHANGELOG"
-            fi
-
-            rm "$CHANGELOG.bak"
-        fi
-    else
-        echo "CHANGELOG.md not found for $CRATE, skipping."
+    if grep -q "## $new_version" "$changelog"; then
+        echo "Note: Changelog for $crate already has version $new_version"
+        return
     fi
-done
 
-echo "All versions and changelogs updated to $NEW_VERSION where necessary."
+    echo "Updating changelog for $crate"
+    
+    # Create temporary file
+    local temp_file=$(mktemp)
+    
+    # Add new version header
+    echo "# Changelog" > "$temp_file"
+    echo >> "$temp_file"
+    echo "## vNext" >> "$temp_file"
+    echo >> "$temp_file"
+    
+    # Replace vNext with new version and append rest of the file
+    sed "1,/^## vNext/d" "$changelog" | sed "1s/^## vNext/## $new_version/" >> "$temp_file"
+    
+    # Add dependency update entry if needed
+    if [ "$dependency_updated" = "true" ]; then
+        sed -i "/^## $new_version/a - Updated dependencies to version $new_version" "$temp_file"
+    fi
+    
+    mv "$temp_file" "$changelog"
+}
+
+# Update version in Cargo.toml
+update_cargo_toml() {
+    local crate=$1
+    local new_version=$2
+    local cargo_toml="$crate/Cargo.toml"
+
+    if [ ! -f "$cargo_toml" ]; then
+        echo "Error: Cargo.toml not found for $crate"
+        return 1
+    fi
+
+    local current_version
+    current_version=$(grep -E '^version = "' "$cargo_toml" | sed -E 's/version = "(.*)"/\1/')
+    
+    if [ "$current_version" = "$new_version" ]; then
+        echo "Note: Version for $crate is already $new_version"
+        return 0
+    fi
+
+    echo "Updating version for $crate to $new_version"
+    
+    # Create temporary file
+    local temp_file=$(mktemp)
+    
+    # Update versions while preserving formatting
+    awk -v new_ver="$new_version" '
+        /^rust-version =/ { print; next }
+        /version = "[0-9]+\.[0-9]+(\.[0-9]+)?"/ { 
+            gsub(/"[0-9]+\.[0-9]+(\.[0-9]+)?"/, "\"" new_ver "\"")
+            updated = 1
+        }
+        { print }
+    ' "$cargo_toml" > "$temp_file"
+    
+    mv "$temp_file" "$cargo_toml"
+    
+    return 0
+}
+
+main() {
+    # Check arguments
+    if [ $# -ne 1 ]; then
+        print_usage
+        exit 1
+    fi
+
+    local new_version=$1
+    validate_version "$new_version"
+
+    # Find workspace crates
+    local workspace_crates
+    workspace_crates=$(find . -type f -name "Cargo.toml" -exec dirname {} \; | 
+                      grep -E '^./opentelemetry(-|$)' | 
+                      sed 's|./||' |
+                      sort)
+
+    if [ -z "$workspace_crates" ]; then
+        echo "Error: No OpenTelemetry crates found in workspace"
+        exit 1
+    fi
+
+    # Process each crate
+    local exit_code=0
+    for crate in $workspace_crates; do
+        echo "Processing $crate..."
+        
+        if ! update_cargo_toml "$crate" "$new_version"; then
+            echo "Error: Failed to update $crate"
+            exit_code=1
+            continue
+        fi
+        
+        # Check if dependencies were updated
+        local dependency_updated=false
+        if grep -q "version = \"$new_version\"" "$crate/Cargo.toml" | grep -v "^version ="; then
+            dependency_updated=true
+        fi
+        
+        update_changelog "$crate" "$new_version" "$dependency_updated"
+        echo "----------------------------------------"
+    done
+
+    if [ $exit_code -eq 0 ]; then
+        echo "Successfully updated all crates to version $new_version"
+    else
+        echo "Completed with errors. Please check the output above."
+    fi
+
+    exit $exit_code
+}
+
+main "$@"
