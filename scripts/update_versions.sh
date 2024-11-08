@@ -53,6 +53,9 @@ update_changelog() {
         fi
     done < <(grep -E '^\s*opentelemetry[^ ]*\s*=\s*.*version\s*=\s*"'$new_version'"' "$cargo_toml")
 
+    # Trim any trailing newline from dependencies_list
+    dependencies_list=$(echo -n "$dependencies_list")
+
     # Create a temporary file for editing
     local temp_file=$(mktemp)
 
@@ -63,21 +66,25 @@ update_changelog() {
         echo "## vNext"
         echo
         echo "## $new_version"
+        echo
         echo "Released $release_date"
         if [ -n "$dependencies_list" ]; then
+            echo
             echo "$dependencies_list" | sed '/^$/d'  # Remove any accidental empty lines
         fi
+        echo  # Ensure a newline between updates and the rest of the changelog
     } > "$temp_file"
 
     # Append the rest of the changelog, skipping the old `vNext` section
     sed '1,/^## vNext/d' "$changelog" >> "$temp_file"
 
-    # Ensure no trailing newlines in the temp file
+    # Ensure no trailing newline in the temp file to prevent extra blank lines between new and existing content
     truncate -s -1 "$temp_file"
 
     # Replace the original changelog with the updated content
     mv "$temp_file" "$changelog"
 }
+
 
 # Update version in Cargo.toml
 update_cargo_toml() {
