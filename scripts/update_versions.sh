@@ -30,17 +30,12 @@ for CRATE in $WORKSPACE_CRATES; do
         echo "Updating version for $CRATE to $NEW_VERSION"
         sed -i.bak -E "s/^version = \".*\"/version = \"$NEW_VERSION\"/" "$CARGO_TOML"
 
-        # Update dependency versions among workspace crates
-        for DEP in $WORKSPACE_CRATES; do
-            DEP_NAME=$(basename "$DEP")
-
-            # Match dependencies with an explicit version key, including those with both `path` and `version`
-            if grep -qE "^\s*\"$DEP_NAME\" = \{.*version = " "$CARGO_TOML"; then
-                echo "Updating dependency $DEP_NAME version in $CRATE to $NEW_VERSION"
-                sed -i -E "s/(\"$DEP_NAME\" = \{[^}]*)(version = \").*\"/\1version = \"$NEW_VERSION\"/" "$CARGO_TOML"
-                DEPENDENCY_UPDATED=true
-            fi
-        done
+        # Update dependencies with a specified version key in any section
+        if grep -q 'version = "' "$CARGO_TOML"; then
+            echo "Updating dependency versions in $CRATE to $NEW_VERSION"
+            sed -i -E "s/(version = \").*\"/\1$NEW_VERSION\"/" "$CARGO_TOML"
+            DEPENDENCY_UPDATED=true
+        fi
 
         rm "$CARGO_TOML.bak"
     else
