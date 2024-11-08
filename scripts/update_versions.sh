@@ -26,13 +26,13 @@ for CRATE in $WORKSPACE_CRATES; do
             continue
         fi
 
-        # Update the crate's version
+        # Update the crate's main version, but skip `rust-version`
         echo "Updating version for $CRATE to $NEW_VERSION"
-        sed -i.bak -E "s/^version = \".*\"/version = \"$NEW_VERSION\"/" "$CARGO_TOML"
+        sed -i.bak -E "/^rust-version =/!s/^version = \".*\"/version = \"$NEW_VERSION\"/" "$CARGO_TOML"
 
-        # Update dependencies with a specified version key in any section, preserving path, features, etc.
+        # Update dependencies with a specified version key in any section, excluding `rust-version`
         perl -i.bak -pe "
-            if (/version = \"\d+\.\d+(\.\d+)?\"/) {
+            if (/version = \"\d+\.\d+(\.\d+)?\"/ && !/rust-version/) {
                 s/version = \"\d+\.\d+(\.\d+)?\"/version = \"$NEW_VERSION\"/g;
                 \$DEPENDENCY_UPDATED = 1;
             }
