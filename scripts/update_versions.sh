@@ -30,12 +30,13 @@ for CRATE in $WORKSPACE_CRATES; do
         echo "Updating version for $CRATE to $NEW_VERSION"
         sed -i.bak -E "s/^version = \".*\"/version = \"$NEW_VERSION\"/" "$CARGO_TOML"
 
-        # Update dependencies with a specified version key in any section
-        if grep -q 'version = "' "$CARGO_TOML"; then
-            echo "Updating dependency versions in $CRATE to $NEW_VERSION"
-            sed -i -E "s/(version = \").*\"/\1$NEW_VERSION\"/" "$CARGO_TOML"
-            DEPENDENCY_UPDATED=true
-        fi
+        # Update dependencies with a specified version key in any section, preserving path, features, etc.
+        perl -i.bak -pe "
+            if (/version = \"\d+\.\d+(\.\d+)?\"/) {
+                s/version = \"\d+\.\d+(\.\d+)?\"/version = \"$NEW_VERSION\"/g;
+                \$DEPENDENCY_UPDATED = 1;
+            }
+        " "$CARGO_TOML" && DEPENDENCY_UPDATED=true
 
         rm "$CARGO_TOML.bak"
     else
