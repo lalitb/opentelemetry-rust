@@ -28,6 +28,10 @@ update_changelog() {
     local cargo_toml="$crate/Cargo.toml"
     local dependency_updated=$3
 
+    # Format the release date
+    local release_date
+    release_date=$(date +"%Y-%b-%d")
+
     if [ ! -f "$changelog" ]; then
         echo "Warning: CHANGELOG.md not found for $crate"
         return
@@ -52,13 +56,15 @@ update_changelog() {
     # Create a temporary file for editing
     local temp_file=$(mktemp)
 
-    # Write the new version section
+    # Write the new version section with release date and dependency updates
     {
         echo "# Changelog"
         echo
         echo "## vNext"
         echo
         echo "## $new_version"
+        echo "Released $release_date"
+        echo
         if [ -n "$dependencies_list" ]; then
             echo "$dependencies_list" | sed '/^$/d'  # Remove any accidental empty lines
         fi
