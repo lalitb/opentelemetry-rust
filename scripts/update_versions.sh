@@ -25,6 +25,7 @@ update_changelog() {
     local crate=$1
     local new_version=$2
     local changelog="$crate/CHANGELOG.md"
+    local cargo_toml="$crate/Cargo.toml"
     local dependency_updated=$3
 
     if [ ! -f "$changelog" ]; then
@@ -39,10 +40,19 @@ update_changelog() {
 
     echo "Updating changelog for $crate"
 
+    # Identify updated opentelemetry dependencies
+    local dependencies_list=""
+    while IFS= read -r line; do
+        dep_name=$(echo "$line" | grep -oE '^\s*[^ ]+')
+        if [[ "$dep_name" == opentelemetry* ]]; then
+            dependencies_list+="- Update \`$dep_name\` dependency version to $new_version"$'\n'
+        fi
+    done < <(grep -E '^\s*opentelemetry[^ ]*\s*=\s*.*version\s*=\s*"'$new_version'"' "$cargo_toml")
+
     # Create a temporary file for editing
     local temp_file=$(mktemp)
 
-    # Add new version header and a new `vNext` section at the top
+    # Write the new version section
     {
         echo "# Changelog"
         echo
@@ -50,15 +60,16 @@ update_changelog() {
         echo
         echo "## $new_version"
         echo
+        if [ -n "$dependencies_list" ]; then
+            echo "$dependencies_list"
+        fi
     } > "$temp_file"
-
-    # Append dependency update entry if needed
-    if [ "$dependency_updated" = "true" ]; then
-        echo "- Updated dependencies to version $new_version" >> "$temp_file"
-    fi
 
     # Append the rest of the changelog, skipping the old `vNext` section
     sed '1,/^## vNext/d' "$changelog" >> "$temp_file"
+
+    # Remove any trailing newline from the temp file
+    truncate -s -1 "$temp_file"
 
     # Replace the original changelog with the updated content
     mv "$temp_file" "$changelog"
