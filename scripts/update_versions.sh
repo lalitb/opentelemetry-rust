@@ -38,24 +38,29 @@ update_changelog() {
     fi
 
     echo "Updating changelog for $crate"
-    
-    # Create temporary file
+
+    # Create a temporary file for editing
     local temp_file=$(mktemp)
-    
-    # Add new version header
-    echo "# Changelog" > "$temp_file"
-    echo >> "$temp_file"
-    echo "## vNext" >> "$temp_file"
-    echo >> "$temp_file"
-    
-    # Replace vNext with new version and append rest of the file
-    sed "1,/^## vNext/d" "$changelog" | sed "1s/^## vNext/## $new_version/" >> "$temp_file"
-    
-    # Add dependency update entry if needed
+
+    # Add new version header and a new `vNext` section at the top
+    {
+        echo "# Changelog"
+        echo
+        echo "## vNext"
+        echo
+        echo "## $new_version"
+        echo
+    } > "$temp_file"
+
+    # Append dependency update entry if needed
     if [ "$dependency_updated" = "true" ]; then
-        sed -i "/^## $new_version/a - Updated dependencies to version $new_version" "$temp_file"
+        echo "- Updated dependencies to version $new_version" >> "$temp_file"
     fi
-    
+
+    # Append the rest of the changelog, skipping the old `vNext` section
+    sed '1,/^## vNext/d' "$changelog" >> "$temp_file"
+
+    # Replace the original changelog with the updated content
     mv "$temp_file" "$changelog"
 }
 
