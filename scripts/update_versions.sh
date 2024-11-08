@@ -59,9 +59,8 @@ update_changelog() {
         echo "## vNext"
         echo
         echo "## $new_version"
-        echo
         if [ -n "$dependencies_list" ]; then
-            echo "$dependencies_list"
+            echo "$dependencies_list" | sed '/^$/d'  # Remove any accidental empty lines
         fi
     } > "$temp_file"
 
