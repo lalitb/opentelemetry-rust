@@ -2,6 +2,7 @@
 mod error;
 mod log_emitter;
 mod log_processor;
+mod log_limits;
 pub(crate) mod record;
 
 pub use error::{LogError, LogResult};
@@ -12,6 +13,7 @@ pub use log_processor::{
 };
 use opentelemetry::InstrumentationScope;
 pub use record::{LogRecord, TraceContext};
+pub use log_limits::LogLimits;
 
 /// `LogData` represents a single log event without resource context.
 #[derive(Clone, Debug)]

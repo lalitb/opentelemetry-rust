@@ -1,6 +1,7 @@
 use super::{BatchLogProcessor, LogProcessor, LogRecord, SimpleLogProcessor, TraceContext};
 use crate::{export::logs::LogExporter, runtime::RuntimeChannel, Resource};
-use crate::{logs::LogError, logs::LogResult};
+use crate::{logs::LogError, logs::LogResult, logs::LogLimits};
+
 use opentelemetry::{otel_debug, trace::TraceContextExt, Context, InstrumentationScope};
 
 #[cfg(feature = "spec_unstable_logs_enabled")]
@@ -23,6 +24,7 @@ static NOOP_LOGGER_PROVIDER: Lazy<LoggerProvider> = Lazy::new(|| LoggerProvider 
         processors: Vec::new(),
         resource: Resource::empty(),
         is_shutdown: AtomicBool::new(true),
+        log_limits: LogLimits::new()
     }),
 });
 
@@ -84,6 +86,10 @@ impl LoggerProvider {
         &self.inner.resource
     }
 
+    pub(crate) fn log_limits(&self) -> &LogLimits {
+        &self.inner.log_limits
+    }
+
     /// Force flush all remaining logs in log processors and return results.
     pub fn force_flush(&self) -> Vec<LogResult<()>> {
         self.log_processors()
@@ -118,6 +124,7 @@ struct LoggerProviderInner {
     processors: Vec<Box<dyn LogProcessor>>,
     resource: Resource,
     is_shutdown: AtomicBool,
+    log_limits: LogLimits,
 }
 
 impl LoggerProviderInner {
@@ -168,6 +175,7 @@ impl Drop for LoggerProviderInner {
 pub struct Builder {
     processors: Vec<Box<dyn LogProcessor>>,
     resource: Option<Resource>,
+    log_limits: LogLimits,
 }
 
 impl Builder {
@@ -205,6 +213,11 @@ impl Builder {
         }
     }
 
+    pub fn with_log_limits(mut self, limits: LogLimits) -> Self {
+        self.log_limits = limits;
+        self
+    }
+
     /// Create a new provider from this configuration.
     pub fn build(self) -> LoggerProvider {
         let resource = self.resource.unwrap_or_default();
@@ -214,6 +227,7 @@ impl Builder {
                 processors: self.processors,
                 resource,
                 is_shutdown: AtomicBool::new(false),
+                log_limits: self.log_limits,
             }),
         };
 
@@ -630,6 +644,7 @@ mod tests {
                 ))],
                 resource: Resource::empty(),
                 is_shutdown: AtomicBool::new(false),
+                log_limits: LogLimits::new(),
             });
 
             {
@@ -671,6 +686,7 @@ mod tests {
             ))],
             resource: Resource::empty(),
             is_shutdown: AtomicBool::new(false),
+            log_limits: LogLimits::new(),
         });
 
         // Create a scope to test behavior when providers are dropped
