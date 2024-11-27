@@ -11,20 +11,24 @@ use std::{
     borrow::Cow,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc,
+        Arc, OnceLock,
     },
 };
 
-use once_cell::sync::Lazy;
-
 // a no nop logger provider used as placeholder when the provider is shutdown
-static NOOP_LOGGER_PROVIDER: Lazy<LoggerProvider> = Lazy::new(|| LoggerProvider {
-    inner: Arc::new(LoggerProviderInner {
-        processors: Vec::new(),
-        resource: Resource::empty(),
-        is_shutdown: AtomicBool::new(true),
-    }),
-});
+// TODO - replace it with LazyLock once it is stable
+static NOOP_LOGGER_PROVIDER: OnceLock<LoggerProvider> = OnceLock::new();
+
+#[inline]
+fn noop_logger_provider() -> &'static LoggerProvider {
+    NOOP_LOGGER_PROVIDER.get_or_init(|| LoggerProvider {
+        inner: Arc::new(LoggerProviderInner {
+            processors: Vec::new(),
+            resource: Resource::empty(),
+            is_shutdown: AtomicBool::new(true),
+        }),
+    })
+}
 
 #[derive(Debug, Clone)]
 /// Handles the creation and coordination of [`Logger`]s.
@@ -55,7 +59,7 @@ impl opentelemetry::logs::LoggerProvider for LoggerProvider {
     fn logger_with_scope(&self, scope: InstrumentationScope) -> Self::Logger {
         // If the provider is shutdown, new logger will refer a no-op logger provider.
         if self.inner.is_shutdown.load(Ordering::Relaxed) {
-            return Logger::new(scope, NOOP_LOGGER_PROVIDER.clone());
+            return Logger::new(scope, noop_logger_provider().clone());
         }
         if scope.name().is_empty() {
             otel_info!(name: "LoggerNameEmpty",  message = "Logger name is empty; consider providing a meaningful name. Logger will function normally and the provided name will be used as-is.");
@@ -238,11 +242,19 @@ impl Logger {
         Logger { scope, provider }
     }
 
+    #[deprecated(
+        since = "0.27.1",
+        note = "This method was intended for appender developers, but has no defined use-case in typical workflows. It is deprecated and will be removed in the next major release."
+    )]
     /// LoggerProvider associated with this logger.
     pub fn provider(&self) -> &LoggerProvider {
         &self.provider
     }
 
+    #[deprecated(
+        since = "0.27.1",
+        note = "This method was intended for appender developers, but has no defined use-case in typical workflows. It is deprecated and will be removed in the next major release."
+    )]
     /// Instrumentation scope of this logger.
     pub fn instrumentation_scope(&self) -> &InstrumentationScope {
         &self.scope
@@ -258,7 +270,7 @@ impl opentelemetry::logs::Logger for Logger {
 
     /// Emit a `LogRecord`.
     fn emit(&self, mut record: Self::LogRecord) {
-        let provider = self.provider();
+        let provider = &self.provider;
         let processors = provider.log_processors();
 
         //let mut log_record = record;
@@ -277,22 +289,17 @@ impl opentelemetry::logs::Logger for Logger {
         }
 
         for p in processors {
-            p.emit(&mut record, self.instrumentation_scope());
+            p.emit(&mut record, &self.scope);
         }
     }
 
     #[cfg(feature = "spec_unstable_logs_enabled")]
     fn event_enabled(&self, level: Severity, target: &str) -> bool {
-        let provider = self.provider();
+        let provider = &self.provider;
 
         let mut enabled = false;
         for processor in provider.log_processors() {
-            enabled = enabled
-                || processor.event_enabled(
-                    level,
-                    target,
-                    self.instrumentation_scope().name().as_ref(),
-                );
+            enabled = enabled || processor.event_enabled(level, target, self.scope.name().as_ref());
         }
         enabled
     }
@@ -725,14 +732,14 @@ mod tests {
             emitted_logs[0].clone().record.body,
             Some(AnyValue::String("Testing empty logger name".into()))
         );
-        assert_eq!(logger.instrumentation_scope().name(), "");
+        assert_eq!(logger.scope.name(), "");
 
         // Assert the second log created through the scope
         assert_eq!(
             emitted_logs[1].clone().record.body,
             Some(AnyValue::String("Testing empty logger scope name".into()))
         );
-        assert_eq!(scoped_logger.instrumentation_scope().name(), "");
+        assert_eq!(scoped_logger.scope.name(), "");
     }
 
     #[derive(Debug)]
