@@ -28,13 +28,10 @@ pub struct SimpleExporter;
 impl LogExporter for SimpleExporter {
     async fn export(&mut self, _batch: LogBatch<'_>) -> LogResult<()> {
         // Simulated export logic
-        println!("Exporting logs...");
         Ok(())
     }
 
-    fn shutdown(&mut self) {
-        println!("Shutting down exporter...");
-    }
+    fn shutdown(&mut self) {}
 }
 
 #[derive(Debug)]
