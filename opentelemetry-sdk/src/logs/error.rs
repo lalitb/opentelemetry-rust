@@ -26,6 +26,9 @@ pub enum LogError {
     #[error("mutex lock poisioning for {0}")]
     MutexPoisoned(String),
 
+    #[error("Unimplemented")]
+    UnImplemented,
+
     /// Other errors propagated from log SDK that weren't covered above.
     #[error(transparent)]
     Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),

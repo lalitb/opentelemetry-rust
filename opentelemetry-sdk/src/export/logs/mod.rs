@@ -62,7 +62,6 @@ impl LogBatch<'_> {
 }
 
 /// `LogExporter` defines the interface that log exporters should implement.
-#[async_trait]
 pub trait LogExporter: Send + Sync + Debug {
     /// Exports a batch of log records and their associated instrumentation scopes.
     ///
@@ -81,7 +80,17 @@ pub trait LogExporter: Send + Sync + Debug {
     /// A `LogResult<()>`, which is a result type indicating either a successful export (with
     /// `Ok(())`) or an error (`Err(LogError)`) if the export operation failed.
     ///
-    async fn export(&mut self, batch: LogBatch<'_>) -> LogResult<()>;
+    fn export<'a>(
+        &'a self,
+        _batch: &'a LogBatch<'a>,
+    ) -> impl std::future::Future<Output = LogResult<()>> + Send + 'a {
+        async { Err(LogError::UnImplemented) }
+    }
+
+    fn export_sync(&mut self, _batch: &LogBatch<'_>) -> LogResult<()> {
+        Err(LogError::UnImplemented)
+    }
+
     /// Shuts down the exporter.
     fn shutdown(&mut self) {}
     #[cfg(feature = "spec_unstable_logs_enabled")]

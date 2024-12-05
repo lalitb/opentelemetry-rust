@@ -106,9 +106,17 @@ impl<T: LogExporter> LogProcessor for SimpleLogProcessor<T> {
             .exporter
             .lock()
             .map_err(|_| LogError::MutexPoisoned("SimpleLogProcessor".into()))
-            .and_then(|mut exporter| {
+            .and_then(|exporter| {
                 let log_tuple = &[(record as &LogRecord, instrumentation)];
-                futures_executor::block_on(exporter.export(LogBatch::new(log_tuple)))
+                let log_batch = LogBatch::new(log_tuple);
+                // First, try synchronous export
+                let sync_result = exporter.export_sync(&log_batch);
+                // If the exporter doesn't support sync export, try async export
+                if let Err(LogError::UnImplemented) = sync_result {
+                    futures_executor::block_on(exporter.export(&log_batch))
+                } else {
+                    sync_result
+                }
             });
         // Handle errors with specific static names
         match result {
@@ -357,13 +365,18 @@ where
         .iter()
         .map(|log_data| (&log_data.0, &log_data.1))
         .collect();
-    let export = exporter.export(LogBatch::new(log_vec.as_slice()));
-    let timeout = runtime.delay(time_out);
-    pin_mut!(export);
-    pin_mut!(timeout);
-    match future::select(export, timeout).await {
-        Either::Left((export_res, _)) => export_res,
-        Either::Right((_, _)) => ExportResult::Err(LogError::ExportTimedOut(time_out)),
+    let log_batch = LogBatch::new(log_vec.as_slice());
+    if let sync_result = exporter.export_sync(&log_batch) {
+        sync_result
+    } else {
+        let export = exporter.export(&log_batch);
+        let timeout = runtime.delay(time_out);
+        pin_mut!(export);
+        pin_mut!(timeout);
+        match future::select(export, timeout).await {
+            Either::Left((export_res, _)) => export_res,
+            Either::Right((_, _)) => ExportResult::Err(LogError::ExportTimedOut(time_out)),
+        }
     }
 }
 
