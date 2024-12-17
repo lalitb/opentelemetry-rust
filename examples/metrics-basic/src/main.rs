@@ -1,10 +1,35 @@
+use opentelemetry::metrics::{Meter, MeterProvider};
+use opentelemetry::InstrumentationScope;
 use opentelemetry::{global, KeyValue};
 use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider};
 use opentelemetry_sdk::Resource;
 use std::error::Error;
+use std::sync::Arc;
 use std::vec;
 
+/// A concrete wrapper around a `dyn MeterProvider`.
+///
+#[derive(Clone)]
+struct MeterProviderWrapper(Arc<dyn MeterProvider + Send + Sync>);
+
+impl MeterProvider for MeterProviderWrapper {
+    fn meter(&self, name: &'static str) -> Meter {
+        self.0.meter(name)
+    }
+
+    fn meter_with_scope(&self, scope: crate::InstrumentationScope) -> Meter {
+        self.0.meter_with_scope(scope)
+    }
+}
+
 fn init_meter_provider() -> opentelemetry_sdk::metrics::SdkMeterProvider {
+    // 1. Grab the current provider at startup (this will be the NoopMeterProvider).
+    let noop_provider = global::meter_provider();
+    let wrapped_noop_provider = MeterProviderWrapper(noop_provider);
+
+    // 3. Reset to the original provider (noop).
+
+    println!("Reset back to NoopMeterProvider!");
     let exporter = opentelemetry_stdout::MetricExporterBuilder::default()
         // Build exporter using Delta Temporality (Defaults to Temporality::Cumulative)
         // .with_temporality(opentelemetry_sdk::metrics::Temporality::Delta)
@@ -18,6 +43,7 @@ fn init_meter_provider() -> opentelemetry_sdk::metrics::SdkMeterProvider {
         )]))
         .build();
     global::set_meter_provider(provider.clone());
+    global::set_meter_provider(wrapped_noop_provider.clone());
     provider
 }
 
