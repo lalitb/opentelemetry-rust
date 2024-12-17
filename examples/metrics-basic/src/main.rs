@@ -27,9 +27,6 @@ fn init_meter_provider() -> opentelemetry_sdk::metrics::SdkMeterProvider {
     let noop_provider = global::meter_provider();
     let wrapped_noop_provider = MeterProviderWrapper(noop_provider);
 
-    // 3. Reset to the original provider (noop).
-
-    println!("Reset back to NoopMeterProvider!");
     let exporter = opentelemetry_stdout::MetricExporterBuilder::default()
         // Build exporter using Delta Temporality (Defaults to Temporality::Cumulative)
         // .with_temporality(opentelemetry_sdk::metrics::Temporality::Delta)
@@ -43,6 +40,7 @@ fn init_meter_provider() -> opentelemetry_sdk::metrics::SdkMeterProvider {
         )]))
         .build();
     global::set_meter_provider(provider.clone());
+    println!("Reset back to NoopMeterProvider!");
     global::set_meter_provider(wrapped_noop_provider.clone());
     provider
 }
