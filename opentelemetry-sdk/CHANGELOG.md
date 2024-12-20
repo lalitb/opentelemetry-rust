@@ -159,6 +159,57 @@ metadata, a feature introduced in version 0.1.40. [#2418](https://github.com/ope
     - Continue enabling one of the async runtime feature flags: `rt-tokio`,
       `rt-tokio-current-thread`, or `rt-async-std`.
 
+- **BREAKING**: [#2374](https://github.com/open-telemetry/opentelemetry-rust/pull/2374)
+ - LogExporter Trait Update
+   - *Before*:
+   ```rust
+   #[async_trait]
+   pub trait LogExporter: Send + Sync + Debug {
+    async fn export(&mut self, batch: LogBatch<'_>) -> LogResult<()>;
+   }
+   ```
+   - *After*:
+   ```rust
+   pub trait LogExporter: Send + Sync + Debug {
+    fn export<'a>(
+        &'a mut self,
+        batch: &'a LogBatch<'a>,
+    ) -> impl std::future::Future<Output = LogResult<()>> + Send + 'a;
+   }
+   ```
+   This change replaces the async_trait implementation with native async/await functionality using impl Future. The new design:
+    - Eliminates dependency on the async_trait crate
+    - Maintains async behavior through direct Future implementation
+    - Improves performance by avoiding runtime overhead
+    - Provides a more idiomatic Rust implementation
+  
+    *Migration Guide for Custom Exporter Developers*: Custom exporters implementing the LogExporter trait must update their export method implementation. Here's an example of the required changes:
+
+    ```rust
+    // Previous implementation
+    #[async_trait]
+    impl LogExporter for MyCustomExporter {
+      async fn export(&mut self, batch: LogBatch<'_>) -> LogResult<()> {
+        // implementation
+      }
+    }
+
+    // New implementation
+    impl LogExporter for MyCustomExporter {
+      fn export<'a>(
+        &'a mut self,
+        batch: &'a LogBatch<'a>,
+      ) -> impl std::future::Future<Output = LogResult<()>> + Send + 'a {
+        async move {
+            // implementation
+        }
+      }
+    }
+    ```
+
+
+
+
 ## 0.27.1
 
 Released 2024-Nov-27
