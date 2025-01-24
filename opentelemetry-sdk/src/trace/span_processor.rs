@@ -36,12 +36,13 @@
 
 use crate::resource::Resource;
 use crate::trace::Span;
+use crate::trace::SpanBatch;
 use crate::trace::{SpanData, SpanExporter};
 use opentelemetry::{otel_debug, otel_warn};
 use opentelemetry::{otel_error, otel_info};
 use opentelemetry::{
     trace::{TraceError, TraceResult},
-    Context,
+    Context, InstrumentationScope,
 };
 use std::cmp::min;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -86,7 +87,7 @@ pub trait SpanProcessor: Send + Sync + std::fmt::Debug {
     /// already set). This method is called synchronously within the `Span::end`
     /// API, therefore it should not block or throw an exception.
     /// TODO - This method should take reference to `SpanData`
-    fn on_end(&self, span: SpanData);
+    fn on_end(&self, span: SpanData, instrumentation: &InstrumentationScope);
     /// Force the spans lying in the cache to be exported.
     fn force_flush(&self) -> TraceResult<()>;
     /// Shuts down the processor. Called when SDK is shut down. This is an
@@ -132,16 +133,20 @@ impl SpanProcessor for SimpleSpanProcessor {
         // Ignored
     }
 
-    fn on_end(&self, span: SpanData) {
+    fn on_end(&self, span: SpanData, instrumentation: &InstrumentationScope) {
         if !span.span_context.is_sampled() {
             return;
         }
+
+        let span_tuple = &[(span as &SpanData, instrumentation)];
 
         let result = self
             .exporter
             .lock()
             .map_err(|_| TraceError::Other("SimpleSpanProcessor mutex poison".into()))
-            .and_then(|mut exporter| futures_executor::block_on(exporter.export(vec![span])));
+            .and_then(|mut exporter| {
+                futures_executor::block_on(exporter.export(SpanBatch::new(span_tuple)))
+            });
 
         if let Err(err) = result {
             // TODO: check error type, and log `error` only if the error is user-actionable, else log `debug`

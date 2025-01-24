@@ -7,6 +7,110 @@ use std::borrow::Cow;
 use std::fmt::Debug;
 use std::time::SystemTime;
 
+/// A batch of spans to be exported by a `SpanExporter`.
+///
+/// The `SpanBatch` struct holds a collection of spans along with their associated
+/// instrumentation scopes. This structure is used to group spans together for efficient
+/// export operations.
+///
+/// # Type Parameters
+/// - `'a`: The lifetime of the references to the log records and instrumentation scopes.
+///
+#[derive(Debug)]
+pub struct SpanBatch<'a> {
+    data: SpanBatchData<'a>,
+}
+
+/// The `SpanBatchData` enum represents the data field of a `SpanBatch`.
+/// It can either be:
+/// - A shared reference to a slice of boxed tuples, where each tuple consists of an owned `SpanData` and an owned `InstrumentationScope`.
+/// - Or it can be a shared reference to a slice of tuples, where each tuple consists of a reference to a `LogRecord` and a reference to an `InstrumentationScope`.
+#[derive(Debug)]
+enum SpanBatchData<'a> {
+    SliceOfOwnedData(&'a [Box<(SpanData, InstrumentationScope)>]), // Used by BatchProcessor which clones the LogRecords for its own use.
+    SliceOfBorrowedData(&'a [(&'a SpanData, &'a InstrumentationScope)]),
+}
+
+impl<'a> SpanBatch<'a> {
+    /// Creates a new instance of `LogBatch`.
+    ///
+    /// # Arguments
+    ///
+    /// * `data` - A slice of tuples, where each tuple consists of a reference to a `LogRecord`
+    ///   and a reference to an `InstrumentationScope`. These tuples represent the log records
+    ///   and their associated instrumentation scopes to be exported.
+    ///
+    /// # Returns
+    ///
+    /// A `LogBatch` instance containing the provided log records and instrumentation scopes.
+    ///
+    /// Note - this is not a public function, and should not be used directly. This would be
+    /// made private in the future.
+    pub fn new(data: &'a [(&'a SpanData, &'a InstrumentationScope)]) -> SpanBatch<'a> {
+        SpanBatch {
+            data: SpanBatchData::SliceOfBorrowedData(data),
+        }
+    }
+
+    pub(crate) fn new_with_owned_data(
+        data: &'a [Box<(SpanData, InstrumentationScope)>],
+    ) -> SpanBatch<'a> {
+        SpanBatch {
+            data: SpanBatchData::SliceOfOwnedData(data),
+        }
+    }
+}
+
+impl SpanBatch<'_> {
+    /// Returns an iterator over the log records and instrumentation scopes in the batch.
+    ///
+    /// Each item yielded by the iterator is a tuple containing references to a `LogRecord`
+    /// and an `InstrumentationScope`.
+    ///
+    /// # Returns
+    ///
+    /// An iterator that yields references to the `LogRecord` and `InstrumentationScope` in the batch.
+    ///
+    pub fn iter(&self) -> impl Iterator<Item = (&SpanData, &InstrumentationScope)> {
+        LogBatchDataIter {
+            data: &self.data,
+            index: 0,
+        }
+    }
+}
+
+struct LogBatchDataIter<'a> {
+    data: &'a SpanBatchData<'a>,
+    index: usize,
+}
+
+impl<'a> Iterator for LogBatchDataIter<'a> {
+    type Item = (&'a SpanData, &'a InstrumentationScope);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.data {
+            SpanBatchData::SliceOfOwnedData(data) => {
+                if self.index < data.len() {
+                    let record = &*data[self.index];
+                    self.index += 1;
+                    Some((&record.0, &record.1))
+                } else {
+                    None
+                }
+            }
+            SpanBatchData::SliceOfBorrowedData(data) => {
+                if self.index < data.len() {
+                    let record = &data[self.index];
+                    self.index += 1;
+                    Some((record.0, record.1))
+                } else {
+                    None
+                }
+            }
+        }
+    }
+}
+
 /// Describes the result of an export.
 pub type ExportResult = Result<(), TraceError>;
 
@@ -30,7 +134,7 @@ pub trait SpanExporter: Send + Sync + Debug {
     ///
     /// Any retry logic that is required by the exporter is the responsibility
     /// of the exporter.
-    fn export(&mut self, batch: Vec<SpanData>) -> BoxFuture<'static, ExportResult>;
+    fn export(&self, batch: SpanBatch<'_>) -> BoxFuture<'static, ExportResult>;
 
     /// Shuts down the exporter. Called when SDK is shut down. This is an
     /// opportunity for exporter to do any cleanup required.
@@ -95,6 +199,4 @@ pub struct SpanData {
     pub links: crate::trace::SpanLinks,
     /// Span status
     pub status: Status,
-    /// Instrumentation scope that produced this span
-    pub instrumentation_scope: InstrumentationScope,
 }

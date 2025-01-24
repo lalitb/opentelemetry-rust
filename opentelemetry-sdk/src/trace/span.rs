@@ -75,11 +75,11 @@ impl Span {
     /// This function copies all data from the current span, which will create a
     /// overhead.
     pub fn exported_data(&self) -> Option<crate::trace::SpanData> {
-        let (span_context, tracer) = (self.span_context.clone(), &self.tracer);
+        let span_context = self.span_context.clone();
 
         self.data
             .as_ref()
-            .map(|data| build_export_data(data.clone(), span_context, tracer))
+            .map(|data| build_export_data(data.clone(), span_context))
     }
 }
 
@@ -217,22 +217,22 @@ impl Span {
             data.end_time = opentelemetry::time::now();
         }
 
+        data.span_context = self.span_context.clone();
+
         match provider.span_processors() {
             [] => {}
             [processor] => {
-                processor.on_end(build_export_data(
-                    data,
-                    self.span_context.clone(),
-                    &self.tracer,
-                ));
+                processor.on_end(
+                    build_export_data(data, self.span_context.clone()),
+                    self.tracer.instrumentation_scope(),
+                );
             }
             processors => {
                 for processor in processors {
-                    processor.on_end(build_export_data(
-                        data.clone(),
-                        self.span_context.clone(),
-                        &self.tracer,
-                    ));
+                    processor.on_end(
+                        build_export_data(data.clone(), self.span_context.clone()),
+                        self.tracer.instrumentation_scope(),
+                    )
                 }
             }
         }
@@ -246,11 +246,7 @@ impl Drop for Span {
     }
 }
 
-fn build_export_data(
-    data: SpanData,
-    span_context: SpanContext,
-    tracer: &crate::trace::Tracer,
-) -> crate::trace::SpanData {
+fn build_export_data(data: SpanData, span_context: SpanContext) -> crate::trace::SpanData {
     crate::trace::SpanData {
         span_context,
         parent_span_id: data.parent_span_id,
@@ -263,7 +259,6 @@ fn build_export_data(
         events: data.events,
         links: data.links,
         status: data.status,
-        instrumentation_scope: tracer.instrumentation_scope().clone(),
     }
 }
 
