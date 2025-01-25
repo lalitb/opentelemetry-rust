@@ -16,7 +16,7 @@ mod sampler;
 mod span;
 mod span_limit;
 mod span_processor;
-#[cfg(feature = "experimental_trace_batch_span_processor_with_async_runtime")]
+//#[cfg(feature = "experimental_trace_batch_span_processor_with_async_runtime")]
 /// Experimental feature to use async runtime with batch span processor.
 pub mod span_processor_with_async_runtime;
 mod tracer;
@@ -78,7 +78,7 @@ mod tests {
         // Arrange
         let exporter = InMemorySpanExporterBuilder::new().build();
         let provider = TracerProvider::builder()
-            .with_span_processor(SimpleSpanProcessor::new(Box::new(exporter.clone())))
+            .with_span_processor(SimpleSpanProcessor::new(exporter.clone()))
             .build();
 
         // Act
@@ -112,7 +112,7 @@ mod tests {
         // Arrange
         let exporter = InMemorySpanExporterBuilder::new().build();
         let provider = TracerProvider::builder()
-            .with_span_processor(SimpleSpanProcessor::new(Box::new(exporter.clone())))
+            .with_span_processor(SimpleSpanProcessor::new(exporter.clone()))
             .build();
 
         // Act
@@ -148,7 +148,7 @@ mod tests {
         // Arrange
         let exporter = InMemorySpanExporterBuilder::new().build();
         let provider = TracerProvider::builder()
-            .with_span_processor(SimpleSpanProcessor::new(Box::new(exporter.clone())))
+            .with_span_processor(SimpleSpanProcessor::new(exporter.clone()))
             .build();
 
         // Act
@@ -184,7 +184,7 @@ mod tests {
         // Arrange
         let exporter = InMemorySpanExporterBuilder::new().build();
         let provider = TracerProvider::builder()
-            .with_span_processor(SimpleSpanProcessor::new(Box::new(exporter.clone())))
+            .with_span_processor(SimpleSpanProcessor::new(exporter.clone()))
             .build();
 
         // Act
@@ -220,7 +220,7 @@ mod tests {
         // Arrange
         let exporter = InMemorySpanExporterBuilder::new().build();
         let provider = TracerProvider::builder()
-            .with_span_processor(SimpleSpanProcessor::new(Box::new(exporter.clone())))
+            .with_span_processor(SimpleSpanProcessor::new(exporter.clone()))
             .build();
 
         // Act
@@ -256,7 +256,7 @@ mod tests {
         let exporter = InMemorySpanExporterBuilder::new().build();
         let provider = TracerProvider::builder()
             .with_sampler(Sampler::AlwaysOff)
-            .with_span_processor(SimpleSpanProcessor::new(Box::new(exporter.clone())))
+            .with_span_processor(SimpleSpanProcessor::new(exporter.clone()))
             .build();
 
         let tracer = provider.tracer("test");
@@ -309,7 +309,7 @@ mod tests {
         let exporter = InMemorySpanExporterBuilder::new().build();
         let provider = TracerProvider::builder()
             .with_sampler(TestRecordOnlySampler::default())
-            .with_span_processor(SimpleSpanProcessor::new(Box::new(exporter.clone())))
+            .with_span_processor(SimpleSpanProcessor::new(exporter))
             .build();
 
         let tracer = provider.tracer("test");
@@ -381,7 +381,7 @@ mod tests {
         }
 
         let exporter = InMemorySpanExporter::default();
-        let span_processor = SimpleSpanProcessor::new(Box::new(exporter.clone()));
+        let span_processor = SimpleSpanProcessor::new(exporter.clone());
         let tracer_provider = TracerProvider::builder()
             .with_span_processor(span_processor)
             .build();

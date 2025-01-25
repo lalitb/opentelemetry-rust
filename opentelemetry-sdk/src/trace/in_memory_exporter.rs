@@ -1,6 +1,5 @@
 use crate::resource::Resource;
 use crate::trace::{ExportResult, SpanData, SpanExporter};
-use futures_util::future::BoxFuture;
 use opentelemetry::trace::{TraceError, TraceResult};
 use std::sync::{Arc, Mutex};
 
@@ -130,7 +129,10 @@ impl InMemorySpanExporter {
 }
 
 impl SpanExporter for InMemorySpanExporter {
-    fn export(&mut self, batch: Vec<SpanData>) -> BoxFuture<'static, ExportResult> {
+    fn export(
+        &self,
+        batch: Vec<SpanData>,
+    ) -> impl std::future::Future<Output = ExportResult> + Send {
         if let Err(err) = self
             .spans
             .lock()
