@@ -1,6 +1,5 @@
 //! Trace exporters
 use crate::Resource;
-use futures_util::future::BoxFuture;
 use opentelemetry::trace::{SpanContext, SpanId, SpanKind, Status, TraceError};
 use opentelemetry::{InstrumentationScope, KeyValue};
 use std::borrow::Cow;
@@ -30,7 +29,10 @@ pub trait SpanExporter: Send + Sync + Debug {
     ///
     /// Any retry logic that is required by the exporter is the responsibility
     /// of the exporter.
-    fn export(&mut self, batch: Vec<SpanData>) -> BoxFuture<'static, ExportResult>;
+    fn export(
+        &self,
+        batch: Vec<SpanData>,
+    ) -> impl std::future::Future<Output = ExportResult> + Send;
 
     /// Shuts down the exporter. Called when SDK is shut down. This is an
     /// opportunity for exporter to do any cleanup required.
@@ -60,8 +62,8 @@ pub trait SpanExporter: Send + Sync + Debug {
     /// implemented as a blocking API or an asynchronous API which notifies the caller via
     /// a callback or an event. OpenTelemetry client authors can decide if they want to
     /// make the flush timeout configurable.
-    fn force_flush(&mut self) -> BoxFuture<'static, ExportResult> {
-        Box::pin(async { Ok(()) })
+    fn force_flush(&mut self) -> impl std::future::Future<Output = ExportResult> + Send {
+        async { Ok(()) }
     }
 
     /// Set the resource for the exporter.

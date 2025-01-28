@@ -2,7 +2,6 @@ use crate::{
     trace::{ExportResult, SpanData, SpanExporter},
     trace::{SpanEvents, SpanLinks},
 };
-use futures_util::future::BoxFuture;
 pub use opentelemetry::testing::trace::TestSpan;
 use opentelemetry::{
     trace::{SpanContext, SpanId, SpanKind, Status, TraceFlags, TraceId, TraceState},
@@ -40,17 +39,22 @@ pub struct TokioSpanExporter {
 }
 
 impl SpanExporter for TokioSpanExporter {
-    fn export(&mut self, batch: Vec<SpanData>) -> BoxFuture<'static, ExportResult> {
-        for span_data in batch {
-            if let Err(err) = self
-                .tx_export
-                .send(span_data)
-                .map_err::<TestExportError, _>(Into::into)
-            {
-                return Box::pin(std::future::ready(Err(Into::into(err))));
+    fn export(
+        &self,
+        batch: Vec<SpanData>,
+    ) -> impl std::future::Future<Output = ExportResult> + Send {
+        async {
+            for span_data in batch {
+                if let Err(err) = self
+                    .tx_export
+                    .send(span_data)
+                    .map_err::<TestExportError, _>(Into::into)
+                {
+                    return Err(Into::into(err));
+                }
             }
+            Ok(())
         }
-        Box::pin(std::future::ready(Ok(())))
     }
 
     fn shutdown(&mut self) {
@@ -113,7 +117,7 @@ impl NoopSpanExporter {
 
 #[async_trait::async_trait]
 impl SpanExporter for NoopSpanExporter {
-    fn export(&mut self, _: Vec<SpanData>) -> BoxFuture<'static, ExportResult> {
-        Box::pin(std::future::ready(Ok(())))
+    fn export(&self, _: Vec<SpanData>) -> impl std::future::Future<Output = ExportResult> + Send {
+        async { Ok(()) }
     }
 }

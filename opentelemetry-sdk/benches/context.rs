@@ -137,8 +137,11 @@ fn parent_sampled_tracer(inner_sampler: Sampler) -> (TracerProvider, BoxedTracer
 struct NoopExporter;
 
 impl SpanExporter for NoopExporter {
-    fn export(&mut self, _spans: Vec<SpanData>) -> BoxFuture<'static, ExportResult> {
-        Box::pin(futures_util::future::ready(Ok(())))
+    fn export(
+        &self,
+        _spans: Vec<SpanData>,
+    ) -> impl std::future::Future<Output = ExportResult> + Send {
+        async { Ok(()) }
     }
 }
 

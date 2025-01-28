@@ -293,7 +293,7 @@ impl TracerProviderBuilder {
     /// Processors are invoked in the order they are added.
     pub fn with_simple_exporter<T: SpanExporter + 'static>(self, exporter: T) -> Self {
         let mut processors = self.processors;
-        processors.push(Box::new(SimpleSpanProcessor::new(Box::new(exporter))));
+        processors.push(Box::new(SimpleSpanProcessor::new(exporter)));
 
         TracerProviderBuilder { processors, ..self }
     }

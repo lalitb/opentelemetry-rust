@@ -3,7 +3,6 @@ mod model;
 mod uploader;
 
 use async_trait::async_trait;
-use futures_core::future::BoxFuture;
 use http::Uri;
 use model::endpoint::Endpoint;
 use opentelemetry::{global, trace::TraceError, InstrumentationScope, KeyValue};
@@ -228,12 +227,11 @@ async fn zipkin_export(
 #[async_trait]
 impl trace::SpanExporter for Exporter {
     /// Export spans to Zipkin collector.
-    fn export(&mut self, batch: Vec<trace::SpanData>) -> BoxFuture<'static, trace::ExportResult> {
-        Box::pin(zipkin_export(
-            batch,
-            self.uploader.clone(),
-            self.local_endpoint.clone(),
-        ))
+    fn export(
+        &self,
+        batch: Vec<trace::SpanData>,
+    ) -> impl std::future::Future<Output = trace::ExportResult> + Send {
+        zipkin_export(batch, self.uploader.clone(), self.local_endpoint.clone())
     }
 }
 

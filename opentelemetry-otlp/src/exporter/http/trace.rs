@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use futures_core::future::BoxFuture;
 use http::{header::CONTENT_TYPE, Method};
 use opentelemetry::{otel_debug, trace::TraceError};
 use opentelemetry_sdk::trace::{ExportResult, SpanData, SpanExporter};
@@ -8,44 +7,42 @@ use opentelemetry_sdk::trace::{ExportResult, SpanData, SpanExporter};
 use super::OtlpHttpClient;
 
 impl SpanExporter for OtlpHttpClient {
-    fn export(&mut self, batch: Vec<SpanData>) -> BoxFuture<'static, ExportResult> {
-        let client = match self
-            .client
-            .lock()
-            .map_err(|e| TraceError::Other(e.to_string().into()))
-            .and_then(|g| match &*g {
-                Some(client) => Ok(Arc::clone(client)),
-                _ => Err(TraceError::Other("exporter is already shut down".into())),
-            }) {
-            Ok(client) => client,
-            Err(err) => return Box::pin(std::future::ready(Err(err))),
-        };
+    fn export(
+        &self,
+        batch: Vec<SpanData>,
+    ) -> impl std::future::Future<Output = ExportResult> + Send {
+        async {
+            let client = match self
+                .client
+                .lock()
+                .map_err(|e| TraceError::Other(e.to_string().into()))
+                .and_then(|g| match &*g {
+                    Some(client) => Ok(Arc::clone(client)),
+                    _ => Err(TraceError::Other("exporter is already shut down".into())),
+                }) {
+                Ok(client) => client,
+                Err(err) => return Err(err),
+            };
 
-        let (body, content_type) = match self.build_trace_export_body(batch) {
-            Ok(body) => body,
-            Err(e) => return Box::pin(std::future::ready(Err(e))),
-        };
+            let (body, content_type) = match self.build_trace_export_body(batch) {
+                Ok(body) => body,
+                Err(e) => return Err(e),
+            };
 
-        let mut request = match http::Request::builder()
-            .method(Method::POST)
-            .uri(&self.collector_endpoint)
-            .header(CONTENT_TYPE, content_type)
-            .body(body)
-        {
-            Ok(req) => req,
-            Err(e) => {
-                return Box::pin(std::future::ready(Err(crate::Error::RequestFailed(
-                    Box::new(e),
-                )
-                .into())))
+            let mut request = match http::Request::builder()
+                .method(Method::POST)
+                .uri(&self.collector_endpoint)
+                .header(CONTENT_TYPE, content_type)
+                .body(body)
+            {
+                Ok(req) => req,
+                Err(e) => return Err(crate::Error::RequestFailed(Box::new(e)).into()),
+            };
+
+            for (k, v) in &self.headers {
+                request.headers_mut().insert(k.clone(), v.clone());
             }
-        };
 
-        for (k, v) in &self.headers {
-            request.headers_mut().insert(k.clone(), v.clone());
-        }
-
-        Box::pin(async move {
             let request_uri = request.uri().to_string();
             otel_debug!(name: "HttpTracesClient.CallingExport");
             let response = client.send(request).await?;
@@ -61,7 +58,7 @@ impl SpanExporter for OtlpHttpClient {
             }
 
             Ok(())
-        })
+        }
     }
 
     fn shutdown(&mut self) {

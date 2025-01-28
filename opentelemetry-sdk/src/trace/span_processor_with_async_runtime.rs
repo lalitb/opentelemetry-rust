@@ -181,15 +181,15 @@ enum BatchMessage {
     SetResource(Arc<Resource>),
 }
 
-struct BatchSpanProcessorInternal<R> {
+struct BatchSpanProcessorInternal<R, E> {
     spans: Vec<SpanData>,
     export_tasks: FuturesUnordered<BoxFuture<'static, ExportResult>>,
     runtime: R,
-    exporter: Box<dyn SpanExporter>,
+    exporter: E,
     config: BatchConfig,
 }
 
-impl<R: RuntimeChannel> BatchSpanProcessorInternal<R> {
+impl<R: RuntimeChannel, E: SpanExporter> BatchSpanProcessorInternal<R, E> {
     async fn flush(&mut self, res_channel: Option<oneshot::Sender<ExportResult>>) {
         let export_task = self.export();
         let task = Box::pin(async move {

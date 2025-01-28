@@ -1,17 +1,16 @@
 use chrono::{DateTime, Utc};
 use core::fmt;
-use futures_util::future::BoxFuture;
 use opentelemetry::trace::TraceError;
 use opentelemetry_sdk::trace::{ExportResult, SpanData};
-use std::sync::atomic;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use opentelemetry_sdk::resource::Resource;
 
 /// An OpenTelemetry exporter that writes Spans to stdout on export.
 pub struct SpanExporter {
     resource: Resource,
-    is_shutdown: atomic::AtomicBool,
-    resource_emitted: bool,
+    is_shutdown: AtomicBool,
+    resource_emitted: AtomicBool,
 }
 
 impl fmt::Debug for SpanExporter {
@@ -24,43 +23,45 @@ impl Default for SpanExporter {
     fn default() -> Self {
         SpanExporter {
             resource: Resource::builder().build(),
-            is_shutdown: atomic::AtomicBool::new(false),
-            resource_emitted: false,
+            is_shutdown: AtomicBool::new(false),
+            resource_emitted: AtomicBool::new(false),
         }
     }
 }
 
 impl opentelemetry_sdk::trace::SpanExporter for SpanExporter {
     /// Write Spans to stdout
-    fn export(&mut self, batch: Vec<SpanData>) -> BoxFuture<'static, ExportResult> {
-        if self.is_shutdown.load(atomic::Ordering::SeqCst) {
-            Box::pin(std::future::ready(Err(TraceError::from(
-                "exporter is shut down",
-            ))))
-        } else {
-            println!("Spans");
-            if self.resource_emitted {
-                print_spans(batch);
+    fn export(
+        &self,
+        batch: Vec<SpanData>,
+    ) -> impl std::future::Future<Output = ExportResult> + Send {
+        async move {
+            if self.is_shutdown.load(Ordering::SeqCst) {
+                return Err(TraceError::from("exporter is shut down"));
             } else {
-                self.resource_emitted = true;
-                println!("Resource");
-                if let Some(schema_url) = self.resource.schema_url() {
-                    println!("\tResource SchemaUrl: {:?}", schema_url);
+                println!("Spans");
+                if self.resource_emitted.load(Ordering::SeqCst) {
+                    print_spans(batch);
+                } else {
+                    self.resource_emitted.store(true, Ordering::SeqCst);
+                    println!("Resource");
+                    if let Some(schema_url) = self.resource.schema_url() {
+                        println!("\tResource SchemaUrl: {:?}", schema_url);
+                    }
+
+                    self.resource.iter().for_each(|(k, v)| {
+                        println!("\t ->  {}={:?}", k, v);
+                    });
+
+                    print_spans(batch);
                 }
-
-                self.resource.iter().for_each(|(k, v)| {
-                    println!("\t ->  {}={:?}", k, v);
-                });
-
-                print_spans(batch);
+                Ok(())
             }
-
-            Box::pin(std::future::ready(Ok(())))
         }
     }
 
     fn shutdown(&mut self) {
-        self.is_shutdown.store(true, atomic::Ordering::SeqCst);
+        self.is_shutdown.store(true, Ordering::SeqCst);
     }
 
     fn set_resource(&mut self, res: &opentelemetry_sdk::Resource) {
