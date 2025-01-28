@@ -31,5 +31,5 @@ tonic-client = ["opentelemetry-otlp/grpc-tonic", "opentelemetry-otlp/trace", "op
 internal-logs = ["opentelemetry-otlp/internal-logs"]
 
 # Keep tonic as the default client
-default = ["tonic-client", "internal-logs"]
+default = ["reqwest-blocking-client", "internal-logs"]
 

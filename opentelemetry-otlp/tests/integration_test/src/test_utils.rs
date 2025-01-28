@@ -20,7 +20,7 @@
 
 use anyhow::Result;
 use opentelemetry::{otel_debug, otel_info};
-use std::fs::{self, File, OpenOptions};
+use std::fs::{self, canonicalize, File, OpenOptions};
 use std::os::unix::fs::PermissionsExt;
 use std::sync::{Arc, Mutex, Once, OnceLock};
 use testcontainers::core::wait::HttpWaitStrategy;
@@ -94,6 +94,18 @@ pub async fn start_collector_container() -> Result<()> {
             .with_mount(Mount::bind_mount(
                 fs::canonicalize("./actual/traces.json")?.to_string_lossy(),
                 "/testresults/traces.json",
+            ))
+            .with_mount(Mount::bind_mount(
+                fs::canonicalize("../cert/ca.pem")?.to_string_lossy(),
+                "/etc/ssl/certs/ca.pem",
+            ))
+            .with_mount(Mount::bind_mount(
+                fs::canonicalize("../cert/server_cert.pem")?.to_string_lossy(),
+                "/etc/ssl/certs/server_cert.pem",
+            ))
+            .with_mount(Mount::bind_mount(
+                fs::canonicalize("../cert/server_cert-key.pem")?.to_string_lossy(),
+                "/etc/ssl/certs/server_cert-key.pem",
             ))
             .start()
             .await?;

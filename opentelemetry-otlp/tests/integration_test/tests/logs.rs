@@ -4,8 +4,9 @@ use anyhow::Result;
 use ctor::dtor;
 use integration_test_runner::test_utils;
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
-use opentelemetry_otlp::LogExporter;
+use opentelemetry_otlp::{LogExporter, WithExportConfig};
 use opentelemetry_sdk::logs::LoggerProvider;
+use opentelemetry_sdk::metrics::exporter;
 use opentelemetry_sdk::{logs as sdklogs, Resource};
 use std::fs::File;
 use std::io::Read;
@@ -24,8 +25,8 @@ fn init_logs(is_simple: bool) -> Result<sdklogs::LoggerProvider> {
         feature = "reqwest-client",
         feature = "reqwest-blocking-client"
     ))]
-    let exporter_builder = exporter_builder.with_http();
-
+    let exporter_builder = exporter_builder.with_http().with_export_config(ExporterConfig {
+    });
     let exporter = exporter_builder.build()?;
 
     let mut logger_provider_builder = LoggerProvider::builder();

@@ -3,8 +3,14 @@ receivers:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
-      http:
+      https:
         endpoint: 0.0.0.0:4318
+        tls:
+          ca_file: /cert/ca.pem
+          cert_file: /cert/server_cert.pem
+          key_file: /cert/server_cert-key.pem
+          min_version: "1.0"
+          max_version: "1.3"
 
 exporters:
   file/traces:
