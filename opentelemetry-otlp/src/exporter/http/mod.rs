@@ -44,59 +44,13 @@ mod trace;
 use opentelemetry_http::hyper::HyperClient;
 
 /// Configuration of the http transport
-#[derive(Debug)]
-#[cfg_attr(
-    all(
-        not(feature = "reqwest-client"),
-        not(feature = "reqwest-blocking-client"),
-        not(feature = "hyper-client")
-    ),
-    derive(Default)
-)]
+#[derive(Debug, Default)]
 pub struct HttpConfig {
     /// Select the HTTP client
     client: Option<Arc<dyn HttpClient>>,
 
     /// Additional headers to send to the collector.
     headers: Option<HashMap<String, String>>,
-}
-
-#[cfg(any(
-    feature = "reqwest-blocking-client",
-    feature = "reqwest-client",
-    feature = "hyper-client"
-))]
-impl Default for HttpConfig {
-    fn default() -> Self {
-        #[cfg(feature = "reqwest-blocking-client")]
-        let default_client = std::thread::spawn(|| {
-            Some(Arc::new(reqwest::blocking::Client::new()) as Arc<dyn HttpClient>)
-        })
-        .join()
-        .expect("creating reqwest::blocking::Client on a new thread not to fail");
-        #[cfg(all(not(feature = "reqwest-blocking-client"), feature = "reqwest-client"))]
-        let default_client = Some(Arc::new(reqwest::Client::new()) as Arc<dyn HttpClient>);
-        #[cfg(all(
-            not(feature = "reqwest-client"),
-            not(feature = "reqwest-blocking-client"),
-            feature = "hyper-client"
-        ))]
-        // TODO - support configuring custom connector and executor
-        let default_client = Some(Arc::new(HyperClient::with_default_connector(
-            Duration::from_secs(10),
-            None,
-        )) as Arc<dyn HttpClient>);
-        #[cfg(all(
-            not(feature = "reqwest-client"),
-            not(feature = "reqwest-blocking-client"),
-            not(feature = "hyper-client")
-        ))]
-        let default_client = None;
-        HttpConfig {
-            client: default_client,
-            headers: None,
-        }
-    }
 }
 
 /// Configuration for the OTLP HTTP exporter.
@@ -171,11 +125,44 @@ impl HttpExporterBuilder {
             },
             None => self.exporter_config.timeout,
         };
-        let http_client = self
-            .http_config
-            .client
-            .take()
-            .ok_or(crate::Error::NoHttpClient)?;
+        let http_client = if let Some(client) = self.http_config.client.take() {
+            client
+        } else {
+            #[cfg(feature = "hyper-client")]
+            {
+                Arc::new(HyperClient::with_default_connector(timeout, None)) as Arc<dyn HttpClient>
+            }
+            #[cfg(all(not(feature = "hyper-client"), feature = "reqwest-client"))]
+            {
+                Arc::new(
+                    reqwest::Client::builder()
+                        .timeout(timeout)
+                        .build()
+                        .map_err(|e| crate::Error::Other(e.to_string()))?,
+                ) as Arc<dyn HttpClient>
+            }
+            #[cfg(all(
+                not(feature = "hyper-client"),
+                not(feature = "reqwest-client"),
+                feature = "reqwest-blocking-client"
+            ))]
+            {
+                Arc::new(
+                    reqwest::blocking::Client::builder()
+                        .timeout(timeout)
+                        .build()
+                        .map_err(|e| crate::Error::Other(e.to_string()))?,
+                ) as Arc<dyn HttpClient>
+            }
+            #[cfg(all(
+                not(feature = "hyper-client"),
+                not(feature = "reqwest-client"),
+                not(feature = "reqwest-blocking-client")
+            ))]
+            {
+                return Err(crate::Error::NoHttpClient);
+            }
+        };
         #[allow(clippy::mutable_key_type)] // http headers are not mutated
         let mut headers: HashMap<HeaderName, HeaderValue> = self
             .http_config
@@ -203,7 +190,7 @@ impl HttpExporterBuilder {
             endpoint,
             headers,
             self.exporter_config.protocol,
-            timeout,
+            //timeout,
         ))
     }
 
@@ -273,7 +260,7 @@ pub(crate) struct OtlpHttpClient {
     collector_endpoint: Uri,
     headers: HashMap<HeaderName, HeaderValue>,
     protocol: Protocol,
-    _timeout: Duration,
+    //_timeout: Duration,
     #[allow(dead_code)]
     // <allow dead> would be removed once we support set_resource for metrics and traces.
     resource: opentelemetry_proto::transform::common::tonic::ResourceAttributesWithSchema,
@@ -286,14 +273,14 @@ impl OtlpHttpClient {
         collector_endpoint: Uri,
         headers: HashMap<HeaderName, HeaderValue>,
         protocol: Protocol,
-        timeout: Duration,
+        //timeout: Duration,
     ) -> Self {
         OtlpHttpClient {
             client: Mutex::new(Some(client)),
             collector_endpoint,
             headers,
             protocol,
-            _timeout: timeout,
+            //_timeout: timeout,
             resource: ResourceAttributesWithSchema::default(),
         }
     }
