@@ -55,7 +55,7 @@ use opentelemetry_http::hyper::HyperClient;
 )]
 pub struct HttpConfig {
     /// Select the HTTP client
-    client: Option<Arc<dyn HttpClient>>,
+    //client: Option<Arc<dyn HttpClient>>,
 
     /// Additional headers to send to the collector.
     headers: Option<HashMap<String, String>>,
@@ -69,11 +69,11 @@ pub struct HttpConfig {
 impl Default for HttpConfig {
     fn default() -> Self {
         #[cfg(feature = "reqwest-blocking-client")]
-        let default_client = std::thread::spawn(|| {
-            Some(Arc::new(reqwest::blocking::Client::new()) as Arc<dyn HttpClient>)
-        })
-        .join()
-        .expect("creating reqwest::blocking::Client on a new thread not to fail");
+      //  let default_client = std::thread::spawn(|| {
+      //      Some(Arc::new(reqwest::blocking::Client::new()) as Arc<dyn HttpClient>)
+      //  })
+      //  .join()
+      //  .expect("creating reqwest::blocking::Client on a new thread not to fail");
         #[cfg(all(not(feature = "reqwest-blocking-client"), feature = "reqwest-client"))]
         let default_client = Some(Arc::new(reqwest::Client::new()) as Arc<dyn HttpClient>);
         #[cfg(all(
@@ -93,7 +93,7 @@ impl Default for HttpConfig {
         ))]
         let default_client = None;
         HttpConfig {
-            client: default_client,
+           // client: default_client,
             headers: None,
         }
     }
@@ -203,7 +203,7 @@ impl HttpExporterBuilder {
             endpoint,
             headers,
             self.exporter_config.protocol,
-            timeout,
+            //timeout,
         ))
     }
 
@@ -273,7 +273,7 @@ pub(crate) struct OtlpHttpClient {
     collector_endpoint: Uri,
     headers: HashMap<HeaderName, HeaderValue>,
     protocol: Protocol,
-    _timeout: Duration,
+    //_timeout: Duration,
     #[allow(dead_code)]
     // <allow dead> would be removed once we support set_resource for metrics and traces.
     resource: opentelemetry_proto::transform::common::tonic::ResourceAttributesWithSchema,
@@ -286,14 +286,14 @@ impl OtlpHttpClient {
         collector_endpoint: Uri,
         headers: HashMap<HeaderName, HeaderValue>,
         protocol: Protocol,
-        timeout: Duration,
+        //timeout: Duration,
     ) -> Self {
         OtlpHttpClient {
             client: Mutex::new(Some(client)),
             collector_endpoint,
             headers,
             protocol,
-            _timeout: timeout,
+            //_timeout: timeout,
             resource: ResourceAttributesWithSchema::default(),
         }
     }

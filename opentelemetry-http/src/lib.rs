@@ -67,6 +67,7 @@ pub trait HttpClient: Debug + Send + Sync {
 #[cfg(feature = "reqwest")]
 mod reqwest {
     use opentelemetry::otel_debug;
+    use std::time::Duration;
 
     use super::{async_trait, Bytes, HttpClient, HttpError, Request, Response};
 
@@ -87,12 +88,30 @@ mod reqwest {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
+    #[derive(Debug, Clone)]
+    pub struct ReqwestBlockingClient {
+        client: reqwest::blocking::Client,
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    impl ReqwestBlockingClient {
+        pub fn new(timeout: Duration) -> Self {
+            let client = reqwest::blocking::Client::builder()
+                .timeout(timeout) // Set timeout globally
+                .build()
+                .expect("Failed to build Reqwest client");
+    
+            Self { client }
+        }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     #[async_trait]
-    impl HttpClient for reqwest::blocking::Client {
+    impl HttpClient for ReqwestBlockingClient {
         async fn send(&self, request: Request<Vec<u8>>) -> Result<Response<Bytes>, HttpError> {
             otel_debug!(name: "ReqwestBlockingClient.Send");
             let request = request.try_into()?;
-            let mut response = self.execute(request)?.error_for_status()?;
+            let mut response = self.client.execute(request)?.error_for_status()?;
             let headers = std::mem::take(response.headers_mut());
             let mut http_response = Response::builder()
                 .status(response.status())
