@@ -2,9 +2,7 @@
 //! This crate contains generated files from [opentelemetry-proto](https://github.com/open-telemetry/opentelemetry-proto)
 //! repository and transformation between types from generated files and types defined in [opentelemetry](https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry)
 //!
-//! Based on the build tool needed, users can choose to generate files using [tonic](https://github.com/hyperium/tonic)
-//! or [grpcio](https://github.com/tikv/grpc-rs).
-//!
+//!  The rs files are generated using [tonic](https://github.com/hyperium/tonic) and [prost](https://github.com/tokio-rs/prost).
 //!
 //! # Feature flags
 //! `Opentelemetry-proto` includes a set of feature flags to avoid pull in unnecessary dependencies.
@@ -16,9 +14,8 @@
 //! - `logs`: generate types that used in logs. Currently supports `gen-tonic`.
 //! - `zpages`: generate types that used in zPages. Currently only tracez related types will be generated. Currently supports `gen-tonic`.
 //!
-//! ## Creates used to generate files
-//! - `gen-tonic-messages`: generate rs files using [tonic](https://github.com/hyperium/tonic) and [prost](https://github.com/tokio-rs/prost).
-//! - `gen-tonic`: adding tonic transport to "`gen-tonic-messages"
+//! ## Crates used to generate files
+//! - `gen-tonic`: adding tonic transport to the generated files. This is the default feature.
 //!
 //! ## Misc
 //! - `full`: enabled all features above.
@@ -32,7 +29,6 @@
 #[doc(hidden)]
 mod proto;
 
-#[cfg(feature = "gen-tonic-messages")]
 pub use proto::tonic;
 
 pub mod transform;

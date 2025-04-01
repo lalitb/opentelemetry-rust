@@ -1,20 +1,13 @@
-#[cfg(all(
-    feature = "gen-tonic-messages",
-    any(feature = "trace", feature = "metrics", feature = "logs")
-))]
+#[cfg(any(feature = "trace", feature = "metrics", feature = "logs"))]
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-#[cfg(all(
-    feature = "gen-tonic-messages",
-    any(feature = "trace", feature = "metrics", feature = "logs")
-))]
+#[cfg(any(feature = "trace", feature = "metrics", feature = "logs"))]
 pub(crate) fn to_nanos(time: SystemTime) -> u64 {
     time.duration_since(UNIX_EPOCH)
         .unwrap_or_else(|_| Duration::from_secs(0))
         .as_nanos() as u64
 }
 
-#[cfg(feature = "gen-tonic-messages")]
 pub mod tonic {
     use crate::proto::tonic::common::v1::{
         any_value, AnyValue, ArrayValue, InstrumentationScope, KeyValue,
