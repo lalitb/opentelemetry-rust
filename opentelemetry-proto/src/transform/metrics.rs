@@ -3,7 +3,6 @@
 // We cannot ignore it as it's not an optional field.
 // We can remove this after we removed the labels field from proto.
 #[allow(deprecated)]
-#[cfg(feature = "gen-tonic-messages")]
 pub mod tonic {
     use std::fmt::Debug;
 

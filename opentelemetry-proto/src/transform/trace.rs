@@ -1,4 +1,3 @@
-#[cfg(feature = "gen-tonic-messages")]
 pub mod tonic {
     use crate::proto::tonic::resource::v1::Resource;
     use crate::proto::tonic::trace::v1::{span, status, ResourceSpans, ScopeSpans, Span, Status};
