@@ -11,6 +11,7 @@
     unused
 )]
 #![cfg_attr(test, deny(warnings))]
+#![cfg_attr(test, allow(deprecated))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/open-telemetry/opentelemetry-rust/main/assets/logo.svg"
 )]
@@ -22,4 +23,4 @@ pub mod trace;
 
 /// The schema URL that matches the version of the semantic conventions that
 /// this crate defines.
-pub const SCHEMA_URL: &str = "https://opentelemetry.io/schemas/1.36.0";
+pub const SCHEMA_URL: &str = "https://opentelemetry.io/schemas/1.37.0";

@@ -25,8 +25,10 @@
 //!         KeyValue::new(semconv::trace::CLIENT_ADDRESS, "example.org"),
 //!         KeyValue::new(semconv::trace::CLIENT_PORT, 80i64),
 //!     ])
-//!     .start(&tracer);
+ //!     .start(&tracer);
 //! ```
+
+#![cfg_attr(all(test, feature = "semconv_experimental"), allow(deprecated))]
 
 #[cfg(feature = "semconv_experimental")]
 pub use crate::attribute::ANDROID_APP_STATE;
@@ -345,12 +347,15 @@ pub use crate::attribute::GEN_AI_CONVERSATION_ID;
 pub use crate::attribute::GEN_AI_DATA_SOURCE_ID;
 
 #[cfg(feature = "semconv_experimental")]
+#[allow(deprecated)]
 pub use crate::attribute::GEN_AI_OPENAI_REQUEST_SERVICE_TIER;
 
 #[cfg(feature = "semconv_experimental")]
+#[allow(deprecated)]
 pub use crate::attribute::GEN_AI_OPENAI_RESPONSE_SERVICE_TIER;
 
 #[cfg(feature = "semconv_experimental")]
+#[allow(deprecated)]
 pub use crate::attribute::GEN_AI_OPENAI_RESPONSE_SYSTEM_FINGERPRINT;
 
 #[cfg(feature = "semconv_experimental")]
@@ -402,6 +407,7 @@ pub use crate::attribute::GEN_AI_RESPONSE_ID;
 pub use crate::attribute::GEN_AI_RESPONSE_MODEL;
 
 #[cfg(feature = "semconv_experimental")]
+#[allow(deprecated)]
 pub use crate::attribute::GEN_AI_SYSTEM;
 
 #[cfg(feature = "semconv_experimental")]

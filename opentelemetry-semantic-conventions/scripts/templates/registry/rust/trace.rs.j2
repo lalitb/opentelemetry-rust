@@ -26,9 +26,11 @@
 //!         KeyValue::new(semconv::trace::CLIENT_ADDRESS, "example.org"),
 //!         KeyValue::new(semconv::trace::CLIENT_PORT, 80i64),
 //!     ])
-//!     .start(&tracer);
+ //!     .start(&tracer);
 //! ```
-
+ 
+#![cfg_attr(all(test, feature = "semconv_experimental"), allow(deprecated))]
+ 
 {% for attr in ctx | rejectattr("name", "in", params.excluded_attributes) %}
     {% if attr is experimental %}
 #[cfg(feature = "semconv_experimental")]

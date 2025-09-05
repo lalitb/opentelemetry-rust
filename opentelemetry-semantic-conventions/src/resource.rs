@@ -27,6 +27,9 @@
 pub use crate::attribute::ANDROID_OS_API_LEVEL;
 
 #[cfg(feature = "semconv_experimental")]
+pub use crate::attribute::APP_BUILD_ID;
+
+#[cfg(feature = "semconv_experimental")]
 pub use crate::attribute::APP_INSTALLATION_ID;
 
 #[cfg(feature = "semconv_experimental")]
@@ -174,7 +177,13 @@ pub use crate::attribute::CONTAINER_LABEL;
 pub use crate::attribute::CONTAINER_NAME;
 
 #[cfg(feature = "semconv_experimental")]
-pub use crate::attribute::CONTAINER_RUNTIME;
+pub use crate::attribute::CONTAINER_RUNTIME_DESCRIPTION;
+
+#[cfg(feature = "semconv_experimental")]
+pub use crate::attribute::CONTAINER_RUNTIME_NAME;
+
+#[cfg(feature = "semconv_experimental")]
+pub use crate::attribute::CONTAINER_RUNTIME_VERSION;
 
 #[cfg(feature = "semconv_experimental")]
 pub use crate::attribute::DEPLOYMENT_ENVIRONMENT_NAME;
