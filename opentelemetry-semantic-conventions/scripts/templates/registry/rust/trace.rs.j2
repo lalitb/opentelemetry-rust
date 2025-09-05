@@ -30,10 +30,16 @@
 //! ```
 
 {% for attr in ctx | rejectattr("name", "in", params.excluded_attributes) %}
+    {# Generic deprecation detection: prefer custom test; fall back on presence of raw metadata string; retain deprecated_names safety net. #}
+    {% set needs_allow =
+        (attr is deprecated)
+        or (attr.deprecated is defined and attr.deprecated|trim != '')
+        or (attr.name in deprecated_names)
+    %}
     {% if attr is experimental %}
 #[cfg(feature = "semconv_experimental")]
     {% endif %}
-    {% if attr is deprecated %}
+    {% if needs_allow %}
 #[allow(deprecated)]
     {% endif %}
 pub use crate::attribute::{{ attr.name | screaming_snake_case }};

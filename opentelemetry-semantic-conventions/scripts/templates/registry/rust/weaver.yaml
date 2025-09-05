@@ -35,8 +35,9 @@ templates:
     application_mode: single
   - pattern: trace.rs.j2
     filter: >
-      semconv_signal("span"; $params) + semconv_signal("event"; $params)
+      semconv_grouped_attributes($params)
       | map(.attributes[])
+      | flatten
       | unique_by(.name)
       | sort_by(.name)
       | map({name, brief, examples, deprecated, requirement_level, stability, type})
