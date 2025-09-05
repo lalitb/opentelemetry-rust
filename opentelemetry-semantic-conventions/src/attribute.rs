@@ -20,7 +20,7 @@
 #[cfg(feature = "semconv_experimental")]
 pub const ANDROID_APP_STATE: &str = "android.app.state";
 
-/// Uniquely identifies the framework API revision offered by a version (`os.version`) of the android operating system. More information can be found [here](https://developer.android.com/guide/topics/manifest/uses-sdk-element#ApiLevels).
+/// Uniquely identifies the framework API revision offered by a version (`os.version`) of the android operating system. More information can be found in the [Android API levels documentation](https://developer.android.com/guide/topics/manifest/uses-sdk-element#ApiLevels).
 ///
 /// ## Notes
 ///
@@ -31,12 +31,26 @@ pub const ANDROID_APP_STATE: &str = "android.app.state";
 #[cfg(feature = "semconv_experimental")]
 pub const ANDROID_OS_API_LEVEL: &str = "android.os.api_level";
 
-/// Deprecated. Use `android.app.state` body field instead.
+/// Deprecated. Use `android.app.state` attribute instead.
 ///
 /// ## Notes
 #[cfg(feature = "semconv_experimental")]
-#[deprecated(note = "{note: Use `android.app.state` body field instead., reason: uncategorized}")]
+#[deprecated(
+    note = "{note: Replaced by `android.app.state`., reason: renamed, renamed_to: android.app.state}"
+)]
 pub const ANDROID_STATE: &str = "android.state";
+
+/// Unique identifier for a particular build or compilation of the application.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"6cff0a7e-cefc-4668-96f5-1273d8b334d0"`
+/// - `"9f2b833506aa6973a92fde9733e6271f"`
+/// - `"my-app-1.0.0-code-123"`
+#[cfg(feature = "semconv_experimental")]
+pub const APP_BUILD_ID: &str = "app.build_id";
 
 /// A unique identifier representing the installation of an application on a specific device
 ///
@@ -58,13 +72,50 @@ pub const ANDROID_STATE: &str = "android.state";
 /// - [App set ID](https://developer.android.com/identity/app-set-id).
 /// - [`Settings.getString(Settings.Secure.ANDROID_ID)`](https://developer.android.com/reference/android/provider/Settings.Secure#ANDROID_ID).
 ///
-/// More information about Android identifier best practices can be found [here](https://developer.android.com/training/articles/user-data-ids).
+/// More information about Android identifier best practices can be found in the [Android user data IDs guide](https://developer.android.com/training/articles/user-data-ids).
 ///
 /// # Examples
 ///
 /// - `"2ab2916d-a51f-4ac8-80ee-45ac31a28092"`
 #[cfg(feature = "semconv_experimental")]
 pub const APP_INSTALLATION_ID: &str = "app.installation.id";
+
+/// A number of frame renders that experienced jank.
+///
+/// ## Notes
+///
+/// Depending on platform limitations, the value provided MAY be approximation.
+///
+/// # Examples
+///
+/// - `9`
+/// - `42`
+#[cfg(feature = "semconv_experimental")]
+pub const APP_JANK_FRAME_COUNT: &str = "app.jank.frame_count";
+
+/// The time period, in seconds, for which this jank is being reported.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `1.0`
+/// - `5.0`
+/// - `10.24`
+#[cfg(feature = "semconv_experimental")]
+pub const APP_JANK_PERIOD: &str = "app.jank.period";
+
+/// The minimum rendering threshold for this jank, in seconds.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `0.016`
+/// - `0.7`
+/// - `1.024`
+#[cfg(feature = "semconv_experimental")]
+pub const APP_JANK_THRESHOLD: &str = "app.jank.threshold";
 
 /// The x (horizontal) coordinate of a screen coordinate, in screen pixels.
 ///
@@ -208,7 +259,51 @@ pub const ARTIFACT_PURL: &str = "artifact.purl";
 #[cfg(feature = "semconv_experimental")]
 pub const ARTIFACT_VERSION: &str = "artifact.version";
 
-/// ASP.NET Core exception middleware handling result
+/// The result of the authentication operation.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"success"`
+/// - `"failure"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHENTICATION_RESULT: &str = "aspnetcore.authentication.result";
+
+/// The identifier that names a particular authentication handler.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"Cookies"`
+/// - `"Bearer"`
+/// - `"Identity.Application"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHENTICATION_SCHEME: &str = "aspnetcore.authentication.scheme";
+
+/// The name of the authorization policy.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"RequireAdminRole"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHORIZATION_POLICY: &str = "aspnetcore.authorization.policy";
+
+/// The result of calling the authorization service.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"success"`
+/// - `"failure"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHORIZATION_RESULT: &str = "aspnetcore.authorization.result";
+
+/// ASP.NET Core exception middleware handling result.
 ///
 /// ## Notes
 ///
@@ -226,6 +321,117 @@ pub const ASPNETCORE_DIAGNOSTICS_EXCEPTION_RESULT: &str = "aspnetcore.diagnostic
 ///
 /// - `"Contoso.MyHandler"`
 pub const ASPNETCORE_DIAGNOSTICS_HANDLER_TYPE: &str = "aspnetcore.diagnostics.handler.type";
+
+/// The error code for a failed identity operation.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"DefaultError"`
+/// - `"PasswordMismatch"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_ERROR_CODE: &str = "aspnetcore.identity.error_code";
+
+/// The result from checking the password.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"success"`
+/// - `"failure"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_PASSWORD_CHECK_RESULT: &str =
+    "aspnetcore.identity.password_check_result";
+
+/// The result of the identity operation.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"success"`
+/// - `"failure"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_RESULT: &str = "aspnetcore.identity.result";
+
+/// Whether the sign in result was success or failure.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"password"`
+/// - `"two_factor"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_SIGN_IN_RESULT: &str = "aspnetcore.identity.sign_in.result";
+
+/// The authentication type.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"password"`
+/// - `"two_factor"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_SIGN_IN_TYPE: &str = "aspnetcore.identity.sign_in.type";
+
+/// What the token will be used for.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"success"`
+/// - `"failure"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_TOKEN_PURPOSE: &str = "aspnetcore.identity.token_purpose";
+
+/// The result of token verification.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"success"`
+/// - `"failure"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_TOKEN_VERIFIED: &str = "aspnetcore.identity.token_verified";
+
+/// The user update type.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"update"`
+/// - `"user_name"`
+/// - `"reset_password"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_USER_UPDATE_TYPE: &str = "aspnetcore.identity.user.update_type";
+
+/// The full name of the identity user type.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"Contoso.ContosoUser"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_USER_TYPE: &str = "aspnetcore.identity.user_type";
+
+/// The name of the library or subsystem using the memory pool instance.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"kestrel"`
+/// - `"iis"`
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_MEMORY_POOL_OWNER: &str = "aspnetcore.memory_pool.owner";
 
 /// Rate limiting policy name.
 ///
@@ -275,6 +481,21 @@ pub const ASPNETCORE_ROUTING_IS_FALLBACK: &str = "aspnetcore.routing.is_fallback
 /// - `"success"`
 /// - `"failure"`
 pub const ASPNETCORE_ROUTING_MATCH_STATUS: &str = "aspnetcore.routing.match_status";
+
+/// A flag indicating whether the sign in is persistent.
+///
+/// ## Notes
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_SIGN_IN_IS_PERSISTENT: &str = "aspnetcore.sign_in.is_persistent";
+
+/// A value that indicates whether the user is authenticated.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `true`
+pub const ASPNETCORE_USER_IS_AUTHENTICATED: &str = "aspnetcore.user.is_authenticated";
 
 /// The unique identifier of the AWS Bedrock Guardrail. A [guardrail](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) helps safeguard and prevent unwanted behavior from model responses or user messages.
 ///
@@ -1928,7 +2149,42 @@ pub const CONTAINER_NAME: &str = "container.name";
 /// - `"containerd"`
 /// - `"rkt"`
 #[cfg(feature = "semconv_experimental")]
+#[deprecated(
+    note = "{note: Replaced by `container.runtime.name`., reason: renamed, renamed_to: container.runtime.name}"
+)]
 pub const CONTAINER_RUNTIME: &str = "container.runtime";
+
+/// A description about the runtime which could include, for example details about the CRI/API version being used or other customisations.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"docker://19.3.1 - CRI: 1.22.0"`
+#[cfg(feature = "semconv_experimental")]
+pub const CONTAINER_RUNTIME_DESCRIPTION: &str = "container.runtime.description";
+
+/// The container runtime managing this container.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"docker"`
+/// - `"containerd"`
+/// - `"rkt"`
+#[cfg(feature = "semconv_experimental")]
+pub const CONTAINER_RUNTIME_NAME: &str = "container.runtime.name";
+
+/// The version of the runtime of this process, as returned by the runtime without modification.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"1.0.0"`
+#[cfg(feature = "semconv_experimental")]
+pub const CONTAINER_RUNTIME_VERSION: &str = "container.runtime.version";
 
 /// The logical CPU number \[0..n-1\]
 ///
@@ -2615,7 +2871,7 @@ pub const DB_SYSTEM_NAME: &str = "db.system.name";
 #[deprecated(note = "{note: Removed, no replacement at this time., reason: obsoleted}")]
 pub const DB_USER: &str = "db.user";
 
-/// 'Deprecated, use `deployment.environment.name` instead.'
+/// Deprecated, use `deployment.environment.name` instead.
 ///
 /// ## Notes
 ///
@@ -2708,7 +2964,7 @@ pub const DESTINATION_PORT: &str = "destination.port";
 /// However, it might be resettable by the user for all apps on a device.
 /// Hardware IDs (e.g. vendor-specific serial number, IMEI or MAC address) MAY be used as values.
 ///
-/// More information about Android identifier best practices can be found [here](https://developer.android.com/training/articles/user-data-ids).
+/// More information about Android identifier best practices can be found in the [Android user data IDs guide](https://developer.android.com/training/articles/user-data-ids).
 ///
 /// \] \[!WARNING\]
 /// \]
@@ -2862,7 +3118,7 @@ pub const ENDUSER_PSEUDO_ID: &str = "enduser.pseudo.id";
 ///
 /// - `"admin"`
 #[cfg(feature = "semconv_experimental")]
-#[deprecated(note = "{note: Use `user.roles` attribute instead., reason: uncategorized}")]
+#[deprecated(note = "{note: Replaced by `user.roles`., reason: renamed, renamed_to: user.roles}")]
 pub const ENDUSER_ROLE: &str = "enduser.role";
 
 /// Deprecated, no replacement at this time.
@@ -3390,7 +3646,7 @@ pub const FILE_EXTENSION: &str = "file.extension";
 ///
 /// # Examples
 ///
-/// - `"Zone.Identifer"`
+/// - `"Zone.Identifier"`
 #[cfg(feature = "semconv_experimental")]
 pub const FILE_FORK_NAME: &str = "file.fork_name";
 
@@ -3710,6 +3966,31 @@ pub const GEN_AI_CONVERSATION_ID: &str = "gen_ai.conversation.id";
 #[cfg(feature = "semconv_experimental")]
 pub const GEN_AI_DATA_SOURCE_ID: &str = "gen_ai.data_source.id";
 
+/// The chat history provided to the model as an input.
+///
+/// ## Notes
+///
+/// Instrumentations MUST follow [Input messages JSON schema](/docs/gen-ai/gen-ai-input-messages.json).
+/// When the attribute is recorded on events, it MUST be recorded in structured
+/// form. When recorded on spans, it MAY be recorded as a JSON string if structured
+/// format is not supported and SHOULD be recorded in structured form otherwise.
+///
+/// Messages MUST be provided in the order they were sent to the model.
+/// Instrumentations MAY provide a way for users to filter or truncate
+/// input messages.
+///
+/// \] \[!Warning\]
+/// \] This attribute is likely to contain sensitive information including user/PII data.
+///
+/// See [Recording content on attributes](/docs/gen-ai/gen-ai-spans.md#recording-content-on-attributes)
+/// section for more details.
+///
+/// # Examples
+///
+/// - `"[\n  {\n    \"role\": \"user\",\n    \"parts\": [\n      {\n        \"type\": \"text\",\n        \"content\": \"Weather in Paris?\"\n      }\n    ]\n  },\n  {\n    \"role\": \"assistant\",\n    \"parts\": [\n      {\n        \"type\": \"tool_call\",\n        \"id\": \"call_VSPygqKTWdrhaFErNvMV18Yl\",\n        \"name\": \"get_weather\",\n        \"arguments\": {\n          \"location\": \"Paris\"\n        }\n      }\n    ]\n  },\n  {\n    \"role\": \"tool\",\n    \"parts\": [\n      {\n        \"type\": \"tool_call_response\",\n        \"id\": \" call_VSPygqKTWdrhaFErNvMV18Yl\",\n        \"result\": \"rainy, 57°F\"\n      }\n    ]\n  }\n]\n"`
+#[cfg(feature = "semconv_experimental")]
+pub const GEN_AI_INPUT_MESSAGES: &str = "gen_ai.input.messages";
+
 /// Deprecated, use `gen_ai.output.type`.
 ///
 /// ## Notes
@@ -3732,18 +4013,16 @@ pub const GEN_AI_OPENAI_REQUEST_RESPONSE_FORMAT: &str = "gen_ai.openai.request.r
 )]
 pub const GEN_AI_OPENAI_REQUEST_SEED: &str = "gen_ai.openai.request.seed";
 
-/// The service tier requested. May be a specific tier, default, or auto.
+/// Deprecated, use `openai.request.service_tier`.
 ///
 /// ## Notes
-///
-/// # Examples
-///
-/// - `"auto"`
-/// - `"default"`
 #[cfg(feature = "semconv_experimental")]
+#[deprecated(
+    note = "{note: Replaced by `openai.request.service_tier`., reason: renamed, renamed_to: openai.request.service_tier}"
+)]
 pub const GEN_AI_OPENAI_REQUEST_SERVICE_TIER: &str = "gen_ai.openai.request.service_tier";
 
-/// The service tier used for the response.
+/// Deprecated, use `openai.response.service_tier`.
 ///
 /// ## Notes
 ///
@@ -3752,9 +4031,12 @@ pub const GEN_AI_OPENAI_REQUEST_SERVICE_TIER: &str = "gen_ai.openai.request.serv
 /// - `"scale"`
 /// - `"default"`
 #[cfg(feature = "semconv_experimental")]
+#[deprecated(
+    note = "{note: Replaced by `openai.response.service_tier`., reason: renamed, renamed_to: openai.response.service_tier}"
+)]
 pub const GEN_AI_OPENAI_RESPONSE_SERVICE_TIER: &str = "gen_ai.openai.response.service_tier";
 
-/// A fingerprint to track any eventual change in the Generative AI environment.
+/// Deprecated, use `openai.response.system_fingerprint`.
 ///
 /// ## Notes
 ///
@@ -3762,6 +4044,9 @@ pub const GEN_AI_OPENAI_RESPONSE_SERVICE_TIER: &str = "gen_ai.openai.response.se
 ///
 /// - `"fp_44709d6fcb"`
 #[cfg(feature = "semconv_experimental")]
+#[deprecated(
+    note = "{note: Replaced by `openai.response.system_fingerprint`., reason: renamed, renamed_to: openai.response.system_fingerprint}"
+)]
 pub const GEN_AI_OPENAI_RESPONSE_SYSTEM_FINGERPRINT: &str =
     "gen_ai.openai.response.system_fingerprint";
 
@@ -3772,6 +4057,36 @@ pub const GEN_AI_OPENAI_RESPONSE_SYSTEM_FINGERPRINT: &str =
 /// If one of the predefined values applies, but specific system uses a different name it's RECOMMENDED to document it in the semantic conventions for specific GenAI system and use system-specific name in the instrumentation. If a different name is not documented, instrumentation libraries SHOULD use applicable predefined value
 #[cfg(feature = "semconv_experimental")]
 pub const GEN_AI_OPERATION_NAME: &str = "gen_ai.operation.name";
+
+/// Messages returned by the model where each message represents a specific model response (choice, candidate).
+///
+/// ## Notes
+///
+/// Instrumentations MUST follow [Output messages JSON schema](/docs/gen-ai/gen-ai-output-messages.json)
+///
+/// Each message represents a single output choice/candidate generated by
+/// the model. Each message corresponds to exactly one generation
+/// (choice/candidate) and vice versa - one choice cannot be split across
+/// multiple messages or one message cannot contain parts from multiple choices.
+///
+/// When the attribute is recorded on events, it MUST be recorded in structured
+/// form. When recorded on spans, it MAY be recorded as a JSON string if structured
+/// format is not supported and SHOULD be recorded in structured form otherwise.
+///
+/// Instrumentations MAY provide a way for users to filter or truncate
+/// output messages.
+///
+/// \] \[!Warning\]
+/// \] This attribute is likely to contain sensitive information including user/PII data.
+///
+/// See [Recording content on attributes](/docs/gen-ai/gen-ai-spans.md#recording-content-on-attributes)
+/// section for more details.
+///
+/// # Examples
+///
+/// - `"[\n  {\n    \"role\": \"assistant\",\n    \"parts\": [\n      {\n        \"type\": \"text\",\n        \"content\": \"The weather in Paris is currently rainy with a temperature of 57°F.\"\n      }\n    ],\n    \"finish_reason\": \"stop\"\n  }\n]\n"`
+#[cfg(feature = "semconv_experimental")]
+pub const GEN_AI_OUTPUT_MESSAGES: &str = "gen_ai.output.messages";
 
 /// Represents the content type requested by the client.
 ///
@@ -3793,6 +4108,31 @@ pub const GEN_AI_OUTPUT_TYPE: &str = "gen_ai.output.type";
 #[cfg(feature = "semconv_experimental")]
 #[deprecated(note = "{note: Removed, no replacement at this time., reason: obsoleted}")]
 pub const GEN_AI_PROMPT: &str = "gen_ai.prompt";
+
+/// The Generative AI provider as identified by the client or server instrumentation.
+///
+/// ## Notes
+///
+/// The attribute SHOULD be set based on the instrumentation's best
+/// knowledge and may differ from the actual model provider.
+///
+/// Multiple providers, including Azure OpenAI, Gemini, and AI hosting platforms
+/// are accessible using the OpenAI REST API and corresponding client libraries,
+/// but may proxy or host models from different providers.
+///
+/// The `gen_ai.request.model`, `gen_ai.response.model`, and `server.address`
+/// attributes may help identify the actual system in use.
+///
+/// The `gen_ai.provider.name` attribute acts as a discriminator that
+/// identifies the GenAI telemetry format flavor specific to that provider
+/// within GenAI semantic conventions.
+/// It SHOULD be set consistently with provider-specific attributes and signals.
+/// For example, GenAI spans, metrics, and events related to AWS Bedrock
+/// should have the `gen_ai.provider.name` set to `aws.bedrock` and include
+/// applicable `aws.bedrock.*` attributes and are not expected to include
+/// `openai.*` attributes
+#[cfg(feature = "semconv_experimental")]
+pub const GEN_AI_PROVIDER_NAME: &str = "gen_ai.provider.name";
 
 /// The target number of candidate completions to return.
 ///
@@ -3951,27 +4291,46 @@ pub const GEN_AI_RESPONSE_ID: &str = "gen_ai.response.id";
 #[cfg(feature = "semconv_experimental")]
 pub const GEN_AI_RESPONSE_MODEL: &str = "gen_ai.response.model";
 
-/// The Generative AI product as identified by the client or server instrumentation.
+/// Deprecated, use `gen_ai.provider.name` instead.
+///
+/// ## Notes
+#[cfg(feature = "semconv_experimental")]
+#[deprecated(
+    note = "{note: Replaced by `gen_ai.provider.name`., reason: renamed, renamed_to: gen_ai.provider.name}"
+)]
+pub const GEN_AI_SYSTEM: &str = "gen_ai.system";
+
+/// The system message or instructions provided to the GenAI model separately from the chat history.
 ///
 /// ## Notes
 ///
-/// The `gen_ai.system` describes a family of GenAI models with specific model identified
-/// by `gen_ai.request.model` and `gen_ai.response.model` attributes.
+/// This attribute SHOULD be used when the corresponding provider or API
+/// allows to provide system instructions or messages separately from the
+/// chat history.
 ///
-/// The actual GenAI product may differ from the one identified by the client.
-/// Multiple systems, including Azure OpenAI and Gemini, are accessible by OpenAI client
-/// libraries. In such cases, the `gen_ai.system` is set to `openai` based on the
-/// instrumentation's best knowledge, instead of the actual system. The `server.address`
-/// attribute may help identify the actual system in use for `openai`.
+/// Instructions that are part of the chat history SHOULD be recorded in
+/// `gen_ai.input.messages` attribute instead.
 ///
-/// For custom model, a custom friendly name SHOULD be used.
-/// If none of these options apply, the `gen_ai.system` SHOULD be set to `_OTHER`.
+/// Instrumentations MUST follow [System instructions JSON schema](/docs/gen-ai/gen-ai-system-instructions.json).
+///
+/// When recorded on spans, it MAY be recorded as a JSON string if structured
+/// format is not supported and SHOULD be recorded in structured form otherwise.
+///
+/// Instrumentations MAY provide a way for users to filter or truncate
+/// system instructions.
+///
+/// \] \[!Warning\]
+/// \] This attribute may contain sensitive information.
+///
+/// See [Recording content on attributes](/docs/gen-ai/gen-ai-spans.md#recording-content-on-attributes)
+/// section for more details.
 ///
 /// # Examples
 ///
-/// - `"openai"`
+/// - `"[\n  {\n    \"type\": \"text\",\n    \"content\": \"You are an Agent that greet users, always use greetings tool to respond\"\n  }\n]\n"`
+/// - `"[\n  {\n    \"type\": \"text\",\n    \"content\": \"You are a language translator.\"\n  },\n  {\n    \"type\": \"text\",\n    \"content\": \"Your mission is to translate text in English to French.\"\n  }\n]\n"`
 #[cfg(feature = "semconv_experimental")]
-pub const GEN_AI_SYSTEM: &str = "gen_ai.system";
+pub const GEN_AI_SYSTEM_INSTRUCTIONS: &str = "gen_ai.system_instructions";
 
 /// The type of token being counted.
 ///
@@ -4744,6 +5103,82 @@ pub const HTTP_URL: &str = "http.url";
 )]
 pub const HTTP_USER_AGENT: &str = "http.user_agent";
 
+/// Design capacity in Watts-hours or Amper-hours
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"9.3Ah"`
+/// - `"50Wh"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_BATTERY_CAPACITY: &str = "hw.battery.capacity";
+
+/// Battery [chemistry](https://schemas.dmtf.org/wbem/cim-html/2.31.0/CIM_Battery.html), e.g. Lithium-Ion, Nickel-Cadmium, etc.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"Li-ion"`
+/// - `"NiMH"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_BATTERY_CHEMISTRY: &str = "hw.battery.chemistry";
+
+/// The current state of the battery
+///
+/// ## Notes
+#[cfg(feature = "semconv_experimental")]
+pub const HW_BATTERY_STATE: &str = "hw.battery.state";
+
+/// BIOS version of the hardware component
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"1.2.3"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_BIOS_VERSION: &str = "hw.bios_version";
+
+/// Driver version for the hardware component
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"10.2.1-3"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_DRIVER_VERSION: &str = "hw.driver_version";
+
+/// Type of the enclosure (useful for modular systems)
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"Computer"`
+/// - `"Storage"`
+/// - `"Switch"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_ENCLOSURE_TYPE: &str = "hw.enclosure.type";
+
+/// Firmware version of the hardware component
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"2.0.1"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_FIRMWARE_VERSION: &str = "hw.firmware_version";
+
+/// Type of task the GPU is performing
+///
+/// ## Notes
+#[cfg(feature = "semconv_experimental")]
+pub const HW_GPU_TASK: &str = "hw.gpu.task";
+
 /// An identifier for the hardware component, unique within the monitored host
 ///
 /// ## Notes
@@ -4753,6 +5188,54 @@ pub const HTTP_USER_AGENT: &str = "http.user_agent";
 /// - `"win32battery_battery_testsysa33_1"`
 #[cfg(feature = "semconv_experimental")]
 pub const HW_ID: &str = "hw.id";
+
+/// Type of limit for hardware components
+///
+/// ## Notes
+#[cfg(feature = "semconv_experimental")]
+pub const HW_LIMIT_TYPE: &str = "hw.limit_type";
+
+/// RAID Level of the logical disk
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"RAID0+1"`
+/// - `"RAID5"`
+/// - `"RAID10"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_LOGICAL_DISK_RAID_LEVEL: &str = "hw.logical_disk.raid_level";
+
+/// State of the logical disk space usage
+///
+/// ## Notes
+#[cfg(feature = "semconv_experimental")]
+pub const HW_LOGICAL_DISK_STATE: &str = "hw.logical_disk.state";
+
+/// Type of the memory module
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"DDR4"`
+/// - `"DDR5"`
+/// - `"LPDDR5"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_MEMORY_TYPE: &str = "hw.memory.type";
+
+/// Descriptive model name of the hardware component
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"PERC H740P"`
+/// - `"Intel(R) Core(TM) i7-10700K"`
+/// - `"Dell XPS 15 Battery"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_MODEL: &str = "hw.model";
 
 /// An easily-recognizable name for the hardware component
 ///
@@ -4764,6 +5247,29 @@ pub const HW_ID: &str = "hw.id";
 #[cfg(feature = "semconv_experimental")]
 pub const HW_NAME: &str = "hw.name";
 
+/// Logical addresses of the adapter (e.g. IP address, or WWPN)
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `[
+///  "172.16.8.21",
+///  "57.11.193.42",
+/// ]`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_NETWORK_LOGICAL_ADDRESSES: &str = "hw.network.logical_addresses";
+
+/// Physical address of the adapter (e.g. MAC address, or WWNN)
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"00-90-F5-E9-7B-36"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_NETWORK_PHYSICAL_ADDRESS: &str = "hw.network.physical_address";
+
 /// Unique identifier of the parent component (typically the `hw.id` attribute of the enclosure, or disk controller)
 ///
 /// ## Notes
@@ -4774,11 +5280,75 @@ pub const HW_NAME: &str = "hw.name";
 #[cfg(feature = "semconv_experimental")]
 pub const HW_PARENT: &str = "hw.parent";
 
+/// [S.M.A.R.T.](https://wikipedia.org/wiki/S.M.A.R.T.) (Self-Monitoring, Analysis, and Reporting Technology) attribute of the physical disk
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"Spin Retry Count"`
+/// - `"Seek Error Rate"`
+/// - `"Raw Read Error Rate"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_PHYSICAL_DISK_SMART_ATTRIBUTE: &str = "hw.physical_disk.smart_attribute";
+
+/// State of the physical disk endurance utilization
+///
+/// ## Notes
+#[cfg(feature = "semconv_experimental")]
+pub const HW_PHYSICAL_DISK_STATE: &str = "hw.physical_disk.state";
+
+/// Type of the physical disk
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"HDD"`
+/// - `"SSD"`
+/// - `"10K"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_PHYSICAL_DISK_TYPE: &str = "hw.physical_disk.type";
+
+/// Location of the sensor
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"cpu0"`
+/// - `"ps1"`
+/// - `"INLET"`
+/// - `"CPU0_DIE"`
+/// - `"AMBIENT"`
+/// - `"MOTHERBOARD"`
+/// - `"PS0 V3_3"`
+/// - `"MAIN_12V"`
+/// - `"CPU_VCORE"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_SENSOR_LOCATION: &str = "hw.sensor_location";
+
+/// Serial number of the hardware component
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"CNFCP0123456789"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_SERIAL_NUMBER: &str = "hw.serial_number";
+
 /// The current state of the component
 ///
 /// ## Notes
 #[cfg(feature = "semconv_experimental")]
 pub const HW_STATE: &str = "hw.state";
+
+/// Type of tape drive operation
+///
+/// ## Notes
+#[cfg(feature = "semconv_experimental")]
+pub const HW_TAPE_DRIVE_OPERATION_TYPE: &str = "hw.tape_drive.operation_type";
 
 /// Type of the component
 ///
@@ -4788,6 +5358,21 @@ pub const HW_STATE: &str = "hw.state";
 #[cfg(feature = "semconv_experimental")]
 pub const HW_TYPE: &str = "hw.type";
 
+/// Vendor name of the hardware component
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"Dell"`
+/// - `"HP"`
+/// - `"Intel"`
+/// - `"AMD"`
+/// - `"LSI"`
+/// - `"Lenovo"`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_VENDOR: &str = "hw.vendor";
+
 /// This attribute represents the state of the application.
 ///
 /// ## Notes
@@ -4796,12 +5381,14 @@ pub const HW_TYPE: &str = "hw.type";
 #[cfg(feature = "semconv_experimental")]
 pub const IOS_APP_STATE: &str = "ios.app.state";
 
+/// Deprecated. Use the `ios.app.state` attribute.
+///
 /// ## Notes
 ///
 /// The iOS lifecycle states are defined in the [UIApplicationDelegate documentation](https://developer.apple.com/documentation/uikit/uiapplicationdelegate), and from which the `OS terminology` column values are derived
 #[cfg(feature = "semconv_experimental")]
 #[deprecated(
-    note = "{note: Replaced by the `ios.app.state` event body field., reason: uncategorized}"
+    note = "{note: Replaced by `ios.app.state`., reason: renamed, renamed_to: ios.app.state}"
 )]
 pub const IOS_STATE: &str = "ios.state";
 
@@ -6732,6 +7319,38 @@ pub const NODEJS_EVENTLOOP_STATE: &str = "nodejs.eventloop.state";
 #[cfg(feature = "semconv_experimental")]
 pub const OCI_MANIFEST_DIGEST: &str = "oci.manifest.digest";
 
+/// The service tier requested. May be a specific tier, default, or auto.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"auto"`
+/// - `"default"`
+#[cfg(feature = "semconv_experimental")]
+pub const OPENAI_REQUEST_SERVICE_TIER: &str = "openai.request.service_tier";
+
+/// The service tier used for the response.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"scale"`
+/// - `"default"`
+#[cfg(feature = "semconv_experimental")]
+pub const OPENAI_RESPONSE_SERVICE_TIER: &str = "openai.response.service_tier";
+
+/// A fingerprint to track any eventual change in the Generative AI environment.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"fp_44709d6fcb"`
+#[cfg(feature = "semconv_experimental")]
+pub const OPENAI_RESPONSE_SYSTEM_FINGERPRINT: &str = "openai.response.system_fingerprint";
+
 /// Parent-child Reference type
 ///
 /// ## Notes
@@ -6865,6 +7484,16 @@ pub const OTEL_LIBRARY_VERSION: &str = "otel.library.version";
 ///
 /// - `"io.opentelemetry.contrib.mongodb"`
 pub const OTEL_SCOPE_NAME: &str = "otel.scope.name";
+
+/// The schema URL of the instrumentation scope.
+///
+/// ## Notes
+///
+/// # Examples
+///
+/// - `"https://opentelemetry.io/schemas/1.31.0"`
+#[cfg(feature = "semconv_experimental")]
+pub const OTEL_SCOPE_SCHEMA_URL: &str = "otel.scope.schema_url";
 
 /// The version of the instrumentation scope - (`InstrumentationScope.Version` in OTLP).
 ///

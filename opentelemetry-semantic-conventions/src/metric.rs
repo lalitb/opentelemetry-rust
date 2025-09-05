@@ -30,6 +30,142 @@
 
 /// ## Description
 ///
+/// The authentication duration for a request.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Authentication`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `histogram` |
+/// | Unit: | `s` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_RESULT`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Conditionally_required`: if a scheme is specified during authentication.
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHENTICATION_AUTHENTICATE_DURATION: &str =
+    "aspnetcore.authentication.authenticate.duration";
+
+/// ## Description
+///
+/// The total number of times a scheme is challenged.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Authentication`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{challenge}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Conditionally_required`: if a scheme is specified during authentication.
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHENTICATION_CHALLENGES: &str = "aspnetcore.authentication.challenges";
+
+/// ## Description
+///
+/// The total number of times an authenticated user attempts to access a resource they are not permitted to access.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Authentication`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{forbid}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Conditionally_required`: if a scheme is specified during authentication.
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHENTICATION_FORBIDS: &str = "aspnetcore.authentication.forbids";
+
+/// ## Description
+///
+/// The total number of times a principal is signed in with a scheme.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Authentication`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{sign_in}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Conditionally_required`: if a scheme is specified during authentication.
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHENTICATION_SIGN_INS: &str = "aspnetcore.authentication.sign_ins";
+
+/// ## Description
+///
+/// The total number of times a principal is signed out with a scheme.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Authentication`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{sign_out}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Conditionally_required`: if a scheme is specified during authentication.
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHENTICATION_SIGN_OUTS: &str = "aspnetcore.authentication.sign_outs";
+
+/// ## Description
+///
+/// The total number of authorization attempts.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Authorization`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{attempt}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHORIZATION_POLICY`] | `Conditionally_required`: if a policy is specified.
+/// | [`crate::attribute::ASPNETCORE_AUTHORIZATION_RESULT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ASPNETCORE_USER_IS_AUTHENTICATED`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_AUTHORIZATION_ATTEMPTS: &str = "aspnetcore.authorization.attempts";
+
+/// ## Description
+///
 /// Number of exceptions caught by exception handling middleware.
 ///
 /// ## Notes
@@ -49,6 +185,385 @@
 /// | [`crate::attribute::ASPNETCORE_DIAGNOSTICS_HANDLER_TYPE`] | `Conditionally_required`: if and only if the exception was handled by this handler.
 /// | [`crate::attribute::ERROR_TYPE`] | `Required`
 pub const ASPNETCORE_DIAGNOSTICS_EXCEPTIONS: &str = "aspnetcore.diagnostics.exceptions";
+
+/// ## Description
+///
+/// The duration of authenticate attempts. The authenticate metrics is recorded by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `histogram` |
+/// | Unit: | `s` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_SIGN_IN_RESULT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_SIGN_IN_TYPE`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_SIGN_IN_IS_PERSISTENT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_SIGN_IN_AUTHENTICATE_DURATION: &str =
+    "aspnetcore.identity.sign_in.authenticate.duration";
+
+/// ## Description
+///
+/// The total number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{attempt}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_SIGN_IN_RESULT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_SIGN_IN_CHECK_PASSWORD_ATTEMPTS: &str =
+    "aspnetcore.identity.sign_in.check_password_attempts";
+
+/// ## Description
+///
+/// The total number of calls to sign in user principals.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{sign_in}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_SIGN_IN_IS_PERSISTENT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_SIGN_IN_SIGN_INS: &str = "aspnetcore.identity.sign_in.sign_ins";
+
+/// ## Description
+///
+/// The total number of calls to sign out user principals.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{sign_out}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_SIGN_IN_SIGN_OUTS: &str = "aspnetcore.identity.sign_in.sign_outs";
+
+/// ## Description
+///
+/// The total number of two factor clients forgotten.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{client}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_SIGN_IN_TWO_FACTOR_CLIENTS_FORGOTTEN: &str =
+    "aspnetcore.identity.sign_in.two_factor_clients_forgotten";
+
+/// ## Description
+///
+/// The total number of two factor clients remembered.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{client}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_AUTHENTICATION_SCHEME`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_SIGN_IN_TWO_FACTOR_CLIENTS_REMEMBERED: &str =
+    "aspnetcore.identity.sign_in.two_factor_clients_remembered";
+
+/// ## Description
+///
+/// The number of check password attempts. Only checks whether the password is valid and not whether the user account is in a state that can log in.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{attempt}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_PASSWORD_CHECK_RESULT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_USER_CHECK_PASSWORD_ATTEMPTS: &str =
+    "aspnetcore.identity.user.check_password_attempts";
+
+/// ## Description
+///
+/// The duration of user creation operations.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `histogram` |
+/// | Unit: | `s` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_ERROR_CODE`] | `Conditionally_required`: if an error was set on a failed identity result.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_RESULT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_USER_CREATE_DURATION: &str =
+    "aspnetcore.identity.user.create.duration";
+
+/// ## Description
+///
+/// The duration of user deletion operations.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `histogram` |
+/// | Unit: | `s` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_ERROR_CODE`] | `Conditionally_required`: if an error was set on a failed identity result.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_RESULT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_USER_DELETE_DURATION: &str =
+    "aspnetcore.identity.user.delete.duration";
+
+/// ## Description
+///
+/// The total number of token generations.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{count}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_TOKEN_PURPOSE`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_USER_GENERATED_TOKENS: &str =
+    "aspnetcore.identity.user.generated_tokens";
+
+/// ## Description
+///
+/// The duration of user update operations.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `histogram` |
+/// | Unit: | `s` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_ERROR_CODE`] | `Conditionally_required`: if an error was set on a failed identity result.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_RESULT`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_UPDATE_TYPE`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_USER_UPDATE_DURATION: &str =
+    "aspnetcore.identity.user.update.duration";
+
+/// ## Description
+///
+/// The total number of token verification attempts.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.Identity`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{attempt}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_TOKEN_PURPOSE`] | `Required`
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_TOKEN_VERIFIED`] | `Conditionally_required`: if no exception was thrown.
+/// | [`crate::attribute::ASPNETCORE_IDENTITY_USER_TYPE`] | `Required`
+/// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if and only if an error has occurred.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_IDENTITY_USER_VERIFY_TOKEN_ATTEMPTS: &str =
+    "aspnetcore.identity.user.verify_token_attempts";
+
+/// ## Description
+///
+/// Total number of bytes allocated by the memory pool. Allocation occurs when a memory rental request exceeds the available pooled memory.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.MemoryPool`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_MEMORY_POOL_OWNER`] | `Conditionally_required`: if owner is specified when the memory pool is created.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_MEMORY_POOL_ALLOCATED: &str = "aspnetcore.memory_pool.allocated";
+
+/// ## Description
+///
+/// Total number of bytes evicted from the memory pool. Eviction occurs when idle pooled memory is reclaimed.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.MemoryPool`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_MEMORY_POOL_OWNER`] | `Conditionally_required`: if owner is specified when the memory pool is created.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_MEMORY_POOL_EVICTED: &str = "aspnetcore.memory_pool.evicted";
+
+/// ## Description
+///
+/// Number of bytes currently pooled and available for reuse.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.MemoryPool`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_MEMORY_POOL_OWNER`] | `Conditionally_required`: if owner is specified when the memory pool is created.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_MEMORY_POOL_POOLED: &str = "aspnetcore.memory_pool.pooled";
+
+/// ## Description
+///
+/// Total number of bytes rented from the memory pool.
+///
+/// ## Notes
+///
+/// Meter name: `Microsoft.AspNetCore.MemoryPool`; Added in: ASP.NET Core 10.0
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::ASPNETCORE_MEMORY_POOL_OWNER`] | `Conditionally_required`: if owner is specified when the memory pool is created.
+#[cfg(feature = "semconv_experimental")]
+pub const ASPNETCORE_MEMORY_POOL_RENTED: &str = "aspnetcore.memory_pool.rented";
 
 /// ## Description
 ///
@@ -331,7 +846,7 @@ pub const CICD_WORKER_COUNT: &str = "cicd.worker.count";
 
 /// ## Description
 ///
-/// Total CPU time consumed
+/// Total CPU time consumed.
 ///
 /// ## Notes
 ///
@@ -352,7 +867,7 @@ pub const CONTAINER_CPU_TIME: &str = "container.cpu.time";
 
 /// ## Description
 ///
-/// Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs
+/// Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs.
 ///
 /// ## Notes
 ///
@@ -395,6 +910,65 @@ pub const CONTAINER_DISK_IO: &str = "container.disk.io";
 
 /// ## Description
 ///
+/// Container filesystem available bytes.
+///
+/// ## Notes
+///
+/// In K8s, this metric is derived from the
+/// [FsStats.AvailableBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [ContainerStats.Rootfs](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const CONTAINER_FILESYSTEM_AVAILABLE: &str = "container.filesystem.available";
+
+/// ## Description
+///
+/// Container filesystem capacity.
+///
+/// ## Notes
+///
+/// In K8s, this metric is derived from the
+/// [FsStats.CapacityBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [ContainerStats.Rootfs](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const CONTAINER_FILESYSTEM_CAPACITY: &str = "container.filesystem.capacity";
+
+/// ## Description
+///
+/// Container filesystem usage.
+///
+/// ## Notes
+///
+/// This may not equal capacity - available.
+///
+/// In K8s, this metric is derived from the
+/// [FsStats.UsedBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [ContainerStats.Rootfs](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const CONTAINER_FILESYSTEM_USAGE: &str = "container.filesystem.usage";
+
+/// ## Description
+///
 /// Memory usage of the container.
 ///
 /// ## Notes
@@ -433,7 +1007,7 @@ pub const CONTAINER_NETWORK_IO: &str = "container.network.io";
 
 /// ## Description
 ///
-/// The time the container has been running
+/// The time the container has been running.
 ///
 /// ## Notes
 ///
@@ -1528,9 +2102,9 @@ pub const FAAS_TIMEOUTS: &str = "faas.timeouts";
 /// |:-|:- |
 /// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if the operation ended in an error
 /// | [`crate::attribute::GEN_AI_OPERATION_NAME`] | `Required`
+/// | [`crate::attribute::GEN_AI_PROVIDER_NAME`] | `Required`
 /// | [`crate::attribute::GEN_AI_REQUEST_MODEL`] | `Conditionally_required`: If available.
 /// | [`crate::attribute::GEN_AI_RESPONSE_MODEL`] | `Recommended`
-/// | [`crate::attribute::GEN_AI_SYSTEM`] | `Required`
 /// | [`crate::attribute::SERVER_ADDRESS`] | `Recommended`
 /// | [`crate::attribute::SERVER_PORT`] | `Conditionally_required`: If `server.address` is set.
 #[cfg(feature = "semconv_experimental")]
@@ -1538,7 +2112,7 @@ pub const GEN_AI_CLIENT_OPERATION_DURATION: &str = "gen_ai.client.operation.dura
 
 /// ## Description
 ///
-/// Measures number of input and output tokens used
+/// Number of input and output tokens used
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -1550,9 +2124,9 @@ pub const GEN_AI_CLIENT_OPERATION_DURATION: &str = "gen_ai.client.operation.dura
 /// | Name | Requirement |
 /// |:-|:- |
 /// | [`crate::attribute::GEN_AI_OPERATION_NAME`] | `Required`
+/// | [`crate::attribute::GEN_AI_PROVIDER_NAME`] | `Required`
 /// | [`crate::attribute::GEN_AI_REQUEST_MODEL`] | `Conditionally_required`: If available.
 /// | [`crate::attribute::GEN_AI_RESPONSE_MODEL`] | `Recommended`
-/// | [`crate::attribute::GEN_AI_SYSTEM`] | `Required`
 /// | [`crate::attribute::GEN_AI_TOKEN_TYPE`] | `Required`
 /// | [`crate::attribute::SERVER_ADDRESS`] | `Recommended`
 /// | [`crate::attribute::SERVER_PORT`] | `Conditionally_required`: If `server.address` is set.
@@ -1574,9 +2148,9 @@ pub const GEN_AI_CLIENT_TOKEN_USAGE: &str = "gen_ai.client.token.usage";
 /// |:-|:- |
 /// | [`crate::attribute::ERROR_TYPE`] | `Conditionally_required`: if the operation ended in an error
 /// | [`crate::attribute::GEN_AI_OPERATION_NAME`] | `Required`
+/// | [`crate::attribute::GEN_AI_PROVIDER_NAME`] | `Required`
 /// | [`crate::attribute::GEN_AI_REQUEST_MODEL`] | `Conditionally_required`: If available.
 /// | [`crate::attribute::GEN_AI_RESPONSE_MODEL`] | `Recommended`
-/// | [`crate::attribute::GEN_AI_SYSTEM`] | `Required`
 /// | [`crate::attribute::SERVER_ADDRESS`] | `Recommended`
 /// | [`crate::attribute::SERVER_PORT`] | `Conditionally_required`: If `server.address` is set.
 #[cfg(feature = "semconv_experimental")]
@@ -1596,9 +2170,9 @@ pub const GEN_AI_SERVER_REQUEST_DURATION: &str = "gen_ai.server.request.duration
 /// | Name | Requirement |
 /// |:-|:- |
 /// | [`crate::attribute::GEN_AI_OPERATION_NAME`] | `Required`
+/// | [`crate::attribute::GEN_AI_PROVIDER_NAME`] | `Required`
 /// | [`crate::attribute::GEN_AI_REQUEST_MODEL`] | `Conditionally_required`: If available.
 /// | [`crate::attribute::GEN_AI_RESPONSE_MODEL`] | `Recommended`
-/// | [`crate::attribute::GEN_AI_SYSTEM`] | `Required`
 /// | [`crate::attribute::SERVER_ADDRESS`] | `Recommended`
 /// | [`crate::attribute::SERVER_PORT`] | `Conditionally_required`: If `server.address` is set.
 #[cfg(feature = "semconv_experimental")]
@@ -1618,9 +2192,9 @@ pub const GEN_AI_SERVER_TIME_PER_OUTPUT_TOKEN: &str = "gen_ai.server.time_per_ou
 /// | Name | Requirement |
 /// |:-|:- |
 /// | [`crate::attribute::GEN_AI_OPERATION_NAME`] | `Required`
+/// | [`crate::attribute::GEN_AI_PROVIDER_NAME`] | `Required`
 /// | [`crate::attribute::GEN_AI_REQUEST_MODEL`] | `Conditionally_required`: If available.
 /// | [`crate::attribute::GEN_AI_RESPONSE_MODEL`] | `Recommended`
-/// | [`crate::attribute::GEN_AI_SYSTEM`] | `Required`
 /// | [`crate::attribute::SERVER_ADDRESS`] | `Recommended`
 /// | [`crate::attribute::SERVER_PORT`] | `Conditionally_required`: If `server.address` is set.
 #[cfg(feature = "semconv_experimental")]
@@ -2028,6 +2602,121 @@ pub const HTTP_SERVER_RESPONSE_BODY_SIZE: &str = "http.server.response.body.size
 
 /// ## Description
 ///
+/// Remaining fraction of battery charge
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_BATTERY_CAPACITY`] | `Recommended`
+/// | [`crate::attribute::HW_BATTERY_CHEMISTRY`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_BATTERY_CHARGE: &str = "hw.battery.charge";
+
+/// ## Description
+///
+/// Lower limit of battery charge fraction to ensure proper operation
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_BATTERY_CAPACITY`] | `Recommended`
+/// | [`crate::attribute::HW_BATTERY_CHEMISTRY`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LIMIT_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_BATTERY_CHARGE_LIMIT: &str = "hw.battery.charge.limit";
+
+/// ## Description
+///
+/// Time left before battery is completely charged or discharged
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `s` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_BATTERY_CAPACITY`] | `Recommended`
+/// | [`crate::attribute::HW_BATTERY_CHEMISTRY`] | `Recommended`
+/// | [`crate::attribute::HW_BATTERY_STATE`] | `Conditionally_required`: If the battery is charging or discharging
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_STATE`] | `Required`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_BATTERY_TIME_LEFT: &str = "hw.battery.time_left";
+
+/// ## Description
+///
+/// CPU current frequency
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `Hz` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_CPU_SPEED: &str = "hw.cpu.speed";
+
+/// ## Description
+///
+/// CPU maximum frequency
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `Hz` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LIMIT_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_CPU_SPEED_LIMIT: &str = "hw.cpu.speed.limit";
+
+/// ## Description
+///
 /// Energy consumed by the component
 /// ## Metadata
 /// | | |
@@ -2064,8 +2753,192 @@ pub const HW_ENERGY: &str = "hw.energy";
 /// | [`crate::attribute::HW_NAME`] | `Recommended`
 /// | [`crate::attribute::HW_PARENT`] | `Recommended`
 /// | [`crate::attribute::HW_TYPE`] | `Required`
+/// | [`crate::attribute::NETWORK_IO_DIRECTION`] | `Recommended`
 #[cfg(feature = "semconv_experimental")]
 pub const HW_ERRORS: &str = "hw.errors";
+
+/// ## Description
+///
+/// Fan speed in revolutions per minute
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `rpm` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SENSOR_LOCATION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_FAN_SPEED: &str = "hw.fan.speed";
+
+/// ## Description
+///
+/// Speed limit in rpm
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `rpm` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LIMIT_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SENSOR_LOCATION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_FAN_SPEED_LIMIT: &str = "hw.fan.speed.limit";
+
+/// ## Description
+///
+/// Fan speed expressed as a fraction of its maximum speed
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SENSOR_LOCATION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_FAN_SPEED_RATIO: &str = "hw.fan.speed_ratio";
+
+/// ## Description
+///
+/// Received and transmitted bytes by the GPU
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_DRIVER_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_FIRMWARE_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+/// | [`crate::attribute::NETWORK_IO_DIRECTION`] | `Required`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_GPU_IO: &str = "hw.gpu.io";
+
+/// ## Description
+///
+/// Size of the GPU memory
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_DRIVER_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_FIRMWARE_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_GPU_MEMORY_LIMIT: &str = "hw.gpu.memory.limit";
+
+/// ## Description
+///
+/// GPU memory used
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_DRIVER_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_FIRMWARE_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_GPU_MEMORY_USAGE: &str = "hw.gpu.memory.usage";
+
+/// ## Description
+///
+/// Fraction of GPU memory used
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_DRIVER_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_FIRMWARE_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_GPU_MEMORY_UTILIZATION: &str = "hw.gpu.memory.utilization";
+
+/// ## Description
+///
+/// Fraction of time spent in a specific task
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_DRIVER_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_FIRMWARE_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_GPU_TASK`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_GPU_UTILIZATION: &str = "hw.gpu.utilization";
 
 /// ## Description
 ///
@@ -2088,7 +2961,7 @@ pub const HW_HOST_AMBIENT_TEMPERATURE: &str = "hw.host.ambient_temperature";
 
 /// ## Description
 ///
-/// Total energy consumed by the entire physical host, in joules
+/// Total energy consumed by the entire physical host, in joules.
 ///
 /// ## Notes
 ///
@@ -2130,7 +3003,7 @@ pub const HW_HOST_HEATING_MARGIN: &str = "hw.host.heating_margin";
 
 /// ## Description
 ///
-/// Instantaneous power consumed by the entire physical host in Watts (`hw.host.energy` is preferred)
+/// Instantaneous power consumed by the entire physical host in Watts (`hw.host.energy` is preferred).
 ///
 /// ## Notes
 ///
@@ -2153,7 +3026,288 @@ pub const HW_HOST_POWER: &str = "hw.host.power";
 
 /// ## Description
 ///
-/// Instantaneous power consumed by the component
+/// Size of the logical disk
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LOGICAL_DISK_RAID_LEVEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_LOGICAL_DISK_LIMIT: &str = "hw.logical_disk.limit";
+
+/// ## Description
+///
+/// Logical disk space usage
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LOGICAL_DISK_RAID_LEVEL`] | `Recommended`
+/// | [`crate::attribute::HW_LOGICAL_DISK_STATE`] | `Required`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_LOGICAL_DISK_USAGE: &str = "hw.logical_disk.usage";
+
+/// ## Description
+///
+/// Logical disk space utilization as a fraction
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LOGICAL_DISK_RAID_LEVEL`] | `Recommended`
+/// | [`crate::attribute::HW_LOGICAL_DISK_STATE`] | `Required`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_LOGICAL_DISK_UTILIZATION: &str = "hw.logical_disk.utilization";
+
+/// ## Description
+///
+/// Size of the memory module
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MEMORY_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_MEMORY_SIZE: &str = "hw.memory.size";
+
+/// ## Description
+///
+/// Link speed
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By/s` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_LOGICAL_ADDRESSES`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_PHYSICAL_ADDRESS`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_NETWORK_BANDWIDTH_LIMIT: &str = "hw.network.bandwidth.limit";
+
+/// ## Description
+///
+/// Utilization of the network bandwidth as a fraction
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_LOGICAL_ADDRESSES`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_PHYSICAL_ADDRESS`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_NETWORK_BANDWIDTH_UTILIZATION: &str = "hw.network.bandwidth.utilization";
+
+/// ## Description
+///
+/// Received and transmitted network traffic in bytes
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_LOGICAL_ADDRESSES`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_PHYSICAL_ADDRESS`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+/// | [`crate::attribute::NETWORK_IO_DIRECTION`] | `Required`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_NETWORK_IO: &str = "hw.network.io";
+
+/// ## Description
+///
+/// Received and transmitted network traffic in packets (or frames)
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{packet}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_LOGICAL_ADDRESSES`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_PHYSICAL_ADDRESS`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+/// | [`crate::attribute::NETWORK_IO_DIRECTION`] | `Required`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_NETWORK_PACKETS: &str = "hw.network.packets";
+
+/// ## Description
+///
+/// Link status: `1` (up) or `0` (down)
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_LOGICAL_ADDRESSES`] | `Recommended`
+/// | [`crate::attribute::HW_NETWORK_PHYSICAL_ADDRESS`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_NETWORK_UP: &str = "hw.network.up";
+
+/// ## Description
+///
+/// Endurance remaining for this SSD disk
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_FIRMWARE_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_PHYSICAL_DISK_STATE`] | `Required`
+/// | [`crate::attribute::HW_PHYSICAL_DISK_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_PHYSICAL_DISK_ENDURANCE_UTILIZATION: &str = "hw.physical_disk.endurance_utilization";
+
+/// ## Description
+///
+/// Size of the disk
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_FIRMWARE_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_PHYSICAL_DISK_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_PHYSICAL_DISK_SIZE: &str = "hw.physical_disk.size";
+
+/// ## Description
+///
+/// Value of the corresponding [S.M.A.R.T.](https://wikipedia.org/wiki/S.M.A.R.T.) (Self-Monitoring, Analysis, and Reporting Technology) attribute
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_FIRMWARE_VERSION`] | `Recommended`
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_PHYSICAL_DISK_SMART_ATTRIBUTE`] | `Recommended`
+/// | [`crate::attribute::HW_PHYSICAL_DISK_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_PHYSICAL_DISK_SMART: &str = "hw.physical_disk.smart";
+
+/// ## Description
+///
+/// Instantaneous power consumed by the component.
 ///
 /// ## Notes
 ///
@@ -2177,7 +3331,74 @@ pub const HW_POWER: &str = "hw.power";
 
 /// ## Description
 ///
-/// Operational status: `1` (true) or `0` (false) for each of the possible states
+/// Maximum power output of the power supply
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `W` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LIMIT_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_POWER_SUPPLY_LIMIT: &str = "hw.power_supply.limit";
+
+/// ## Description
+///
+/// Current power output of the power supply
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `W` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_POWER_SUPPLY_USAGE: &str = "hw.power_supply.usage";
+
+/// ## Description
+///
+/// Utilization of the power supply as a fraction of its maximum output
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `1` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_POWER_SUPPLY_UTILIZATION: &str = "hw.power_supply.utilization";
+
+/// ## Description
+///
+/// Operational status: `1` (true) or `0` (false) for each of the possible states.
 ///
 /// ## Notes
 ///
@@ -2199,6 +3420,131 @@ pub const HW_POWER: &str = "hw.power";
 /// | [`crate::attribute::HW_TYPE`] | `Required`
 #[cfg(feature = "semconv_experimental")]
 pub const HW_STATUS: &str = "hw.status";
+
+/// ## Description
+///
+/// Operations performed by the tape drive
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{operation}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_MODEL`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SERIAL_NUMBER`] | `Recommended`
+/// | [`crate::attribute::HW_TAPE_DRIVE_OPERATION_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_VENDOR`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_TAPE_DRIVE_OPERATIONS: &str = "hw.tape_drive.operations";
+
+/// ## Description
+///
+/// Temperature in degrees Celsius
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `Cel` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SENSOR_LOCATION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_TEMPERATURE: &str = "hw.temperature";
+
+/// ## Description
+///
+/// Temperature limit in degrees Celsius
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `Cel` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LIMIT_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SENSOR_LOCATION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_TEMPERATURE_LIMIT: &str = "hw.temperature.limit";
+
+/// ## Description
+///
+/// Voltage measured by the sensor
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `V` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SENSOR_LOCATION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_VOLTAGE: &str = "hw.voltage";
+
+/// ## Description
+///
+/// Voltage limit in Volts
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `V` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_LIMIT_TYPE`] | `Recommended`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SENSOR_LOCATION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_VOLTAGE_LIMIT: &str = "hw.voltage.limit";
+
+/// ## Description
+///
+/// Nominal (expected) voltage
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `gauge` |
+/// | Unit: | `V` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::HW_ID`] | `Required`
+/// | [`crate::attribute::HW_NAME`] | `Recommended`
+/// | [`crate::attribute::HW_PARENT`] | `Recommended`
+/// | [`crate::attribute::HW_SENSOR_LOCATION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const HW_VOLTAGE_NOMINAL: &str = "hw.voltage.nominal";
 
 /// ## Description
 ///
@@ -2508,7 +3854,7 @@ pub const JVM_THREAD_COUNT: &str = "jvm.thread.count";
 
 /// ## Description
 ///
-/// Maximum CPU resource limit set for the container
+/// Maximum CPU resource limit set for the container.
 ///
 /// ## Notes
 ///
@@ -2524,7 +3870,7 @@ pub const K8S_CONTAINER_CPU_LIMIT: &str = "k8s.container.cpu.limit";
 
 /// ## Description
 ///
-/// CPU resource requested for the container
+/// CPU resource requested for the container.
 ///
 /// ## Notes
 ///
@@ -2540,7 +3886,7 @@ pub const K8S_CONTAINER_CPU_REQUEST: &str = "k8s.container.cpu.request";
 
 /// ## Description
 ///
-/// Maximum ephemeral storage resource limit set for the container
+/// Maximum ephemeral storage resource limit set for the container.
 ///
 /// ## Notes
 ///
@@ -2556,7 +3902,7 @@ pub const K8S_CONTAINER_EPHEMERAL_STORAGE_LIMIT: &str = "k8s.container.ephemeral
 
 /// ## Description
 ///
-/// Ephemeral storage resource requested for the container
+/// Ephemeral storage resource requested for the container.
 ///
 /// ## Notes
 ///
@@ -2572,7 +3918,7 @@ pub const K8S_CONTAINER_EPHEMERAL_STORAGE_REQUEST: &str = "k8s.container.ephemer
 
 /// ## Description
 ///
-/// Maximum memory resource limit set for the container
+/// Maximum memory resource limit set for the container.
 ///
 /// ## Notes
 ///
@@ -2588,7 +3934,7 @@ pub const K8S_CONTAINER_MEMORY_LIMIT: &str = "k8s.container.memory.limit";
 
 /// ## Description
 ///
-/// Memory resource requested for the container
+/// Memory resource requested for the container.
 ///
 /// ## Notes
 ///
@@ -2604,7 +3950,7 @@ pub const K8S_CONTAINER_MEMORY_REQUEST: &str = "k8s.container.memory.request";
 
 /// ## Description
 ///
-/// Indicates whether the container is currently marked as ready to accept traffic, based on its readiness probe (1 = ready, 0 = not ready)
+/// Indicates whether the container is currently marked as ready to accept traffic, based on its readiness probe (1 = ready, 0 = not ready).
 ///
 /// ## Notes
 ///
@@ -2621,7 +3967,7 @@ pub const K8S_CONTAINER_READY: &str = "k8s.container.ready";
 
 /// ## Description
 ///
-/// Describes how many times the container has restarted (since the last counter reset)
+/// Describes how many times the container has restarted (since the last counter reset).
 ///
 /// ## Notes
 ///
@@ -2641,7 +3987,7 @@ pub const K8S_CONTAINER_RESTART_COUNT: &str = "k8s.container.restart.count";
 
 /// ## Description
 ///
-/// Describes the number of K8s containers that are currently in a state for a given reason
+/// Describes the number of K8s containers that are currently in a state for a given reason.
 ///
 /// ## Notes
 ///
@@ -2663,7 +4009,7 @@ pub const K8S_CONTAINER_STATUS_REASON: &str = "k8s.container.status.reason";
 
 /// ## Description
 ///
-/// Describes the number of K8s containers that are currently in a given state
+/// Describes the number of K8s containers that are currently in a given state.
 ///
 /// ## Notes
 ///
@@ -2685,7 +4031,7 @@ pub const K8S_CONTAINER_STATUS_STATE: &str = "k8s.container.status.state";
 
 /// ## Description
 ///
-/// Maximum storage resource limit set for the container
+/// Maximum storage resource limit set for the container.
 ///
 /// ## Notes
 ///
@@ -2701,7 +4047,7 @@ pub const K8S_CONTAINER_STORAGE_LIMIT: &str = "k8s.container.storage.limit";
 
 /// ## Description
 ///
-/// Storage resource requested for the container
+/// Storage resource requested for the container.
 ///
 /// ## Notes
 ///
@@ -2717,7 +4063,7 @@ pub const K8S_CONTAINER_STORAGE_REQUEST: &str = "k8s.container.storage.request";
 
 /// ## Description
 ///
-/// The number of actively running jobs for a cronjob
+/// The number of actively running jobs for a cronjob.
 ///
 /// ## Notes
 ///
@@ -2734,7 +4080,7 @@ pub const K8S_CRONJOB_ACTIVE_JOBS: &str = "k8s.cronjob.active_jobs";
 
 /// ## Description
 ///
-/// Number of nodes that are running at least 1 daemon pod and are supposed to run the daemon pod
+/// Number of nodes that are running at least 1 daemon pod and are supposed to run the daemon pod.
 ///
 /// ## Notes
 ///
@@ -2751,7 +4097,7 @@ pub const K8S_DAEMONSET_CURRENT_SCHEDULED_NODES: &str = "k8s.daemonset.current_s
 
 /// ## Description
 ///
-/// Number of nodes that should be running the daemon pod (including nodes currently running the daemon pod)
+/// Number of nodes that should be running the daemon pod (including nodes currently running the daemon pod).
 ///
 /// ## Notes
 ///
@@ -2768,7 +4114,7 @@ pub const K8S_DAEMONSET_DESIRED_SCHEDULED_NODES: &str = "k8s.daemonset.desired_s
 
 /// ## Description
 ///
-/// Number of nodes that are running the daemon pod, but are not supposed to run the daemon pod
+/// Number of nodes that are running the daemon pod, but are not supposed to run the daemon pod.
 ///
 /// ## Notes
 ///
@@ -2785,7 +4131,7 @@ pub const K8S_DAEMONSET_MISSCHEDULED_NODES: &str = "k8s.daemonset.misscheduled_n
 
 /// ## Description
 ///
-/// Number of nodes that should be running the daemon pod and have one or more of the daemon pod running and ready
+/// Number of nodes that should be running the daemon pod and have one or more of the daemon pod running and ready.
 ///
 /// ## Notes
 ///
@@ -2802,7 +4148,7 @@ pub const K8S_DAEMONSET_READY_NODES: &str = "k8s.daemonset.ready_nodes";
 
 /// ## Description
 ///
-/// Total number of available replica pods (ready for at least minReadySeconds) targeted by this deployment
+/// Total number of available replica pods (ready for at least minReadySeconds) targeted by this deployment.
 ///
 /// ## Notes
 ///
@@ -2819,7 +4165,7 @@ pub const K8S_DEPLOYMENT_AVAILABLE_PODS: &str = "k8s.deployment.available_pods";
 
 /// ## Description
 ///
-/// Number of desired replica pods in this deployment
+/// Number of desired replica pods in this deployment.
 ///
 /// ## Notes
 ///
@@ -2836,7 +4182,7 @@ pub const K8S_DEPLOYMENT_DESIRED_PODS: &str = "k8s.deployment.desired_pods";
 
 /// ## Description
 ///
-/// Current number of replica pods managed by this horizontal pod autoscaler, as last seen by the autoscaler
+/// Current number of replica pods managed by this horizontal pod autoscaler, as last seen by the autoscaler.
 ///
 /// ## Notes
 ///
@@ -2853,7 +4199,7 @@ pub const K8S_HPA_CURRENT_PODS: &str = "k8s.hpa.current_pods";
 
 /// ## Description
 ///
-/// Desired number of replica pods managed by this horizontal pod autoscaler, as last calculated by the autoscaler
+/// Desired number of replica pods managed by this horizontal pod autoscaler, as last calculated by the autoscaler.
 ///
 /// ## Notes
 ///
@@ -2870,7 +4216,7 @@ pub const K8S_HPA_DESIRED_PODS: &str = "k8s.hpa.desired_pods";
 
 /// ## Description
 ///
-/// The upper limit for the number of replica pods to which the autoscaler can scale up
+/// The upper limit for the number of replica pods to which the autoscaler can scale up.
 ///
 /// ## Notes
 ///
@@ -2963,7 +4309,7 @@ pub const K8S_HPA_METRIC_TARGET_CPU_VALUE: &str = "k8s.hpa.metric.target.cpu.val
 
 /// ## Description
 ///
-/// The lower limit for the number of replica pods to which the autoscaler can scale down
+/// The lower limit for the number of replica pods to which the autoscaler can scale down.
 ///
 /// ## Notes
 ///
@@ -2980,7 +4326,7 @@ pub const K8S_HPA_MIN_PODS: &str = "k8s.hpa.min_pods";
 
 /// ## Description
 ///
-/// The number of pending and actively running pods for a job
+/// The number of pending and actively running pods for a job.
 ///
 /// ## Notes
 ///
@@ -2997,7 +4343,7 @@ pub const K8S_JOB_ACTIVE_PODS: &str = "k8s.job.active_pods";
 
 /// ## Description
 ///
-/// The desired number of successfully finished pods the job should be run with
+/// The desired number of successfully finished pods the job should be run with.
 ///
 /// ## Notes
 ///
@@ -3014,7 +4360,7 @@ pub const K8S_JOB_DESIRED_SUCCESSFUL_PODS: &str = "k8s.job.desired_successful_po
 
 /// ## Description
 ///
-/// The number of pods which reached phase Failed for a job
+/// The number of pods which reached phase Failed for a job.
 ///
 /// ## Notes
 ///
@@ -3031,7 +4377,7 @@ pub const K8S_JOB_FAILED_PODS: &str = "k8s.job.failed_pods";
 
 /// ## Description
 ///
-/// The max desired number of pods the job should run at any given time
+/// The max desired number of pods the job should run at any given time.
 ///
 /// ## Notes
 ///
@@ -3048,7 +4394,7 @@ pub const K8S_JOB_MAX_PARALLEL_PODS: &str = "k8s.job.max_parallel_pods";
 
 /// ## Description
 ///
-/// The number of pods which reached phase Succeeded for a job
+/// The number of pods which reached phase Succeeded for a job.
 ///
 /// ## Notes
 ///
@@ -3152,7 +4498,7 @@ pub const K8S_NODE_CONDITION_STATUS: &str = "k8s.node.condition.status";
 
 /// ## Description
 ///
-/// Total CPU time consumed
+/// Total CPU time consumed.
 ///
 /// ## Notes
 ///
@@ -3168,7 +4514,7 @@ pub const K8S_NODE_CPU_TIME: &str = "k8s.node.cpu.time";
 
 /// ## Description
 ///
-/// Node's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs
+/// Node's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs.
 ///
 /// ## Notes
 ///
@@ -3184,7 +4530,66 @@ pub const K8S_NODE_CPU_USAGE: &str = "k8s.node.cpu.usage";
 
 /// ## Description
 ///
-/// Memory usage of the Node
+/// Node filesystem available bytes.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [FsStats.AvailableBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [NodeStats.Fs](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_NODE_FILESYSTEM_AVAILABLE: &str = "k8s.node.filesystem.available";
+
+/// ## Description
+///
+/// Node filesystem capacity.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [FsStats.CapacityBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [NodeStats.Fs](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_NODE_FILESYSTEM_CAPACITY: &str = "k8s.node.filesystem.capacity";
+
+/// ## Description
+///
+/// Node filesystem usage.
+///
+/// ## Notes
+///
+/// This may not equal capacity - available.
+///
+/// This metric is derived from the
+/// [FsStats.UsedBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [NodeStats.Fs](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_NODE_FILESYSTEM_USAGE: &str = "k8s.node.filesystem.usage";
+
+/// ## Description
+///
+/// Memory usage of the Node.
 ///
 /// ## Notes
 ///
@@ -3236,7 +4641,7 @@ pub const K8S_NODE_NETWORK_IO: &str = "k8s.node.network.io";
 
 /// ## Description
 ///
-/// The time the Node has been running
+/// The time the Node has been running.
 ///
 /// ## Notes
 ///
@@ -3253,7 +4658,7 @@ pub const K8S_NODE_UPTIME: &str = "k8s.node.uptime";
 
 /// ## Description
 ///
-/// Total CPU time consumed
+/// Total CPU time consumed.
 ///
 /// ## Notes
 ///
@@ -3269,7 +4674,7 @@ pub const K8S_POD_CPU_TIME: &str = "k8s.pod.cpu.time";
 
 /// ## Description
 ///
-/// Pod's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs
+/// Pod's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs.
 ///
 /// ## Notes
 ///
@@ -3285,7 +4690,66 @@ pub const K8S_POD_CPU_USAGE: &str = "k8s.pod.cpu.usage";
 
 /// ## Description
 ///
-/// Memory usage of the Pod
+/// Pod filesystem available bytes.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [FsStats.AvailableBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [PodStats.EphemeralStorage](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_FILESYSTEM_AVAILABLE: &str = "k8s.pod.filesystem.available";
+
+/// ## Description
+///
+/// Pod filesystem capacity.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [FsStats.CapacityBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [PodStats.EphemeralStorage](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_FILESYSTEM_CAPACITY: &str = "k8s.pod.filesystem.capacity";
+
+/// ## Description
+///
+/// Pod filesystem usage.
+///
+/// ## Notes
+///
+/// This may not equal capacity - available.
+///
+/// This metric is derived from the
+/// [FsStats.UsedBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats) field
+/// of the [PodStats.EphemeralStorage](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats)
+/// of the Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_FILESYSTEM_USAGE: &str = "k8s.pod.filesystem.usage";
+
+/// ## Description
+///
+/// Memory usage of the Pod.
 ///
 /// ## Notes
 ///
@@ -3337,7 +4801,7 @@ pub const K8S_POD_NETWORK_IO: &str = "k8s.pod.network.io";
 
 /// ## Description
 ///
-/// The time the Pod has been running
+/// The time the Pod has been running.
 ///
 /// ## Notes
 ///
@@ -3354,7 +4818,161 @@ pub const K8S_POD_UPTIME: &str = "k8s.pod.uptime";
 
 /// ## Description
 ///
-/// Total number of available replica pods (ready for at least minReadySeconds) targeted by this replicaset
+/// Pod volume storage space available.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [VolumeStats.AvailableBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats) field
+/// of the [PodStats](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats) of the
+/// Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::K8S_VOLUME_NAME`] | `Required`
+/// | [`crate::attribute::K8S_VOLUME_TYPE`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_VOLUME_AVAILABLE: &str = "k8s.pod.volume.available";
+
+/// ## Description
+///
+/// Pod volume total capacity.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [VolumeStats.CapacityBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats) field
+/// of the [PodStats](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats) of the
+/// Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::K8S_VOLUME_NAME`] | `Required`
+/// | [`crate::attribute::K8S_VOLUME_TYPE`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_VOLUME_CAPACITY: &str = "k8s.pod.volume.capacity";
+
+/// ## Description
+///
+/// The total inodes in the filesystem of the Pod's volume.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [VolumeStats.Inodes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats) field
+/// of the [PodStats](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats) of the
+/// Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `{inode}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::K8S_VOLUME_NAME`] | `Required`
+/// | [`crate::attribute::K8S_VOLUME_TYPE`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_VOLUME_INODE_COUNT: &str = "k8s.pod.volume.inode.count";
+
+/// ## Description
+///
+/// The free inodes in the filesystem of the Pod's volume.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [VolumeStats.InodesFree](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats) field
+/// of the [PodStats](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats) of the
+/// Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `{inode}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::K8S_VOLUME_NAME`] | `Required`
+/// | [`crate::attribute::K8S_VOLUME_TYPE`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_VOLUME_INODE_FREE: &str = "k8s.pod.volume.inode.free";
+
+/// ## Description
+///
+/// The inodes used by the filesystem of the Pod's volume.
+///
+/// ## Notes
+///
+/// This metric is derived from the
+/// [VolumeStats.InodesUsed](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats) field
+/// of the [PodStats](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats) of the
+/// Kubelet's stats API.
+///
+/// This may not be equal to `inodes - free` because filesystem may share inodes with other filesystems
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `{inode}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::K8S_VOLUME_NAME`] | `Required`
+/// | [`crate::attribute::K8S_VOLUME_TYPE`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_VOLUME_INODE_USED: &str = "k8s.pod.volume.inode.used";
+
+/// ## Description
+///
+/// Pod volume usage.
+///
+/// ## Notes
+///
+/// This may not equal capacity - available.
+///
+/// This metric is derived from the
+/// [VolumeStats.UsedBytes](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats) field
+/// of the [PodStats](https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats) of the
+/// Kubelet's stats API
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `updowncounter` |
+/// | Unit: | `By` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::K8S_VOLUME_NAME`] | `Required`
+/// | [`crate::attribute::K8S_VOLUME_TYPE`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const K8S_POD_VOLUME_USAGE: &str = "k8s.pod.volume.usage";
+
+/// ## Description
+///
+/// Total number of available replica pods (ready for at least minReadySeconds) targeted by this replicaset.
 ///
 /// ## Notes
 ///
@@ -3371,7 +4989,7 @@ pub const K8S_REPLICASET_AVAILABLE_PODS: &str = "k8s.replicaset.available_pods";
 
 /// ## Description
 ///
-/// Number of desired replica pods in this replicaset
+/// Number of desired replica pods in this replicaset.
 ///
 /// ## Notes
 ///
@@ -3419,7 +5037,7 @@ pub const K8S_REPLICATION_CONTROLLER_DESIRED_PODS: &str = "k8s.replication_contr
 
 /// ## Description
 ///
-/// Total number of available replica pods (ready for at least minReadySeconds) targeted by this replication controller
+/// Total number of available replica pods (ready for at least minReadySeconds) targeted by this replication controller.
 ///
 /// ## Notes
 ///
@@ -3437,7 +5055,7 @@ pub const K8S_REPLICATIONCONTROLLER_AVAILABLE_PODS: &str =
 
 /// ## Description
 ///
-/// Number of desired replica pods in this replication controller
+/// Number of desired replica pods in this replication controller.
 ///
 /// ## Notes
 ///
@@ -3874,7 +5492,7 @@ pub const K8S_RESOURCEQUOTA_STORAGE_REQUEST_USED: &str = "k8s.resourcequota.stor
 
 /// ## Description
 ///
-/// The number of replica pods created by the statefulset controller from the statefulset version indicated by currentRevision
+/// The number of replica pods created by the statefulset controller from the statefulset version indicated by currentRevision.
 ///
 /// ## Notes
 ///
@@ -3891,7 +5509,7 @@ pub const K8S_STATEFULSET_CURRENT_PODS: &str = "k8s.statefulset.current_pods";
 
 /// ## Description
 ///
-/// Number of desired replica pods in this statefulset
+/// Number of desired replica pods in this statefulset.
 ///
 /// ## Notes
 ///
@@ -3908,7 +5526,7 @@ pub const K8S_STATEFULSET_DESIRED_PODS: &str = "k8s.statefulset.desired_pods";
 
 /// ## Description
 ///
-/// The number of replica pods created for this statefulset with a Ready Condition
+/// The number of replica pods created for this statefulset with a Ready Condition.
 ///
 /// ## Notes
 ///
@@ -3925,7 +5543,7 @@ pub const K8S_STATEFULSET_READY_PODS: &str = "k8s.statefulset.ready_pods";
 
 /// ## Description
 ///
-/// Number of replica pods created by the statefulset controller from the statefulset version indicated by updateRevision
+/// Number of replica pods created by the statefulset controller from the statefulset version indicated by updateRevision.
 ///
 /// ## Notes
 ///
@@ -4548,7 +6166,7 @@ pub const NODEJS_EVENTLOOP_UTILIZATION: &str = "nodejs.eventloop.utilization";
 
 /// ## Description
 ///
-/// The number of log records for which the export has finished, either successful or failed
+/// The number of log records for which the export has finished, either successful or failed.
 ///
 /// ## Notes
 ///
@@ -4575,7 +6193,7 @@ pub const OTEL_SDK_EXPORTER_LOG_EXPORTED: &str = "otel.sdk.exporter.log.exported
 
 /// ## Description
 ///
-/// The number of log records which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)
+/// The number of log records which were passed to the exporter, but that have not been exported yet (neither successful, nor failed).
 ///
 /// ## Notes
 ///
@@ -4599,7 +6217,7 @@ pub const OTEL_SDK_EXPORTER_LOG_INFLIGHT: &str = "otel.sdk.exporter.log.inflight
 
 /// ## Description
 ///
-/// The number of metric data points for which the export has finished, either successful or failed
+/// The number of metric data points for which the export has finished, either successful or failed.
 ///
 /// ## Notes
 ///
@@ -4627,7 +6245,7 @@ pub const OTEL_SDK_EXPORTER_METRIC_DATA_POINT_EXPORTED: &str =
 
 /// ## Description
 ///
-/// The number of metric data points which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)
+/// The number of metric data points which were passed to the exporter, but that have not been exported yet (neither successful, nor failed).
 ///
 /// ## Notes
 ///
@@ -4681,7 +6299,7 @@ pub const OTEL_SDK_EXPORTER_OPERATION_DURATION: &str = "otel.sdk.exporter.operat
 
 /// ## Description
 ///
-/// The number of spans for which the export has finished, either successful or failed
+/// The number of spans for which the export has finished, either successful or failed.
 ///
 /// ## Notes
 ///
@@ -4723,7 +6341,7 @@ pub const OTEL_SDK_EXPORTER_SPAN_EXPORTED_COUNT: &str = "otel.sdk.exporter.span.
 
 /// ## Description
 ///
-/// The number of spans which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)
+/// The number of spans which were passed to the exporter, but that have not been exported yet (neither successful, nor failed).
 ///
 /// ## Notes
 ///
@@ -4799,7 +6417,7 @@ pub const OTEL_SDK_METRIC_READER_COLLECTION_DURATION: &str =
 
 /// ## Description
 ///
-/// The number of log records for which the processing has finished, either successful or failed
+/// The number of log records for which the processing has finished, either successful or failed.
 ///
 /// ## Notes
 ///
@@ -4824,7 +6442,7 @@ pub const OTEL_SDK_PROCESSOR_LOG_PROCESSED: &str = "otel.sdk.processor.log.proce
 
 /// ## Description
 ///
-/// The maximum number of log records the queue of a given instance of an SDK Log Record processor can hold
+/// The maximum number of log records the queue of a given instance of an SDK Log Record processor can hold.
 ///
 /// ## Notes
 ///
@@ -4846,7 +6464,7 @@ pub const OTEL_SDK_PROCESSOR_LOG_QUEUE_CAPACITY: &str = "otel.sdk.processor.log.
 
 /// ## Description
 ///
-/// The number of log records in the queue of a given instance of an SDK log processor
+/// The number of log records in the queue of a given instance of an SDK log processor.
 ///
 /// ## Notes
 ///
@@ -4868,7 +6486,7 @@ pub const OTEL_SDK_PROCESSOR_LOG_QUEUE_SIZE: &str = "otel.sdk.processor.log.queu
 
 /// ## Description
 ///
-/// The number of spans for which the processing has finished, either successful or failed
+/// The number of spans for which the processing has finished, either successful or failed.
 ///
 /// ## Notes
 ///
@@ -4907,7 +6525,7 @@ pub const OTEL_SDK_PROCESSOR_SPAN_PROCESSED_COUNT: &str = "otel.sdk.processor.sp
 
 /// ## Description
 ///
-/// The maximum number of spans the queue of a given instance of an SDK span processor can hold
+/// The maximum number of spans the queue of a given instance of an SDK span processor can hold.
 ///
 /// ## Notes
 ///
@@ -4929,7 +6547,7 @@ pub const OTEL_SDK_PROCESSOR_SPAN_QUEUE_CAPACITY: &str = "otel.sdk.processor.spa
 
 /// ## Description
 ///
-/// The number of spans in the queue of a given instance of an SDK span processor
+/// The number of spans in the queue of a given instance of an SDK span processor.
 ///
 /// ## Notes
 ///
@@ -5009,7 +6627,7 @@ pub const OTEL_SDK_SPAN_LIVE_COUNT: &str = "otel.sdk.span.live.count";
 
 /// ## Description
 ///
-/// The number of created spans
+/// The number of created spans.
 ///
 /// ## Notes
 ///
@@ -5431,7 +7049,7 @@ pub const SYSTEM_CPU_FREQUENCY: &str = "system.cpu.frequency";
 
 /// ## Description
 ///
-/// Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking
+/// Reports the number of logical (virtual) processor cores created by the operating system to manage multitasking.
 ///
 /// ## Notes
 ///
@@ -5447,7 +7065,7 @@ pub const SYSTEM_CPU_LOGICAL_COUNT: &str = "system.cpu.logical.count";
 
 /// ## Description
 ///
-/// Reports the number of actual physical processor cores on the hardware
+/// Reports the number of actual physical processor cores on the hardware.
 ///
 /// ## Notes
 ///
@@ -5498,6 +7116,8 @@ pub const SYSTEM_CPU_TIME: &str = "system.cpu.time";
 pub const SYSTEM_CPU_UTILIZATION: &str = "system.cpu.utilization";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5515,7 +7135,7 @@ pub const SYSTEM_DISK_IO: &str = "system.disk.io";
 
 /// ## Description
 ///
-/// Time disk spent activated
+/// Time disk spent activated.
 ///
 /// ## Notes
 ///
@@ -5557,6 +7177,8 @@ pub const SYSTEM_DISK_IO_TIME: &str = "system.disk.io_time";
 pub const SYSTEM_DISK_LIMIT: &str = "system.disk.limit";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5574,7 +7196,7 @@ pub const SYSTEM_DISK_MERGED: &str = "system.disk.merged";
 
 /// ## Description
 ///
-/// Sum of the time each operation took to complete
+/// Sum of the time each operation took to complete.
 ///
 /// ## Notes
 ///
@@ -5598,6 +7220,8 @@ pub const SYSTEM_DISK_MERGED: &str = "system.disk.merged";
 pub const SYSTEM_DISK_OPERATION_TIME: &str = "system.disk.operation_time";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5660,6 +7284,8 @@ pub const SYSTEM_FILESYSTEM_LIMIT: &str = "system.filesystem.limit";
 pub const SYSTEM_FILESYSTEM_USAGE: &str = "system.filesystem.usage";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5680,7 +7306,7 @@ pub const SYSTEM_FILESYSTEM_UTILIZATION: &str = "system.filesystem.utilization";
 
 /// ## Description
 ///
-/// An estimate of how much memory is available for starting new applications, without causing swapping
+/// An estimate of how much memory is available for starting new applications, without causing swapping.
 ///
 /// ## Notes
 ///
@@ -5723,11 +7349,7 @@ pub const SYSTEM_LINUX_MEMORY_SLAB_USAGE: &str = "system.linux.memory.slab.usage
 
 /// ## Description
 ///
-/// Total memory available in the system.
-///
-/// ## Notes
-///
-/// Its value SHOULD equal the sum of `system.memory.state` over all states
+/// Total virtual memory available in the system
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5756,12 +7378,7 @@ pub const SYSTEM_MEMORY_SHARED: &str = "system.memory.shared";
 
 /// ## Description
 ///
-/// Reports memory in use by state.
-///
-/// ## Notes
-///
-/// The sum over all `system.memory.state` values SHOULD equal the total memory
-/// available on the system, that is `system.memory.limit`
+/// Reports memory in use by state
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5777,6 +7394,8 @@ pub const SYSTEM_MEMORY_SHARED: &str = "system.memory.shared";
 pub const SYSTEM_MEMORY_USAGE: &str = "system.memory.usage";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5792,6 +7411,8 @@ pub const SYSTEM_MEMORY_USAGE: &str = "system.memory.usage";
 pub const SYSTEM_MEMORY_UTILIZATION: &str = "system.memory.utilization";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5832,39 +7453,13 @@ pub const SYSTEM_NETWORK_CONNECTIONS: &str = "system.network.connections";
 
 /// ## Description
 ///
-/// Count of packets that are dropped or discarded even though there was no error
+/// Count of network errors detected.
 ///
 /// ## Notes
 ///
 /// Measured as:
 ///
-/// - Linux: the `drop` column in `/proc/dev/net` ([source](https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html))
-/// - Windows: [`InDiscards`/`OutDiscards`](https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2)
-///   from [`GetIfEntry2`](https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2)
-/// ## Metadata
-/// | | |
-/// |:-|:-
-/// | Instrument: | `counter` |
-/// | Unit: | `{packet}` |
-/// | Status: | `Development`  |
-///
-/// ## Attributes
-/// | Name | Requirement |
-/// |:-|:- |
-/// | [`crate::attribute::NETWORK_INTERFACE_NAME`] | `Recommended`
-/// | [`crate::attribute::NETWORK_IO_DIRECTION`] | `Recommended`
-#[cfg(feature = "semconv_experimental")]
-pub const SYSTEM_NETWORK_DROPPED: &str = "system.network.dropped";
-
-/// ## Description
-///
-/// Count of network errors detected
-///
-/// ## Notes
-///
-/// Measured as:
-///
-/// - Linux: the `errs` column in `/proc/dev/net` ([source](https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html)).
+/// - Linux: the `errs` column in `/proc/net/dev` ([source](https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html)).
 /// - Windows: [`InErrors`/`OutErrors`](https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2)
 ///   from [`GetIfEntry2`](https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2)
 /// ## Metadata
@@ -5883,6 +7478,8 @@ pub const SYSTEM_NETWORK_DROPPED: &str = "system.network.dropped";
 pub const SYSTEM_NETWORK_ERRORS: &str = "system.network.errors";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5899,6 +7496,8 @@ pub const SYSTEM_NETWORK_ERRORS: &str = "system.network.errors";
 pub const SYSTEM_NETWORK_IO: &str = "system.network.io";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5912,9 +7511,37 @@ pub const SYSTEM_NETWORK_IO: &str = "system.network.io";
 /// | [`crate::attribute::NETWORK_IO_DIRECTION`] | `Recommended`
 /// | [`crate::attribute::SYSTEM_DEVICE`] | `Recommended`
 #[cfg(feature = "semconv_experimental")]
-pub const SYSTEM_NETWORK_PACKETS: &str = "system.network.packets";
+pub const SYSTEM_NETWORK_PACKET_COUNT: &str = "system.network.packet.count";
 
 /// ## Description
+///
+/// Count of packets that are dropped or discarded even though there was no error.
+///
+/// ## Notes
+///
+/// Measured as:
+///
+/// - Linux: the `drop` column in `/proc/net/dev` ([source](https://web.archive.org/web/20180321091318/http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html))
+/// - Windows: [`InDiscards`/`OutDiscards`](https://docs.microsoft.com/windows/win32/api/netioapi/ns-netioapi-mib_if_row2)
+///   from [`GetIfEntry2`](https://docs.microsoft.com/windows/win32/api/netioapi/nf-netioapi-getifentry2)
+/// ## Metadata
+/// | | |
+/// |:-|:-
+/// | Instrument: | `counter` |
+/// | Unit: | `{packet}` |
+/// | Status: | `Development`  |
+///
+/// ## Attributes
+/// | Name | Requirement |
+/// |:-|:- |
+/// | [`crate::attribute::NETWORK_INTERFACE_NAME`] | `Recommended`
+/// | [`crate::attribute::NETWORK_IO_DIRECTION`] | `Recommended`
+#[cfg(feature = "semconv_experimental")]
+pub const SYSTEM_NETWORK_PACKET_DROPPED: &str = "system.network.packet.dropped";
+
+/// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5930,6 +7557,8 @@ pub const SYSTEM_NETWORK_PACKETS: &str = "system.network.packets";
 pub const SYSTEM_PAGING_FAULTS: &str = "system.paging.faults";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -5964,6 +7593,8 @@ pub const SYSTEM_PAGING_OPERATIONS: &str = "system.paging.operations";
 pub const SYSTEM_PAGING_USAGE: &str = "system.paging.usage";
 
 /// ## Description
+///
+/// TODO
 /// ## Metadata
 /// | | |
 /// |:-|:-
@@ -6010,7 +7641,7 @@ pub const SYSTEM_PROCESS_CREATED: &str = "system.process.created";
 
 /// ## Description
 ///
-/// The time the system has been running
+/// The time the system has been running.
 ///
 /// ## Notes
 ///
@@ -6296,7 +7927,7 @@ pub const VCS_REF_LINES_DELTA: &str = "vcs.ref.lines_delta";
 
 /// ## Description
 ///
-/// The number of revisions (commits) a ref (branch) is ahead/behind the branch from the `vcs.ref.base.name` attribute
+/// The number of revisions (commits) a ref (branch) is ahead/behind the branch from the `vcs.ref.base.name` attribute.
 ///
 /// ## Notes
 ///
