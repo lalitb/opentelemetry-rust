@@ -4,7 +4,7 @@
 
 ## 0.31.0
 
-Released TBD
+Released 2025-Sep-24
 
 - Update `opentelemetry` dependency version to 0.31
 - Update `opentelemetry_sdk` dependency version to 0.31

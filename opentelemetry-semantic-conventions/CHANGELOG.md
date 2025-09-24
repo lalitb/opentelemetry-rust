@@ -2,6 +2,10 @@
 
 ## vNext
 
+## 0.31.0
+
+Released 2025-Sep-24
+
 - Update to [v1.34.0](https://github.com/open-telemetry/semantic-conventions/releases/tag/v1.34.0) of the semantic conventions.
 
 ## 0.30.0
