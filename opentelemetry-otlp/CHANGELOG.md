@@ -2,11 +2,13 @@
 
 ## vNext
 
-## 0.30.1
+## 0.31.0
 
-Released 2025-Sep-16
+Released TBD
 
-- Update `opentelemetry-proto` and `opentelemetry-http` dependency version to 0.30.1
+- Update `opentelemetry` dependency version to 0.31
+- Update `opentelemetry_sdk` dependency version to 0.31
+- Update `opentelemetry-proto` and `opentelemetry-http` dependency version to 0.31
 - Add HTTP compression support with `gzip-http` and `zstd-http` feature flags
 
 ## 0.30.0

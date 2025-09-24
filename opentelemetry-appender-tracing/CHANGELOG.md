@@ -2,11 +2,12 @@
 
 ## vNext
 
-## 0.30.1
+## 0.31.0
 
-Released 2025-June-05
+Released TBD
 
 - Bump `tracing-opentelemetry` to 0.31
+- Updated `opentelemetry` dependency to version 0.31.0
 
 ## 0.30.0
 
