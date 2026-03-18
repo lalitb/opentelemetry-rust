@@ -100,7 +100,7 @@ impl TryFrom<Compression> for tonic::codec::CompressionEncoding {
 ///
 /// It allows you to
 /// - add additional metadata
-/// - set tls config (via the `tls-ring` or `tls-aws-lc` features)
+/// - set tls config (via the `tls-ring`, `tls-aws-lc`, or `tls-provider-agnostic` features)
 /// - specify custom [channel]s
 ///
 /// [tonic]: <https://github.com/hyperium/tonic>
@@ -259,13 +259,18 @@ impl TonicExporterBuilder {
             .scheme()
             .is_some_and(|s| *s == http::uri::Scheme::HTTPS);
 
-        #[cfg(not(any(feature = "tls", feature = "tls-ring", feature = "tls-aws-lc")))]
+        #[cfg(not(any(
+            feature = "tls",
+            feature = "tls-ring",
+            feature = "tls-aws-lc",
+            feature = "tls-provider-agnostic"
+        )))]
         if is_https {
             return Err(ExporterBuildError::InvalidConfig {
                 name: "endpoint".to_string(),
                 reason: format!(
                     "endpoint '{}' uses HTTPS but no TLS feature is enabled; \
-                     enable one of the `tls-ring` or `tls-aws-lc` features on `opentelemetry-otlp`",
+                     enable one of the `tls-ring`, `tls-aws-lc`, or `tls-provider-agnostic` features on `opentelemetry-otlp`",
                     endpoint_clone
                 ),
             });
@@ -1005,7 +1010,12 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(any(feature = "tls", feature = "tls-ring", feature = "tls-aws-lc")))]
+    #[cfg(not(any(
+        feature = "tls",
+        feature = "tls-ring",
+        feature = "tls-aws-lc",
+        feature = "tls-provider-agnostic"
+    )))]
     fn test_https_endpoint_errors_without_tls_feature() {
         use crate::exporter::ExporterBuildError;
         use crate::SpanExporter;
@@ -1030,7 +1040,11 @@ mod tests {
     }
 
     #[tokio::test]
-    #[cfg(any(feature = "tls-ring", feature = "tls-aws-lc"))]
+    #[cfg(any(
+        feature = "tls-ring",
+        feature = "tls-aws-lc",
+        feature = "tls-provider-agnostic"
+    ))]
     async fn test_https_endpoint_succeeds_with_tls_feature() {
         use crate::SpanExporter;
         use crate::WithExportConfig;
