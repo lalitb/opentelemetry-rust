@@ -2,6 +2,13 @@
 
 ## vNext
 
+## 0.31.1
+
+Released TBD
+
+- Add `tls-ring` and `tls-aws-lc` feature flags for explicit crypto provider selection.
+- Add `tls-provider-agnostic` feature flag for environments that require a custom crypto backend (e.g., OpenSSL for FIPS compliance). Enables TLS code paths without bundling `ring` or `aws-lc-rs`.
+
 ## 0.31.0
 
 Released 2025-Sep-25
