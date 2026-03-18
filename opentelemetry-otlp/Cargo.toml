@@ -79,8 +79,8 @@ zstd-http = ["zstd"]
 tls = ["tonic/tls-ring"]
 tls-ring = ["tonic/tls-ring"]
 tls-aws-lc = ["tonic/tls-aws-lc"]
-# Provider-agnostic TLS: enables TLS code paths with native OS trust roots
-# but does NOT bundle a specific crypto provider. Use this when you install a
+# Provider-agnostic TLS: enables TLS code paths without bundling a specific 
+# crypto provider. Use this when you install a
 # CryptoProvider globally (e.g., via rustls-openssl for FIPS/OpenSSL environments).
 tls-provider-agnostic = ["tonic/_tls-any"]
 tls-roots = ["tls", "tonic/tls-native-roots"]
