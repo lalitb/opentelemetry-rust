@@ -271,8 +271,8 @@
 //! * `zstd-tonic`: Use zstd compression for `tonic` grpc layer.
 //! * `tls-ring`: Enable rustls TLS support using ring for `tonic`.
 //! * `tls-aws-lc`: Enable rustls TLS support using aws-lc for `tonic`.
-//! * `tls-provider-agnostic`: Provider-agnostic TLS — enables TLS code paths with native OS trust roots
-//!   but does not bundle a crypto provider. Use this when you install a `CryptoProvider` globally
+//! * `tls-provider-agnostic`: Provider-agnostic TLS — enables TLS code paths without bundling a specific
+//!   crypto provider. Use this when you install a `CryptoProvider` globally
 //!   (e.g., via `rustls-openssl` for FIPS/OpenSSL environments).
 //! * `tls` (deprecated): Use `tls-ring` or `tls-aws-lc` instead.
 //! * `tls-roots`: Adds system trust roots to rustls-based gRPC clients using the rustls-native-certs crate (use with `tls-ring` or `tls-aws-lc`).

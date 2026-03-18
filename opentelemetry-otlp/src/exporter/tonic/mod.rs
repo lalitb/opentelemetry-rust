@@ -1041,6 +1041,7 @@ mod tests {
 
     #[tokio::test]
     #[cfg(any(
+        feature = "tls",
         feature = "tls-ring",
         feature = "tls-aws-lc",
         feature = "tls-provider-agnostic"
