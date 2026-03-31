@@ -2,6 +2,7 @@
 
 ## vNext
 
+- Update proto definitions to v1.10.0.
 - Updated `schemars` dependency to version 1.0.0.
 
 ## 0.31.0

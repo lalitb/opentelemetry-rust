@@ -42,6 +42,7 @@ mod json_serde {
                                 value: Some(AnyValue {
                                     value: Some(Value::StringValue(String::from("my.service"))),
                                 }),
+                                key_strindex: 0,
                             }],
                             dropped_attributes_count: 0,
                             entity_refs: vec![],
@@ -57,6 +58,7 @@ mod json_serde {
                                             "some scope attribute",
                                         ))),
                                     }),
+                                    key_strindex: 0,
                                 }],
                                 dropped_attributes_count: 0,
                             }),
@@ -76,6 +78,7 @@ mod json_serde {
                                     value: Some(AnyValue {
                                         value: Some(Value::StringValue(String::from("some value"))),
                                     }),
+                                    key_strindex: 0,
                                 }],
                                 dropped_attributes_count: 0,
                                 events: vec![],
@@ -250,6 +253,7 @@ mod json_serde {
                                 value: Some(AnyValue {
                                     value: Some(Value::StringValue(String::from("my.service"))),
                                 }),
+                                key_strindex: 0,
                             }],
                             dropped_attributes_count: 1,
                             entity_refs: vec![],
@@ -265,6 +269,7 @@ mod json_serde {
                                             "some scope attribute",
                                         ))),
                                     }),
+                                    key_strindex: 0,
                                 }],
                                 dropped_attributes_count: 1,
                             }),
@@ -287,12 +292,14 @@ mod json_serde {
                                                 "some value",
                                             ))),
                                         }),
+                                        key_strindex: 0,
                                     },
                                     KeyValue {
                                         key: String::from("my.span.bytes.attr"),
                                         value: Some(AnyValue {
                                             value: Some(Value::BytesValue(vec![0x80, 0x80, 0x80])),
                                         }),
+                                        key_strindex: 0,
                                     },
                                 ],
                                 dropped_attributes_count: 1,
@@ -306,6 +313,7 @@ mod json_serde {
                                                 "snowman",
                                             ))),
                                         }),
+                                        key_strindex: 0,
                                     }],
                                     dropped_attributes_count: 1,
                                 }],
@@ -320,6 +328,7 @@ mod json_serde {
                                         value: Some(AnyValue {
                                             value: Some(Value::StringValue(String::from("rust"))),
                                         }),
+                                        key_strindex: 0,
                                     }],
                                     dropped_attributes_count: 1,
                                     flags: 0x0200,
@@ -601,6 +610,7 @@ mod json_serde {
                     value: Some(AnyValue {
                         value: Some(Value::StringValue(String::from("some value"))),
                     }),
+                    key_strindex: 0,
                 }],
             });
             // language=json
@@ -639,6 +649,7 @@ mod json_serde {
                     value: Some(AnyValue {
                         value: Some(Value::StringValue(String::from("my.service"))),
                     }),
+                    key_strindex: 0,
                 }
             }
 
@@ -676,6 +687,7 @@ mod json_serde {
                     value: Some(AnyValue {
                         value: Some(Value::IntValue(33)),
                     }),
+                    key_strindex: 0,
                 }
             }
 
@@ -796,6 +808,7 @@ mod json_serde {
                                 value: Some(AnyValue {
                                     value: Some(Value::StringValue(String::from("my.service"))),
                                 }),
+                                key_strindex: 0,
                             }],
                             dropped_attributes_count: 0,
                             entity_refs: vec![],
@@ -811,6 +824,7 @@ mod json_serde {
                                             "some scope attribute",
                                         ))),
                                     }),
+                                    key_strindex: 0,
                                 }],
                                 dropped_attributes_count: 0,
                             }),
@@ -829,6 +843,7 @@ mod json_serde {
                                                         "some value",
                                                     ))),
                                                 }),
+                                                key_strindex: 0,
                                             }],
                                             start_time_unix_nano: 1544712660300000000,
                                             time_unix_nano: 1544712660300000000,
@@ -854,6 +869,7 @@ mod json_serde {
                                                         "some value",
                                                     ))),
                                                 }),
+                                                key_strindex: 0,
                                             }],
                                             start_time_unix_nano: 0,
                                             time_unix_nano: 1544712660300000000,
@@ -877,6 +893,7 @@ mod json_serde {
                                                         "some value",
                                                     ))),
                                                 }),
+                                                key_strindex: 0,
                                             }],
                                             start_time_unix_nano: 1544712660300000000,
                                             time_unix_nano: 1544712660300000000,
@@ -1184,6 +1201,7 @@ mod json_serde {
                                 value: Some(AnyValue {
                                     value: Some(Value::StringValue(String::from("my.service"))),
                                 }),
+                                key_strindex: 0,
                             }],
                             dropped_attributes_count: 0,
                             entity_refs: vec![],
@@ -1199,6 +1217,7 @@ mod json_serde {
                                             "some scope attribute",
                                         ))),
                                     }),
+                                    key_strindex: 0,
                                 }],
                                 dropped_attributes_count: 0,
                             }),
@@ -1221,24 +1240,28 @@ mod json_serde {
                                                 "some string",
                                             ))),
                                         }),
+                                        key_strindex: 0,
                                     },
                                     KeyValue {
                                         key: String::from("boolean.attribute"),
                                         value: Some(AnyValue {
                                             value: Some(Value::BoolValue(true)),
                                         }),
+                                        key_strindex: 0,
                                     },
                                     KeyValue {
                                         key: String::from("int.attribute"),
                                         value: Some(AnyValue {
                                             value: Some(Value::IntValue(10)),
                                         }),
+                                        key_strindex: 0,
                                     },
                                     KeyValue {
                                         key: String::from("double.attribute"),
                                         value: Some(AnyValue {
                                             value: Some(Value::DoubleValue(637.704)),
                                         }),
+                                        key_strindex: 0,
                                     },
                                     KeyValue {
                                         key: String::from("array.attribute"),
@@ -1258,6 +1281,7 @@ mod json_serde {
                                                 ],
                                             })),
                                         }),
+                                        key_strindex: 0,
                                     },
                                     KeyValue {
                                         key: String::from("map.attribute"),
@@ -1270,9 +1294,11 @@ mod json_serde {
                                                             String::from("some value"),
                                                         )),
                                                     }),
+                                                    key_strindex: 0,
                                                 }],
                                             })),
                                         }),
+                                        key_strindex: 0,
                                     },
                                 ],
                                 dropped_attributes_count: 0,
@@ -1544,6 +1570,7 @@ mod json_serde {
                         attributes: vec![KeyValue {
                             key: String::from("service.name"),
                             value: None,
+                            key_strindex: 0,
                         }],
                         dropped_attributes_count: 0,
                         entity_refs: vec![],

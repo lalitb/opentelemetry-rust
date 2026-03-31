@@ -97,6 +97,14 @@ fn build_tonic() {
             .field_attribute(path, "#[cfg_attr(feature = \"with-serde\", serde(serialize_with = \"crate::proto::serializers::serialize_to_hex_string\", deserialize_with = \"crate::proto::serializers::deserialize_from_hex_string\"))]")
     }
 
+    // key_strindex is a profiling-only reference field added to common.v1.KeyValue.
+    // For non-profiles signals we keep the existing JSON shape by defaulting it on input
+    // and omitting it from output when it is zero.
+    builder = builder.field_attribute(
+        "common.v1.KeyValue.key_strindex",
+        "#[cfg_attr(feature = \"with-serde\", serde(default, skip_serializing_if = \"crate::proto::serializers::is_default\"))]",
+    );
+
     // special serializer and deserializer for timestamp
     // OTLP/JSON format may use string for timestamp
     // the proto file uses u64 for timestamp

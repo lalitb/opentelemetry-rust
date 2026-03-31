@@ -10,6 +10,13 @@ pub(crate) mod serializers {
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use std::fmt;
 
+    pub fn is_default<T>(value: &T) -> bool
+    where
+        T: Default + PartialEq,
+    {
+        value == &T::default()
+    }
+
     // hex string <-> bytes conversion
 
     pub fn serialize_to_hex_string<S>(bytes: &[u8], serializer: S) -> Result<S::Ok, S::Error>
